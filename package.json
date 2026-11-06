@@ -1,0 +1,25 @@
+{
+  "name": "petcare-ai-veterinary-scribe",
+  "version": "1.0.0",
+  "description": "AI-Powered Veterinary Live Consultation and Documentation System",
+  "scripts": {
+    "backend:start": "cd backend && npm start",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:test": "cd backend && npm test",
+    "backend:migrate": "cd backend && npm run migrate",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "test": "cd backend && npm test",
+    "test:live": "cd frontend && npx playwright test e2e/live-audio-consultation.spec.js --headed"
+  },
+  "keywords": [
+    "veterinary",
+    "ai",
+    "scribe",
+    "openai",
+    "speech-to-text",
+    "react",
+    "nodejs"
+  ]
+}
+
