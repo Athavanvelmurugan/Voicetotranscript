@@ -71,45 +71,45 @@ The latest release brings major production hardening across acoustic ingestion, 
 ```mermaid
 flowchart TD
     subgraph Client["Client Tier (React 18 + Vite)"]
-        A[Microphone Audio Stream / File Upload] --> B[15s Audio Chunk / Binary Dispatcher]
-        B --> C[Audio Controls & Animated Soundwave]
-        D[2-Tier Patient Header & Doctor Switcher]
-        E[Clinical Document Workspace: Summary | Rx | Lab]
-        F[Clinical Insights Modal: Approve & Sign All / Reject]
+        A["Microphone Audio Stream / File Upload"] --> B["15s Audio Chunk / Binary Dispatcher"]
+        B --> C["Audio Controls & Animated Soundwave"]
+        D["2-Tier Patient Header & Doctor Switcher"]
+        E["Clinical Document Workspace: Summary / Rx / Lab"]
+        F["Clinical Insights Modal: Approve & Sign All / Reject"]
     end
 
     subgraph Ingestion["Acoustic Ingestion & Hardening"]
-        G[Binary Magic Bytes Validation] --> H[VAD Silence Trimmer RMS Gate]
-        H --> I[SHA-256 Chunk Hash Deduplication]
+        G["Binary Magic Bytes Validation"] --> H["VAD Silence Trimmer RMS Gate"]
+        H --> I["SHA-256 Chunk Hash Deduplication"]
     end
 
     subgraph Transcription["Speech-to-Text & Diarization"]
-        J[Groq Whisper-large-v3 Engine] --> K[Boundary Phrase Stitcher]
-        K --> L[Veterinary Drug Alias Normalizer]
-        L --> M[Semantic Speaker Diarizer: Doctor vs Owner]
+        J["Groq Whisper-large-v3 Engine"] --> K["Boundary Phrase Stitcher"]
+        K --> L["Veterinary Drug Alias Normalizer"]
+        L --> M["Semantic Speaker Diarizer: Doctor vs Owner"]
     end
 
     subgraph Intelligence["Clinical AI Synthesis Engine"]
-        N[Prompt Builder with Patient Context] --> O{Primary Groq LLM: gpt-oss-120b}
-        O -->|Rate Limit / 429| P[Secondary Groq LLM: qwen3.8-27b]
-        O -->|Success| Q[Structured Clinical JSON Output]
+        N["Prompt Builder with Patient Context"] --> O{"Primary Groq LLM: gpt-oss-120b"}
+        O -->|Rate Limit / 429| P["Secondary Groq LLM: qwen3.8-27b"]
+        O -->|Success| Q["Structured Clinical JSON Output"]
         P -->|Success| Q
-        Q --> R[Zod Clinical Safety Guardrails]
-        R --> S[Formulary Contraindication Interceptor]
-        S --> T[3-Document Synthesizer: Summary, Rx, Lab]
+        Q --> R["Zod Clinical Safety Guardrails"]
+        R --> S["Formulary Contraindication Interceptor"]
+        S --> T["3-Document Synthesizer: Summary, Rx, Lab"]
     end
 
     subgraph Persistence["Storage & Cryptographic Audit Layer"]
-        U[(PostgreSQL 14+: 12 Relational Tables)]
-        V[(Binary Audio Chunks BYTEA)]
-        W[(RFC 8785 Chained SHA-256 Audit Ledger)]
-        X[(Immutable Version History)]
+        U[("PostgreSQL 14+: 12 Relational Tables")]
+        V[("Binary Audio Chunks BYTEA")]
+        W[("RFC 8785 Chained SHA-256 Audit Ledger")]
+        X[("Immutable Version History")]
     end
 
     A --> G
     I --> J
     M -->|Real-Time WebSocket Stream| Client
-    Client -->|Explicit Clinician 'Generate' Action| N
+    Client -->|Explicit Clinician Generate Action| N
     T --> U
     T --> X
     F -->|Approve & Sign| W
