@@ -24,6 +24,7 @@ const sessionManager = require('../realtime/ws.session.manager');
 const auditService = require('../audit/audit.service');
 const db = require('../../db/connection');
 const clinicalExtractor = require('../clinical-ai/clinical.extractor');
+const clinicalTranslator = require('../clinical-ai/clinical.translator');
 const SummaryBuilder = require('../templates/summary.builder');
 const PrescriptionBuilder = require('../templates/prescription.builder');
 const LabTestsBuilder = require('../templates/lab-tests.builder');
@@ -169,14 +170,33 @@ class AudioController {
         }
       }
 
+      // Contextual translation to 100% English and speaker role verification
+      let liveSegments = transcriptionResult.segments || [];
+      try {
+        let chunkConsultation = null;
+        try {
+          chunkConsultation = await consultationRepo.findById(consultationId);
+        } catch (_) {}
+        const translationResult = await clinicalTranslator.translateAndDiarize({
+          segments: liveSegments,
+          fullText: liveSegments.map(s => s.text).join(' '),
+          consultation: chunkConsultation || { id: consultationId },
+          forceLanguage: 'en',
+          detectedLanguage: transcriptionResult.detectedLanguage,
+        });
+        liveSegments = translationResult.segments;
+      } catch (transErr) {
+        console.warn('[AudioController] Live chunk translation error, using raw segments:', transErr.message);
+      }
+
       // Save each returned segment to DB and broadcast via WebSocket
       const savedSegments = [];
-      for (const seg of transcriptionResult.segments) {
+      for (const seg of liveSegments) {
         if (!seg.text || !seg.text.trim()) continue;
         currentSeq++;
 
-        // Automatically determine or verify speaker role using Semantic Diarizer
-        const resolvedSpeaker = speakerClassifier.classify(seg.text, speakerRole);
+        // Automatically determine or verify speaker role using Semantic Diarizer / Translator
+        const resolvedSpeaker = seg.speakerRole || speakerClassifier.classify(seg.text, speakerRole);
 
         const saved = await transcriptAccumulator.addSegment({
           consultationId,
@@ -184,7 +204,7 @@ class AudioController {
           text: seg.text,
           isPartial: false,
           speakerRole: resolvedSpeaker,
-          languageDetected: transcriptionResult.detectedLanguage,
+          languageDetected: 'en',
           confidence: seg.confidence,
           startMs: seg.startMs,
           endMs: seg.endMs,
@@ -396,7 +416,27 @@ class AudioController {
         };
       }
 
-      // 4. Clinical Extraction (Groq LLM / fallback) - only when auto-generation is active
+      // 4. Clinical Translation into 100% English & True Speaker Diarization
+      let processedTranscript = whisperResult;
+      try {
+        const translationResult = await clinicalTranslator.translateAndDiarize({
+          segments: whisperResult.segments || [],
+          fullText: whisperResult.fullText || '',
+          consultation,
+          forceLanguage: 'en',
+          detectedLanguage: whisperResult.detectedLanguage,
+        });
+        processedTranscript = {
+          ...whisperResult,
+          segments: translationResult.segments,
+          fullText: translationResult.fullText,
+          detectedLanguage: 'en',
+        };
+      } catch (transErr) {
+        console.warn('[AudioController] Translation/diarization error, proceeding with raw transcript:', transErr.message);
+      }
+
+      // 5. Clinical Extraction (Groq LLM / fallback) - only when auto-generation is active
       let normalized = null;
       let summaryDoc = null;
       let prescriptionDoc = null;
@@ -407,15 +447,15 @@ class AudioController {
       if (shouldAutoGenerate) {
         let rawExtraction;
         try {
-          rawExtraction = await clinicalExtractor.callGroqLLM(consultation, whisperResult.fullText);
+          rawExtraction = await clinicalExtractor.callGroqLLM(consultation, processedTranscript.fullText);
         } catch (err) {
           console.warn('[AudioController] Groq LLM extraction error, using fallback extractor:', err.message);
-          rawExtraction = clinicalExtractor.generateFallbackExtraction(consultation, whisperResult.fullText);
+          rawExtraction = clinicalExtractor.generateFallbackExtraction(consultation, processedTranscript.fullText);
         }
 
         normalized = clinicalExtractor.normalizeExtractionJson(rawExtraction, consultation);
 
-        // 5. Synthesize All Clinical Documents
+        // 6. Synthesize All Clinical Documents
         summaryDoc = SummaryBuilder.build(normalized, consultation);
         prescriptionDoc = PrescriptionBuilder.build(normalized, consultation);
         labTestsDoc = LabTestsBuilder.build(normalized, consultation);
@@ -429,16 +469,16 @@ class AudioController {
       if (isPersistedConsultation) {
         // A. Persist transcript segments to transcript_segments table
         try {
-          if (Array.isArray(whisperResult.segments)) {
-            for (let i = 0; i < whisperResult.segments.length; i++) {
-              const seg = whisperResult.segments[i];
+          if (Array.isArray(processedTranscript.segments)) {
+            for (let i = 0; i < processedTranscript.segments.length; i++) {
+              const seg = processedTranscript.segments[i];
               await consultationRepo.insertTranscriptSegment({
                 consultationId: consultation.id,
                 sequenceNumber: i + 1,
                 text: seg.text,
                 isPartial: false,
                 speakerRole: seg.speakerRole || 'doctor',
-                languageDetected: whisperResult.detectedLanguage || 'en',
+                languageDetected: 'en',
                 confidence: seg.confidence || 0.99,
                 startMs: seg.startMs || 0,
                 endMs: seg.endMs || 0,
@@ -454,7 +494,7 @@ class AudioController {
         if (shouldAutoGenerate) {
           try {
             const documentService = require('../documents/document.service');
-            const extractionRecord = await clinicalExtractor.extractAndValidate(consultation, whisperResult.fullText);
+            const extractionRecord = await clinicalExtractor.extractAndValidate(consultation, processedTranscript.fullText);
             persistedDocs = await documentService.generateAllDocuments(consultation.id, extractionRecord, doctorId);
             await consultationRepo.updateStatus(consultation.id, 'completed');
           } catch (docErr) {
@@ -502,9 +542,9 @@ class AudioController {
         data: {
           consultation,
           transcript: {
-            detectedLanguage: whisperResult.detectedLanguage,
-            fullText: whisperResult.fullText,
-            segments: whisperResult.segments,
+            detectedLanguage: 'en',
+            fullText: processedTranscript.fullText,
+            segments: processedTranscript.segments,
           },
           clinical_extraction: shouldAutoGenerate ? normalized : null,
           documents: documentsPayload,

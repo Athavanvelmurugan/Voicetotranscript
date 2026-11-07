@@ -178,5 +178,23 @@
     "phonetic_key": "FRSMT",
     "auto_correct_threshold": 0.85,
     "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "IV Fluid",
+    "generic": "Intravenous Fluid Therapy",
+    "indian_brands": ["Normal Saline", "Ringer Lactate", "RL", "DNS"],
+    "known_mishearings": ["4-fluid", "4 fluid", "four fluid", "4-fluid therapy", "four fluid therapy"],
+    "phonetic_key": "VFLT",
+    "auto_correct_threshold": 0.80,
+    "possible_drug_threshold": 0.65
+  },
+  {
+    "canonical": "SDMA",
+    "generic": "Symmetric Dimethylarginine (Kidney Biomarker)",
+    "indian_brands": ["IDEXX SDMA"],
+    "known_mishearings": ["hdma", "h d m a", "s d m a"],
+    "phonetic_key": "STMA",
+    "auto_correct_threshold": 0.80,
+    "possible_drug_threshold": 0.65
   }
 ]

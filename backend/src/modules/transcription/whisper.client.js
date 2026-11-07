@@ -19,9 +19,10 @@ const vadService = require('./vad.service');
 const drugNormalizer = require('./drug-alias.normalizer');
 
 const LANGUAGE_MAP = {
-  en: 'en',
-  ta: 'ta',
-  'en-ta': null, // auto-detect
+  en: null,      // Auto-detect allows Whisper to transcribe native languages (Tamil, Hindi, etc.) without acoustic distortion
+  ta: 'ta',      // Explicit Tamil acoustic model
+  'en-ta': null, // Multilingual auto-detect
+  auto: null,    // Auto-detect
 };
 
 const VETERINARY_PROMPT = `Veterinary medical consultation between a veterinarian and pet owner.
@@ -42,6 +43,10 @@ const PHANTOM_BLOCKLIST = [
   'see you in the next video',
   'subscribe to my channel',
   'subscribe to our channel',
+  'the following is the list of the drugs',
+  'the following is the list of drugs',
+  'the following is the result of the consultation',
+  'the following is a list of',
 ];
 
 class WhisperClient {
@@ -196,9 +201,12 @@ class WhisperClient {
 
     // Helper to test for phantom hallucination phrases
     const isPhantomPhrase = (text) => {
-      if (!text) return true;
+      if (!text || typeof text !== 'string') return true;
       const clean = text.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
-      return PHANTOM_BLOCKLIST.some(phrase => clean.includes(phrase) || phrase.includes(clean));
+      // If the text contains non-ASCII characters (e.g. Tamil, Hindi) and has minimal ASCII,
+      // it must NEVER be falsely matched as an English phantom phrase!
+      if (!clean || clean.length < 3) return false;
+      return PHANTOM_BLOCKLIST.some(phrase => clean === phrase || clean.includes(phrase));
     };
 
     // Helper to test if a segment is noise or hallucination
