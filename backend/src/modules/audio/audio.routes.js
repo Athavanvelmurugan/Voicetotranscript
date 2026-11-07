@@ -35,24 +35,36 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (_req, file, cb) => {
-  // Whisper accepts: mp3, mp4, mpeg, mpga, m4a, wav, webm
-  const allowed = [
+  // Support comprehensive audio formats: MP3, WAV, M4A, WEBM, OGG, FLAC, AAC, MP4
+  const allowedMimes = [
     'audio/webm',
     'audio/wav',
     'audio/wave',
+    'audio/x-wav',
     'audio/mp4',
     'audio/mpeg',
     'audio/mp3',
     'audio/m4a',
-    'audio/ogg',
     'audio/x-m4a',
-    'application/octet-stream', // some browsers send raw binary
+    'audio/ogg',
+    'audio/flac',
+    'audio/x-flac',
+    'audio/aac',
+    'audio/x-aac',
+    'video/mp4',
+    'video/webm',
   ];
 
-  if (allowed.includes(file.mimetype) || file.originalname.match(/\.(webm|wav|mp3|mp4|m4a|ogg)$/i)) {
+  const hasAudioExtension = Boolean(file.originalname && file.originalname.match(/\.(webm|wav|mp3|mp4|m4a|ogg|flac|aac|mpeg|mpga)$/i));
+
+  // Reject generic octet-stream unless file extension indicates audio; magic-bytes will be sniffed on the buffer
+  if (allowedMimes.includes(file.mimetype) || (file.mimetype === 'application/octet-stream' && hasAudioExtension) || hasAudioExtension) {
     cb(null, true);
   } else {
-    cb(new Error(`Unsupported audio format: ${file.mimetype}. Use webm, wav, mp3, or mp4.`));
+    const err = new Error(`Unsupported audio format: ${file.mimetype}. Supported formats: mp3, wav, m4a, webm, ogg, flac, aac.`);
+    err.statusCode = 400;
+    err.error = 'invalid_audio';
+    cb(err);
   }
 };
 
@@ -61,6 +73,16 @@ const upload = multer({
   fileFilter,
   limits: {
     fileSize: 25 * 1024 * 1024, // 25MB — Whisper API hard limit
+  },
+});
+
+// In-Memory storage: Zero disk writes, stored directly into PostgreSQL as BYTEA
+const memoryStorage = multer.memoryStorage();
+const memoryUpload = multer({
+  storage: memoryStorage,
+  fileFilter,
+  limits: {
+    fileSize: 25 * 1024 * 1024,
   },
 });
 
@@ -80,6 +102,49 @@ router.post(
   '/:id/audio-chunk',
   upload.single('audio'),
   (req, res, next) => audioController.uploadChunk(req, res, next)
+);
+
+/**
+ * POST /api/v1/consultations/upload-and-scribe
+ * POST /api/v1/consultations/:id/upload-and-scribe
+ *
+ * Unified single-turn endpoint (In-Memory / Zero Disk):
+ *  - Ingests multipart audio directly into RAM
+ *  - Transcribes audio via Whisper Large V3
+ *  - Saves binary into PostgreSQL (consultation_audio BYTEA)
+ *  - Extracts structured clinical entities (diagnoses, meds, labs)
+ *  - Synthesizes Summary, Prescription, Lab Tests, SOAP Notes, Follow-up
+ */
+router.post(
+  '/upload-and-scribe',
+  memoryUpload.single('audio'),
+  (req, res, next) => audioController.uploadAndScribe(req, res, next)
+);
+
+router.post(
+  '/:id/upload-and-scribe',
+  memoryUpload.single('audio'),
+  (req, res, next) => audioController.uploadAndScribe(req, res, next)
+);
+
+/**
+ * GET /api/v1/consultations/:id/audio
+ *
+ * Streams raw audio binary directly from PostgreSQL BYTEA column
+ */
+router.get(
+  '/:id/audio',
+  (req, res, next) => audioController.getAudioByConsultation(req, res, next)
+);
+
+/**
+ * GET /api/v1/consultations/:id/audio/verify
+ *
+ * Verifies byte integrity of stored audio against SHA-256 hash
+ */
+router.get(
+  '/:id/audio/verify',
+  (req, res, next) => audioController.verifyAudioHash(req, res, next)
 );
 
 module.exports = router;

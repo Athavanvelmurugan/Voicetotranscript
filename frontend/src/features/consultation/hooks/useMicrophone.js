@@ -21,7 +21,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 // How often (ms) to slice the recording and send to Whisper
-const CHUNK_INTERVAL_MS = 15000; // 15 seconds
+const CHUNK_INTERVAL_MS = 10000; // 10 seconds continuous streaming
 
 export function useMicrophone({
   consultationId,
@@ -38,10 +38,24 @@ export function useMicrophone({
   const [chunkCount, setChunkCount]         = useState(0);
   const [error, setError]                   = useState(null);
 
-  const mediaRecorderRef = useRef(null);
-  const streamRef        = useRef(null);
-  const chunkIndexRef    = useRef(0);
-  const chunkBufferRef   = useRef([]); // collects blobs during recording interval
+  const mediaRecorderRef   = useRef(null);
+  const streamRef          = useRef(null);
+  const chunkIndexRef      = useRef(0);
+  const currentSpeakerRef  = useRef(currentSpeaker);
+  const overlapBlobRef     = useRef(null); // stores 1.5s trailing slice for Bug 5
+  const intervalTimerRef   = useRef(null);
+
+  useEffect(() => {
+    currentSpeakerRef.current = currentSpeaker;
+  }, [currentSpeaker]);
+
+  // Reset chunk telemetry when switching or creating consultations
+  useEffect(() => {
+    setChunkCount(0);
+    setChunkStatus(null);
+    chunkIndexRef.current = 0;
+    overlapBlobRef.current = null;
+  }, [consultationId]);
 
   // ─── Upload a single audio blob chunk to backend Whisper endpoint ───────────
   const uploadChunk = useCallback(async (blob, speakerRole) => {
@@ -95,7 +109,27 @@ export function useMicrophone({
       setError(err.message);
       if (onChunkError) onChunkError(err);
     }
-  }, [consultationId, language, onChunkProcessed, onChunkError]);
+  }, [consultationId, language, doctorId, onChunkProcessed, onChunkError]);
+
+  // Process blob with 1.5s boundary overlap (Bug 5) and upload continuously (Bug 8)
+  const processAndUploadBlob = useCallback(async (blob) => {
+    if (!blob || blob.size < 1000) return;
+
+    let payloadBlob = blob;
+    if (overlapBlobRef.current) {
+      payloadBlob = new Blob([overlapBlobRef.current, blob], { type: blob.type || 'audio/webm' });
+    }
+
+    // Save trailing ~1.5s slice for the next chunk's boundary overlap
+    try {
+      const overlapSize = Math.floor(blob.size * 0.15); // ~15% of 10s chunk is ~1.5s
+      if (overlapSize > 500) {
+        overlapBlobRef.current = blob.slice(blob.size - overlapSize, blob.size, blob.type);
+      }
+    } catch (_) {}
+
+    await uploadChunk(payloadBlob, currentSpeakerRef.current);
+  }, [uploadChunk]);
 
   // ─── Start recording ─────────────────────────────────────────────────────────
   const startCapture = useCallback(async () => {
@@ -128,28 +162,30 @@ export function useMicrophone({
       });
 
       mediaRecorderRef.current = recorder;
-      chunkBufferRef.current   = [];
 
-      // Collect blobs (fires every timeslice interval)
-      recorder.ondataavailable = (e) => {
+      // Continuous streaming: ondataavailable uploads chunks immediately every 10s (Bug 8)
+      recorder.ondataavailable = async (e) => {
         if (e.data && e.data.size > 0) {
-          chunkBufferRef.current.push(e.data);
+          await processAndUploadBlob(e.data);
         }
       };
 
-      // On each timeslice stop → merge blobs → upload → restart
-      recorder.onstop = async () => {
-        const blobs = chunkBufferRef.current.splice(0);
-        if (blobs.length === 0) return;
-
-        const merged = new Blob(blobs, { type: blobs[0].type || 'audio/webm' });
-
-        // Use the currentSpeaker captured at stop time (via ref)
-        await uploadChunk(merged, currentSpeaker);
+      recorder.onstop = () => {
+        console.log('[Mic] MediaRecorder stopped.');
       };
 
-      // Start with timeslice — fires ondataavailable every interval
       recorder.start(CHUNK_INTERVAL_MS);
+
+      // Interval fallback to guarantee periodic chunk requests across all browser implementations
+      if (intervalTimerRef.current) clearInterval(intervalTimerRef.current);
+      intervalTimerRef.current = setInterval(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          try {
+            mediaRecorderRef.current.requestData();
+          } catch (_) {}
+        }
+      }, CHUNK_INTERVAL_MS);
+
       setIsRecording(true);
       setIsPaused(false);
 
@@ -162,20 +198,48 @@ export function useMicrophone({
           : err.message,
       );
     }
-  }, [currentSpeaker, uploadChunk]);
+  }, [processAndUploadBlob]);
 
-  // ─── Pause: stop MediaRecorder (triggers final chunk) ────────────────────────
+  // ─── Pause: pause MediaRecorder without resetting chunk index (Bug 8) ────────
   const pauseCapture = useCallback(() => {
     const recorder = mediaRecorderRef.current;
     if (!recorder || recorder.state === 'inactive') return;
 
-    recorder.stop(); // triggers onstop → uploads the current buffer
+    if (recorder.state === 'recording') {
+      try {
+        recorder.requestData(); // flush pending audio before pausing
+      } catch (_) {}
+      recorder.pause();
+    }
+
+    if (intervalTimerRef.current) {
+      clearInterval(intervalTimerRef.current);
+      intervalTimerRef.current = null;
+    }
+
     setIsPaused(true);
     setIsRecording(false);
   }, []);
 
-  // ─── Resume: re-create MediaRecorder on same stream ──────────────────────────
+  // ─── Resume: resume MediaRecorder on same stream ──────────────────────────
   const resumeCapture = useCallback(async () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state === 'paused') {
+      recorder.resume();
+      if (intervalTimerRef.current) clearInterval(intervalTimerRef.current);
+      intervalTimerRef.current = setInterval(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          try {
+            mediaRecorderRef.current.requestData();
+          } catch (_) {}
+        }
+      }, CHUNK_INTERVAL_MS);
+      setIsRecording(true);
+      setIsPaused(false);
+      return;
+    }
+
+    // If recorder was stopped, re-start on existing stream without resetting chunkIndexRef
     if (!streamRef.current) {
       await startCapture();
       return;
@@ -188,36 +252,46 @@ export function useMicrophone({
       'audio/ogg;codecs=opus',
     ].find(m => MediaRecorder.isTypeSupported(m)) || '';
 
-    const recorder = new MediaRecorder(stream, {
+    const newRecorder = new MediaRecorder(stream, {
       ...(preferredMime ? { mimeType: preferredMime } : {}),
     });
 
-    mediaRecorderRef.current = recorder;
-    chunkBufferRef.current   = [];
+    mediaRecorderRef.current = newRecorder;
 
-    recorder.ondataavailable = (e) => {
+    newRecorder.ondataavailable = async (e) => {
       if (e.data && e.data.size > 0) {
-        chunkBufferRef.current.push(e.data);
+        await processAndUploadBlob(e.data);
       }
     };
 
-    recorder.onstop = async () => {
-      const blobs = chunkBufferRef.current.splice(0);
-      if (blobs.length === 0) return;
-      const merged = new Blob(blobs, { type: blobs[0].type || 'audio/webm' });
-      await uploadChunk(merged, currentSpeaker);
-    };
+    newRecorder.start(CHUNK_INTERVAL_MS);
 
-    recorder.start(CHUNK_INTERVAL_MS);
+    if (intervalTimerRef.current) clearInterval(intervalTimerRef.current);
+    intervalTimerRef.current = setInterval(() => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        try {
+          mediaRecorderRef.current.requestData();
+        } catch (_) {}
+      }
+    }, CHUNK_INTERVAL_MS);
+
     setIsRecording(true);
     setIsPaused(false);
-  }, [currentSpeaker, startCapture, uploadChunk]);
+  }, [processAndUploadBlob, startCapture]);
 
   // ─── Stop: flush final chunk, release mic ────────────────────────────────────
   const stopCapture = useCallback(() => {
+    if (intervalTimerRef.current) {
+      clearInterval(intervalTimerRef.current);
+      intervalTimerRef.current = null;
+    }
+
     const recorder = mediaRecorderRef.current;
     if (recorder && recorder.state !== 'inactive') {
-      recorder.stop(); // triggers onstop → uploads last chunk
+      try {
+        recorder.requestData();
+      } catch (_) {}
+      recorder.stop();
     }
 
     // Release microphone track
@@ -226,6 +300,7 @@ export function useMicrophone({
       streamRef.current = null;
     }
 
+    overlapBlobRef.current   = null;
     mediaRecorderRef.current = null;
     setIsRecording(false);
     setIsPaused(false);

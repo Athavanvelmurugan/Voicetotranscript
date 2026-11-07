@@ -6,6 +6,7 @@ import { LiveTranscript } from './LiveTranscript';
 export function RecordingPanel({
   status,
   consentGiven,
+  hasConsultation = true,
   onGrantConsent,
   onStart,
   onPause,
@@ -24,6 +25,9 @@ export function RecordingPanel({
   chunkCount,
   micPermission,
   micError,
+  // Audio Upload Props
+  onUploadAudio,
+  isUploadingAudio = false,
   // Bottom Generate / Insights Trigger
   onOpenInsightsModal,
   isGenerating,
@@ -46,6 +50,7 @@ export function RecordingPanel({
       <RecordingControls
         status={status}
         consentGiven={consentGiven}
+        hasConsultation={hasConsultation}
         onGrantConsent={onGrantConsent}
         onStart={onStart}
         onPause={onPause}
@@ -60,6 +65,8 @@ export function RecordingPanel({
         chunkCount={chunkCount}
         micPermission={micPermission}
         micError={micError}
+        onUploadAudio={onUploadAudio}
+        isUploadingAudio={isUploadingAudio}
       />
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
@@ -68,6 +75,7 @@ export function RecordingPanel({
           partialSegment={partialSegment}
           doctorName={doctorName}
           ownerName={ownerName}
+          isUploadingAudio={isUploadingAudio}
         />
       </div>
 

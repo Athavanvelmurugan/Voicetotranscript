@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { User, Stethoscope, Mic, Upload, Sparkles } from 'lucide-react';
+import { User, Stethoscope, Mic, Upload, Sparkles, Loader2 } from 'lucide-react';
 
-export function LiveTranscript({ segments, partialSegment, doctorName, ownerName }) {
+export function LiveTranscript({ segments, partialSegment, doctorName, ownerName, isUploadingAudio = false }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [segments, partialSegment]);
+  }, [segments, partialSegment, isUploadingAudio]);
 
   const getSpeakerStyle = (speakerRole) => {
     if (speakerRole === 'doctor') return 'transcript-doctor';
@@ -37,14 +37,20 @@ export function LiveTranscript({ segments, partialSegment, doctorName, ownerName
         </div>
       )}
 
-      {segments.map((seg) => {
-        const isDoctor = seg.speaker_role === 'doctor';
-        const sourceIsWhisper = seg.source === 'whisper-1';
+      {segments.map((seg, idx) => {
+        const role = seg.speaker_role || seg.speakerRole || 'doctor';
+        const isDoctor = role === 'doctor';
+        const sourceIsWhisper = seg.source === 'whisper-1' || seg.source === 'whisper_upload';
+        const segSeq = seg.sequence_number ?? seg.sequenceOffset ?? (idx + 1);
+        const segStartMs = seg.start_ms ?? seg.startMs ?? 0;
+        const segKey = seg.id
+          || (seg.sequence_number != null ? `${seg.consultation_id || 'c'}-${seg.sequence_number}` : null)
+          || (seg.sequenceOffset != null ? `offset-${seg.sequenceOffset}` : `seg-${idx}`);
 
         return (
           <div
-            key={seg.id || `${seg.consultation_id}-${seg.sequence_number}`}
-            className={`transcript-message ${getSpeakerStyle(seg.speaker_role)}`}
+            key={segKey}
+            className={`transcript-message ${getSpeakerStyle(role)}`}
           >
             <div className="transcript-meta">
               <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -60,7 +66,7 @@ export function LiveTranscript({ segments, partialSegment, doctorName, ownerName
                 }}>
                   {isDoctor ? <Stethoscope size={10} /> : <User size={10} />}
                 </span>
-                <span style={{ letterSpacing: '0.02em' }}>{getSpeakerLabel(seg.speaker_role)}</span>
+                <span style={{ letterSpacing: '0.02em' }}>{getSpeakerLabel(role)}</span>
                 {sourceIsWhisper && (
                   <span style={{ fontSize: '0.62rem', background: '#f0f9ff', color: '#0284c7', border: '1px solid #bae6fd', padding: '1px 5px', borderRadius: '9999px', marginLeft: '2px', fontWeight: 700 }}>
                     Whisper
@@ -69,8 +75,8 @@ export function LiveTranscript({ segments, partialSegment, doctorName, ownerName
               </span>
 
               <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', color: '#64748b' }}>
-                #{seg.sequence_number}
-                {seg.start_ms > 0 && ` · ${(seg.start_ms / 1000).toFixed(1)}s`}
+                #{segSeq}
+                {segStartMs > 0 && ` · ${(segStartMs / 1000).toFixed(1)}s`}
                 {seg.confidence ? ` · ${(seg.confidence * 100).toFixed(0)}%` : ''}
               </span>
             </div>
@@ -90,6 +96,31 @@ export function LiveTranscript({ segments, partialSegment, doctorName, ownerName
             <span style={{ fontSize: '0.7rem', color: '#b45309' }}>processing</span>
           </div>
           <div style={{ color: '#78350f' }}>{partialSegment.text || '...'}</div>
+        </div>
+      )}
+
+      {/* Scribe Rolling Loading Animation — shown while audio file is uploading and transcribing */}
+      {isUploadingAudio && (
+        <div className="transcript-uploading-banner">
+          <div className="uploading-visualizer" title="Whisper speech recognition actively scribing audio stream">
+            <span className="wave-bar-scribe" />
+            <span className="wave-bar-scribe" />
+            <span className="wave-bar-scribe" />
+            <span className="wave-bar-scribe" />
+            <span className="wave-bar-scribe" />
+            <span className="wave-bar-scribe" />
+            <span className="wave-bar-scribe" />
+            <span className="wave-bar-scribe" />
+          </div>
+          <div className="uploading-text-block">
+            <div className="uploading-title">
+              <Loader2 size={13} className="spin-animate" />
+              <span>Scribing Consultation Audio...</span>
+            </div>
+            <p className="uploading-subtitle">
+              Whisper Large V3 is transcribing audio, detecting voice activity, and diarizing speaker turns.
+            </p>
+          </div>
         </div>
       )}
 

@@ -203,3 +203,36 @@ CREATE TABLE IF NOT EXISTS audio_retention_policies (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 10. Binary Audio Storage (Direct in-database persistence without disk saving)
+CREATE TABLE IF NOT EXISTS consultation_audio (
+  id SERIAL PRIMARY KEY,
+  consultation_id INTEGER NOT NULL REFERENCES consultations(id) ON DELETE CASCADE,
+  audio_data BYTEA NOT NULL,
+  mime_type VARCHAR(100) NOT NULL DEFAULT 'audio/wav',
+  file_name VARCHAR(255) DEFAULT 'audio.wav',
+  file_size_bytes BIGINT NOT NULL,
+  duration_seconds INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_consultation_audio_consultation_id ON consultation_audio(consultation_id);
+
+-- 11. Cryptographic Audit Ledger (Append-only SHA-256 hash-chained immutable ledger)
+CREATE TABLE IF NOT EXISTS consultation_audit_ledger (
+  id SERIAL PRIMARY KEY,
+  consultation_id INTEGER NOT NULL REFERENCES consultations(id) ON DELETE CASCADE,
+  sequence_number INTEGER NOT NULL,
+  event_type VARCHAR(100) NOT NULL,
+  actor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  actor_type VARCHAR(20) NOT NULL CHECK (actor_type IN ('doctor', 'system', 'ai', 'admin')),
+  payload_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb,
+  previous_hash VARCHAR(64) NOT NULL,
+  current_hash VARCHAR(64) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(consultation_id, sequence_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_ledger_consultation ON consultation_audit_ledger(consultation_id);
+CREATE INDEX IF NOT EXISTS idx_audit_ledger_seq ON consultation_audit_ledger(consultation_id, sequence_number);
+
+

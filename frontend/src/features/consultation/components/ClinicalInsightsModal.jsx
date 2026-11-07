@@ -11,11 +11,15 @@ export function ClinicalInsightsModal({
   documents = [],
   onApproveAll,
   isApprovingAll = false,
+  onRejectAll,
+  isRejectingAll = false,
   onRegenerate,
   isGenerating = false,
 }) {
   const [activeTab, setActiveTab] = useState('summary');
   const [copied, setCopied] = useState(false);
+  const [showRejectBox, setShowRejectBox] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
 
   if (!isOpen) return null;
 
@@ -627,6 +631,60 @@ export function ClinicalInsightsModal({
           )}
         </div>
 
+        {/* ─── Rejection Reason Prompt (Modal Level) ─── */}
+        {showRejectBox && (
+          <div style={{
+            background: '#fff1f2',
+            borderTop: '1px solid #fecdd3',
+            borderBottom: '1px solid #fecdd3',
+            padding: '12px 24px',
+            animation: 'fadeIn 0.2s ease-out'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <span style={{ fontSize: '0.825rem', fontWeight: 700, color: '#9f1239', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <AlertTriangle size={15} color="#e11d48" /> Reject AI Clinical Documentation
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowRejectBox(false)}
+                style={{ background: 'none', border: 'none', color: '#9f1239', cursor: 'pointer' }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <p style={{ fontSize: '0.75rem', color: '#881337', margin: '0 0 8px 0' }}>
+              Please specify why the AI draft is being rejected (e.g. incorrect medication, missing diagnosis, needs re-transcription):
+            </p>
+            <textarea
+              className="form-control"
+              rows={2}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Clinical reason for rejection..."
+              style={{ fontSize: '0.82rem', marginBottom: '8px', background: '#ffffff' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setShowRejectBox(false)}
+                style={{ fontSize: '0.78rem', padding: '4px 10px', background: '#ffffff' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                disabled={isRejectingAll}
+                onClick={() => onRejectAll && onRejectAll(rejectReason || 'Clinician rejected AI clinical draft')}
+                style={{ fontSize: '0.78rem', padding: '4px 12px', background: '#e11d48', borderColor: '#e11d48', color: '#ffffff' }}
+              >
+                {isRejectingAll ? 'Rejecting...' : 'Confirm Rejection'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ─── Footer Action Bar ─── */}
         <div
           style={{
@@ -672,16 +730,38 @@ export function ClinicalInsightsModal({
               className="btn btn-outline"
               onClick={onClose}
               style={{ fontSize: '0.82rem', background: '#ffffff' }}
+              title="Close modal to edit individual fields in right panel"
             >
-              Close
+              Edit in Workspace
             </button>
+
+            {onRejectAll && (
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={() => setShowRejectBox(true)}
+                disabled={isRejectingAll || isApprovingAll}
+                style={{
+                  fontSize: '0.82rem',
+                  background: '#e11d48',
+                  borderColor: '#e11d48',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <X size={14} />
+                {isRejectingAll ? 'Rejecting...' : 'Reject AI Draft'}
+              </button>
+            )}
 
             {onApproveAll && (
               <button
                 type="button"
                 className="btn btn-primary"
                 onClick={onApproveAll}
-                disabled={isApprovingAll}
+                disabled={isApprovingAll || isRejectingAll}
                 style={{
                   fontSize: '0.82rem',
                   background: '#059669',
@@ -692,7 +772,7 @@ export function ClinicalInsightsModal({
                 }}
               >
                 <ShieldCheck size={14} />
-                {isApprovingAll ? 'Approving All...' : 'Approve & Lock All Documents'}
+                {isApprovingAll ? 'Approving All...' : 'Approve & Sign All'}
               </button>
             )}
           </div>

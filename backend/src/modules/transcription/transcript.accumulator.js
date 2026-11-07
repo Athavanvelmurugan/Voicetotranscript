@@ -24,6 +24,15 @@ class TranscriptAccumulator {
     startMs = 0,
     endMs = 0,
     source = 'openai_realtime',
+    passNumber = 1,
+    isFinalPass = true,
+    model = null,
+    provider = null,
+    promptVersion = null,
+    params = {},
+    avgLogprob = null,
+    noSpeechProb = null,
+    needsVetReview = false,
   }) {
     const buffer = this.getBuffer(consultationId);
 
@@ -39,6 +48,15 @@ class TranscriptAccumulator {
       startMs,
       endMs,
       source,
+      passNumber,
+      isFinalPass,
+      model,
+      provider,
+      promptVersion,
+      params,
+      avgLogprob,
+      noSpeechProb,
+      needsVetReview,
     });
 
     if (!isPartial) {
@@ -52,7 +70,7 @@ class TranscriptAccumulator {
     // Read directly from DB for completeness and ordering
     const segments = await repo.getTranscriptSegments(consultationId, false);
     const fullText = segments
-      .map(s => `[${s.speaker_role.toUpperCase()}] ${s.text}`)
+      .map(s => `[${(s.speaker_role || 'doctor').toUpperCase()}] ${s.text}`)
       .join('\n');
 
     return {

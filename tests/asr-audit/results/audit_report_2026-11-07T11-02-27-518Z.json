@@ -1,0 +1,313 @@
+{
+  "timestamp": "2026-11-07T11-02-27-518Z",
+  "endpoint": "http://localhost:5000/api/v1/consultations/upload-and-scribe",
+  "tests": [
+    {
+      "id": "A1_WAV_ASHWIN",
+      "status": "FAIL",
+      "error": "fetch failed"
+    },
+    {
+      "id": "A1_MP3_ASHWIN",
+      "category": "A_FORMAT",
+      "audio": "ashwin_consultation.mp3",
+      "fileSizeBytes": 2641401,
+      "fileSha256": "9b3dcc4d7121415e99e81818fff5e1e58eaf50feddd0046f32f7c31a08d7b40c",
+      "httpStatus": 502,
+      "latencyMs": 3057807,
+      "detectedLang": "unknown",
+      "transcriptLength": 0,
+      "transcriptText": "",
+      "referenceText": "Good morning, doctor. I brought my dog Ashwin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kilograms. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago. I am not sure whether the food was fresh. Since then, his health seems to have become worse. He has not received any new medication recently. His routine vaccinations are up to date, and his last deworming was approximately three months ago. Doctor, could you please examine Ashwin and tell me what might be causing these symptoms? I am particularly worried because he is not eating and is becoming weaker. I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a Complete Blood Count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium, potassium, and chloride should be checked because he has been vomiting and experiencing diarrhea. Could dehydration affect these values? Should we also perform a blood glucose test to check his sugar level? And is a C-reactive protein test useful for evaluating inflammation in his body? If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Ashwin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting? Is an antiemetic such as Maropitant appropriate in his case? Would he also need any medication to protect his stomach? Should we give him probiotics to support his digestive system? And if there is evidence of a bacterial infection, would antibiotics be necessary, or should we wait for the test results before deciding? Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashwin recovers quickly.",
+      "wer": 100,
+      "cer": 100,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": false,
+      "failureReasons": [
+        "HTTP 502",
+        "WER 100.0% exceeds 15% threshold"
+      ]
+    },
+    {
+      "id": "A1_M4A_ASHWIN",
+      "category": "A_FORMAT",
+      "audio": "ashwin_consultation.m4a",
+      "fileSizeBytes": 3224508,
+      "fileSha256": "db6b427979481fa86954c2d3084d062e44de2e566476d83b5fc537c8dfb29014",
+      "httpStatus": 502,
+      "latencyMs": 48511,
+      "detectedLang": "unknown",
+      "transcriptLength": 0,
+      "transcriptText": "",
+      "referenceText": "Good morning, doctor. I brought my dog Ashwin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kilograms. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago. I am not sure whether the food was fresh. Since then, his health seems to have become worse. He has not received any new medication recently. His routine vaccinations are up to date, and his last deworming was approximately three months ago. Doctor, could you please examine Ashwin and tell me what might be causing these symptoms? I am particularly worried because he is not eating and is becoming weaker. I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a Complete Blood Count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium, potassium, and chloride should be checked because he has been vomiting and experiencing diarrhea. Could dehydration affect these values? Should we also perform a blood glucose test to check his sugar level? And is a C-reactive protein test useful for evaluating inflammation in his body? If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Ashwin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting? Is an antiemetic such as Maropitant appropriate in his case? Would he also need any medication to protect his stomach? Should we give him probiotics to support his digestive system? And if there is evidence of a bacterial infection, would antibiotics be necessary, or should we wait for the test results before deciding? Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashwin recovers quickly.",
+      "wer": 100,
+      "cer": 100,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": false,
+      "failureReasons": [
+        "HTTP 502",
+        "WER 100.0% exceeds 15% threshold"
+      ]
+    },
+    {
+      "id": "A1_WEBM_ASHWIN",
+      "status": "FAIL",
+      "error": "fetch failed"
+    },
+    {
+      "id": "B1_BRUNO_WAV",
+      "status": "FAIL",
+      "error": "fetch failed"
+    },
+    {
+      "id": "B2_DRUGS_20",
+      "category": "B_ACCURACY",
+      "audio": "drugs_20.wav",
+      "fileSizeBytes": 2035566,
+      "fileSha256": "22072d53fa0b2dd136112d524ce01a4b5fc2861c39227051322b819538dbba69",
+      "httpStatus": 502,
+      "latencyMs": 677110,
+      "detectedLang": "unknown",
+      "transcriptLength": 0,
+      "transcriptText": "",
+      "referenceText": "Please administer Amoxicillin. We need to give Clavamox. Start on Metronidazole. Prescribe Doxycycline. Administer Meloxicam. Give Carprofen for pain. Start Prednisolone. Use Dexamethasone for inflammation. Dispense Maropitant for vomiting. Start Ondansetron. Give Pantoprazole for stomach protection. Administer Ranitidine. Prescribe Enrofloxacin. Start Cephalexin. Use Gabapentin. Give Tramadol. Dispense Apoquel for itching. Administer Cytopoint. Start Levothyroxine. Prescribe Furosemide.",
+      "wer": 100,
+      "cer": 100,
+      "drugMetrics": {
+        "expectedCount": 20,
+        "foundCount": 0,
+        "missedCount": 20,
+        "recall": 0,
+        "found": [],
+        "missed": [
+          "Amoxicillin",
+          "Clavamox",
+          "Metronidazole",
+          "Doxycycline",
+          "Meloxicam",
+          "Carprofen",
+          "Prednisolone",
+          "Dexamethasone",
+          "Maropitant",
+          "Ondansetron",
+          "Pantoprazole",
+          "Ranitidine",
+          "Enrofloxacin",
+          "Cephalexin",
+          "Gabapentin",
+          "Tramadol",
+          "Apoquel",
+          "Cytopoint",
+          "Levothyroxine",
+          "Furosemide"
+        ]
+      },
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": false,
+      "failureReasons": [
+        "HTTP 502",
+        "WER 100.0% exceeds 15% threshold",
+        "Drug recall 0% < 98% (Missed: Amoxicillin, Clavamox, Metronidazole, Doxycycline, Meloxicam, Carprofen, Prednisolone, Dexamethasone, Maropitant, Ondansetron, Pantoprazole, Ranitidine, Enrofloxacin, Cephalexin, Gabapentin, Tramadol, Apoquel, Cytopoint, Levothyroxine, Furosemide)"
+      ]
+    },
+    {
+      "id": "B3_DOSES_UNITS",
+      "category": "B_ACCURACY",
+      "audio": "doses_units.wav",
+      "fileSizeBytes": 571246,
+      "fileSha256": "7e87b1da77e43a0e20280100992397c16d39d7a1db5ae74d9fb649f0625f386e",
+      "httpStatus": 502,
+      "latencyMs": 2317,
+      "detectedLang": "unknown",
+      "transcriptLength": 0,
+      "transcriptText": "",
+      "referenceText": "Administer meloxicam zero point two mg per kg. Prescribe levothyroxine 25 micrograms BID. Give half a tablet twice daily. Administer 500 ml over 4 hours.",
+      "wer": 100,
+      "cer": 100,
+      "drugMetrics": null,
+      "numberMetrics": {
+        "total": 13,
+        "matchedCount": 0,
+        "missedCount": 13,
+        "accuracy": 0,
+        "matched": [],
+        "missed": [
+          "0.2",
+          "mg",
+          "kg",
+          "25",
+          "micrograms",
+          "bid",
+          "half",
+          "tablet",
+          "twice daily",
+          "500",
+          "ml",
+          "4",
+          "hours"
+        ]
+      },
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": false,
+      "failureReasons": [
+        "HTTP 502",
+        "WER 100.0% exceeds 15% threshold",
+        "Number/Unit accuracy 0% < 100% (Missed: 0.2, mg, kg, 25, micrograms, bid, half, tablet, twice daily, 500, ml, 4, hours)"
+      ]
+    },
+    {
+      "id": "B4_NEGATION",
+      "category": "B_ACCURACY",
+      "audio": "negation.wav",
+      "fileSizeBytes": 350286,
+      "fileSha256": "1caeddd77ea5b2b8bfe87a2f6d1bfab57606fa8106c1ba6794a3f9003854f4ba",
+      "httpStatus": 502,
+      "latencyMs": 1857,
+      "detectedLang": "unknown",
+      "transcriptLength": 0,
+      "transcriptText": "",
+      "referenceText": "There is no vomiting, no diarrhea, and we stopped Metacam two days ago. Patient is not dehydrated and does not have fever.",
+      "wer": 100,
+      "cer": 100,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": {
+        "total": 4,
+        "matchedCount": 0,
+        "missedCount": 4,
+        "accuracy": 0,
+        "matched": [],
+        "missed": [
+          "no",
+          "stopped",
+          "not",
+          "does not"
+        ]
+      },
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": false,
+      "failureReasons": [
+        "HTTP 502",
+        "WER 100.0% exceeds 15% threshold",
+        "Negation accuracy 0% < 100% (Missed: no, stopped, not, does not)"
+      ]
+    },
+    {
+      "id": "B5_LAB_TERMS",
+      "category": "B_ACCURACY",
+      "audio": "lab_terms.wav",
+      "fileSizeBytes": 352846,
+      "fileSha256": "70462793c2ca450ce5791e39f44b423d7751ffb8428762960eb0d7c27b379a14",
+      "httpStatus": 504,
+      "latencyMs": 12351,
+      "detectedLang": "unknown",
+      "transcriptLength": 0,
+      "transcriptText": "",
+      "referenceText": "We performed a Complete Blood Count CBC. Check ALT, ALP, BUN, creatinine, PCV, SDMA, and T4.",
+      "wer": 100,
+      "cer": 100,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": false,
+      "failureReasons": [
+        "HTTP 504",
+        "WER 100.0% exceeds 15% threshold"
+      ]
+    },
+    {
+      "id": "D1_SILENCE_60S",
+      "category": "D_HALLUCINATION",
+      "audio": "silence_60s.wav",
+      "fileSizeBytes": 1920044,
+      "fileSha256": "4c59ed976769ba50aba4a23ef2823cf795f0b555d48f4c80d41576ce9f3378b7",
+      "httpStatus": 200,
+      "latencyMs": 19,
+      "detectedLang": "unknown",
+      "transcriptLength": 0,
+      "transcriptText": "",
+      "referenceText": "",
+      "wer": null,
+      "cer": null,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": true,
+      "failureReasons": []
+    }
+  ],
+  "edgeCases": {
+    "zeroByteFile": {
+      "status": 400,
+      "json": {
+        "success": false,
+        "error": "invalid_audio",
+        "reason": "empty_file",
+        "message": "Audio file is empty (0 bytes)."
+      }
+    },
+    "fakeMp3File": {
+      "status": 400,
+      "json": {
+        "success": false,
+        "error": "invalid_audio",
+        "reason": "unrecognized_magic_bytes",
+        "message": "Invalid audio format: file header does not match any supported audio signature."
+      }
+    }
+  },
+  "determinism": {
+    "testAudio": "doses_units.wav",
+    "run1Text": "",
+    "run2Text": "",
+    "run3Text": "",
+    "identical": true,
+    "pass": true
+  }
+}

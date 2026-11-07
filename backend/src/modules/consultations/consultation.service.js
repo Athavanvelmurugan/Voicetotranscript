@@ -200,6 +200,14 @@ class ConsultationService {
 
   async completeConsultation(id, doctorId) {
     const consultation = await this.getConsultation(id);
+
+    if (consultation.status === 'draft_only_unverified' || consultation.draft_only_unverified === true) {
+      const error = new Error('Cannot complete consultation: Final transcription pass failed. Record is flagged draft_only_unverified and sign-off is blocked.');
+      error.statusCode = 422;
+      error.code = 'SIGN_OFF_BLOCKED';
+      throw error;
+    }
+
     const updated = await repo.updateStatus(id, 'completed', {
       ended_at: consultation.ended_at || new Date(),
     });

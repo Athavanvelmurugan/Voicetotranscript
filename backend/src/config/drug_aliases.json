@@ -1,0 +1,182 @@
+[
+  {
+    "canonical": "Clavamox",
+    "generic": "Amoxicillin + Clavulanate Potassium",
+    "indian_brands": ["Augmentin", "Moxikind-CV", "Clavam", "Amoxyclav Vet"],
+    "known_mishearings": ["clave amox", "clava mox", "clavemox", "clavamoxe", "clavamock"],
+    "phonetic_key": "KLVMS",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Maropitant",
+    "generic": "Maropitant Citrate",
+    "indian_brands": ["Cerenia", "Maropet", "Vomikind Pet"],
+    "known_mishearings": ["maropitin", "maropitant citrate", "maropiten", "maropitan"],
+    "phonetic_key": "MRPTNT",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Ondansetron",
+    "generic": "Ondansetron Hydrochloride",
+    "indian_brands": ["Emeset", "Zofran", "Ondem", "Vomitron"],
+    "known_mishearings": ["on danstran", "danstran", "ondanstran", "ondansatron", "ondancetron", "ondansetron hcl"],
+    "phonetic_key": "ANTNSTRN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Metacam",
+    "generic": "Meloxicam",
+    "indian_brands": ["Melonex", "Meloflam", "Zobid M", "Melo-Vet"],
+    "known_mishearings": ["medicam", "meta cam", "medacam", "metakam"],
+    "phonetic_key": "MTKM",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Cephalexin",
+    "generic": "Cephalexin Monohydrate",
+    "indian_brands": ["Ceff", "Sporidex", "Phexin", "Cephavet"],
+    "known_mishearings": ["cefalexin", "cephalaxin", "sefalecksin", "cephlexin"],
+    "phonetic_key": "SFLKSN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Amoxicillin",
+    "generic": "Amoxicillin Trihydrate",
+    "indian_brands": ["Mox", "Novamox", "Amoxil"],
+    "known_mishearings": ["amoxycillin", "amoxacillin", "amoxcillin"],
+    "phonetic_key": "AMKSLN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Doxycycline",
+    "generic": "Doxycycline Hyclate",
+    "indian_brands": ["Doxt", "Doxypet", "Microdox"],
+    "known_mishearings": ["doxycyclin", "doxicycline", "doxcycline"],
+    "phonetic_key": "TKSKLN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Metronidazole",
+    "generic": "Metronidazole",
+    "indian_brands": ["Flagyl", "Metrogyl", "Aristogyl"],
+    "known_mishearings": ["metronidazol", "metronidizole", "metronidizol"],
+    "phonetic_key": "MTRNTZ",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Carprofen",
+    "generic": "Carprofen",
+    "indian_brands": ["Rimadyl", "Carponex", "Ultra-Carb"],
+    "known_mishearings": ["carpofen", "carprofene", "carprofin"],
+    "phonetic_key": "KRPFRN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Prednisolone",
+    "generic": "Prednisolone",
+    "indian_brands": ["Wysolone", "Omnacortil", "Predone"],
+    "known_mishearings": ["prednisolon", "prednesolone", "prednislon"],
+    "phonetic_key": "PRTNSLN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Dexamethasone",
+    "generic": "Dexamethasone Sodium Phosphate",
+    "indian_brands": ["Dexona", "Decdan", "Dexa-Vet"],
+    "known_mishearings": ["dexamethazon", "dexamethasown", "dexmethasone"],
+    "phonetic_key": "TKMTSN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Pantoprazole",
+    "generic": "Pantoprazole Sodium",
+    "indian_brands": ["Pan", "Pantocid", "Pantosec"],
+    "known_mishearings": ["pantoprazol", "pantaprazole", "pantoprizole"],
+    "phonetic_key": "PNTPRZL",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Ranitidine",
+    "generic": "Ranitidine Hydrochloride",
+    "indian_brands": ["Rantac", "Zinetac", "Aciloc"],
+    "known_mishearings": ["ranitidin", "ranetidine", "ranitadine"],
+    "phonetic_key": "RNTDN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Enrofloxacin",
+    "generic": "Enrofloxacin",
+    "indian_brands": ["Baytril", "Enrocin", "Enrovet"],
+    "known_mishearings": ["enrofloxacine", "enrofloxin", "enroflox"],
+    "phonetic_key": "ANRFLX",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Gabapentin",
+    "generic": "Gabapentin",
+    "indian_brands": ["Gabapin", "Neurontin", "Gabaneuron"],
+    "known_mishearings": ["gabapentine", "gabapanten", "gabapentyn"],
+    "phonetic_key": "KBPNTN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Tramadol",
+    "generic": "Tramadol Hydrochloride",
+    "indian_brands": ["Tramazac", "Ultram", "Domadol"],
+    "known_mishearings": ["tramadol hcl", "tramedol", "tramadolum"],
+    "phonetic_key": "TRMTL",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Apoquel",
+    "generic": "Oclacitinib Maleate",
+    "indian_brands": ["Apoquel"],
+    "known_mishearings": ["apoqel", "apo quell", "apokwel"],
+    "phonetic_key": "APKL",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Cytopoint",
+    "generic": "Lokivetmab",
+    "indian_brands": ["Cytopoint"],
+    "known_mishearings": ["cyto point", "cytopoint injection", "sitopoint"],
+    "phonetic_key": "STPNT",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Levothyroxine",
+    "generic": "Levothyroxine Sodium",
+    "indian_brands": ["Thyronorm", "Eltroxin", "Thyrox"],
+    "known_mishearings": ["levothyroxin", "levothyroxene", "levo thyroxine"],
+    "phonetic_key": "LFTRXN",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  },
+  {
+    "canonical": "Furosemide",
+    "generic": "Furosemide",
+    "indian_brands": ["Lasix", "Frusip", "Salurin"],
+    "known_mishearings": ["furosemid", "frusemide", "furasemide"],
+    "phonetic_key": "FRSMT",
+    "auto_correct_threshold": 0.85,
+    "possible_drug_threshold": 0.70
+  }
+]

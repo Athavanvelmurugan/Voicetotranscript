@@ -109,17 +109,31 @@ class ConsultationRepository {
     startMs = 0,
     endMs = 0,
     source = 'openai_realtime',
+    passNumber = 1,
+    isFinalPass = true,
+    model = null,
+    provider = null,
+    promptVersion = null,
+    params = {},
+    avgLogprob = null,
+    noSpeechProb = null,
+    needsVetReview = false,
   }) {
     const query = `
       INSERT INTO transcript_segments 
-        (consultation_id, sequence_number, text, is_partial, speaker_role, language_detected, confidence, start_ms, end_ms, source)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      ON CONFLICT (consultation_id, sequence_number, is_partial)
+        (consultation_id, sequence_number, text, is_partial, speaker_role, language_detected, confidence, start_ms, end_ms, source, pass_number, is_final_pass, model, provider, prompt_version, params, avg_logprob, no_speech_prob, needs_vet_review)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      ON CONFLICT (consultation_id, pass_number, sequence_number, is_partial)
       DO UPDATE SET 
         text = EXCLUDED.text,
         speaker_role = EXCLUDED.speaker_role,
         confidence = EXCLUDED.confidence,
-        end_ms = EXCLUDED.end_ms
+        end_ms = EXCLUDED.end_ms,
+        model = EXCLUDED.model,
+        provider = EXCLUDED.provider,
+        avg_logprob = EXCLUDED.avg_logprob,
+        no_speech_prob = EXCLUDED.no_speech_prob,
+        needs_vet_review = EXCLUDED.needs_vet_review
       RETURNING *;
     `;
     const values = [
@@ -133,6 +147,15 @@ class ConsultationRepository {
       startMs,
       endMs,
       source,
+      passNumber,
+      isFinalPass,
+      model,
+      provider,
+      promptVersion,
+      JSON.stringify(params),
+      avgLogprob,
+      noSpeechProb,
+      needsVetReview,
     ];
     const { rows } = await db.query(query, values);
     return rows[0];

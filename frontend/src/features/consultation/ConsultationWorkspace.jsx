@@ -27,6 +27,7 @@ export function ConsultationWorkspace() {
   const [consultation, setConsultation]     = useState(null);
   const [documents, setDocuments]           = useState([]);
   const [isGenerating, setIsGenerating]     = useState(false);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   const [errorMessage, setErrorMessage]     = useState(null);
 
   // Dynamic Active Doctor State (Persisted in localStorage)
@@ -85,7 +86,7 @@ export function ConsultationWorkspace() {
   }, [activeDoctorId]);
 
   // ─── Load all consultations list ───────────────────────────────────────────
-  const loadConsultationsList = useCallback(async () => {
+  const loadConsultationsList = useCallback(async (targetId = null) => {
     try {
       const res = await fetch('/api/v1/consultations', {
         headers: getAuthHeaders(),
@@ -95,6 +96,9 @@ export function ConsultationWorkspace() {
         setConsultations(data.data);
         if (data.data.length > 0) {
           setConsultationId((prev) => {
+            if (targetId && data.data.some((c) => c.id === targetId)) {
+              return targetId;
+            }
             const urlParams = new URLSearchParams(window.location.search);
             const paramId = parseInt(urlParams.get('consultationId'), 10);
             const cachedId = parseInt(localStorage.getItem('activeConsultationId'), 10);
@@ -205,6 +209,8 @@ export function ConsultationWorkspace() {
   const {
     connectionStatus,
     segments,
+    setSegments,
+    reloadTranscript,
     partialSegment,
     extractionProgress,
     sendPause,
@@ -235,6 +241,9 @@ export function ConsultationWorkspace() {
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
   const handleSelectConsultation = (id) => {
+    if (id === consultationId) return;
+    setSegments([]);
+    setDocuments([]);
     setConsultationId(id);
     setErrorMessage(null);
   };
@@ -260,9 +269,25 @@ export function ConsultationWorkspace() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
+      const newId = data.data.id;
       setShowNewModal(false);
-      await loadConsultationsList();
-      setConsultationId(data.data.id);
+
+      // Immediately clear state for new consultation
+      setSegments([]);
+      setDocuments([]);
+
+      // Update URL and localStorage BEFORE fetching lists to avoid race condition
+      try {
+        localStorage.setItem('activeConsultationId', String(newId));
+        const currentUrl = new URL(window.location);
+        currentUrl.searchParams.set('consultationId', String(newId));
+        window.history.replaceState(null, '', currentUrl.toString());
+      } catch (e) {
+        console.warn('[ConsultationWorkspace] URL sync warning:', e);
+      }
+
+      setConsultationId(newId);
+      await loadConsultationsList(newId);
     } catch (err) {
       setErrorMessage(err.message);
     } finally {
@@ -280,6 +305,7 @@ export function ConsultationWorkspace() {
       const data = await res.json();
       if (data.success) {
         setConsultation(data.data);
+        await reloadTranscript();
         loadConsultationsList();
       }
     } catch (err) {
@@ -288,6 +314,11 @@ export function ConsultationWorkspace() {
   };
 
   const handleGrantConsent = async () => {
+    if (!consultationId) {
+      setErrorMessage('Please create or select an active consultation before recording consent.');
+      setShowNewModal(true);
+      return;
+    }
     try {
       // Dynamic pet owner name derived from consultation or selected pet (NO hardcoded fallback)
       const dynamicOwner = consultation?.owner_name || 'Pet Owner (Digital Consent)';
@@ -299,6 +330,8 @@ export function ConsultationWorkspace() {
       const data = await res.json();
       if (data.success) {
         loadConsultationData(consultationId);
+      } else {
+        throw new Error(data.error || 'Failed to record consent');
       }
     } catch (err) {
       setErrorMessage(err.message);
@@ -306,6 +339,11 @@ export function ConsultationWorkspace() {
   };
 
   const handleStartRecording = async () => {
+    if (!consultationId) {
+      setErrorMessage('Please create or select an active consultation before starting recording.');
+      setShowNewModal(true);
+      return;
+    }
     setErrorMessage(null);
     try {
       const res = await fetch(`/api/v1/consultations/${consultationId}/start`, {
@@ -323,6 +361,7 @@ export function ConsultationWorkspace() {
   };
 
   const handlePauseRecording = async () => {
+    if (!consultationId) return;
     try {
       sendPause();
       pauseCapture();
@@ -338,6 +377,7 @@ export function ConsultationWorkspace() {
   };
 
   const handleResumeRecording = async () => {
+    if (!consultationId) return;
     try {
       sendResume();
       await resumeCapture();
@@ -353,6 +393,7 @@ export function ConsultationWorkspace() {
   };
 
   const handleStopRecording = async (durationSeconds) => {
+    if (!consultationId) return;
     try {
       stopCapture();
       sendStop(durationSeconds);
@@ -369,6 +410,7 @@ export function ConsultationWorkspace() {
   };
 
   const handleTriggerGenerate = async () => {
+    if (!consultationId) return;
     setIsGenerating(true);
     setErrorMessage(null);
     try {
@@ -386,6 +428,63 @@ export function ConsultationWorkspace() {
       setErrorMessage(err.message);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleUploadAudio = async (file) => {
+    if (!file) return;
+    setIsUploadingAudio(true);
+    setErrorMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('audio', file);
+      formData.append('autoGenerate', 'false'); // Transcription only on upload; document generation occurs on explicit Generate click
+      if (consultation?.pet_name) formData.append('petName', consultation.pet_name);
+      if (consultation?.pet_species) formData.append('petSpecies', consultation.pet_species);
+      if (consultation?.pet_breed) formData.append('petBreed', consultation.pet_breed);
+      if (consultation?.owner_name) formData.append('ownerName', consultation.owner_name);
+      if (consultation?.doctor_name) formData.append('doctorName', consultation.doctor_name);
+
+      const targetUrl = consultationId
+        ? `/api/v1/consultations/${consultationId}/upload-and-scribe`
+        : '/api/v1/consultations/upload-and-scribe';
+
+      const res = await fetch(targetUrl, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to scribe uploaded audio');
+      }
+
+      // 1. Set consultation data
+      if (data.data.consultation) {
+        setConsultation(data.data.consultation);
+      }
+
+      // 2. Set transcript segments
+      if (data.data.transcript?.segments) {
+        setSegments(data.data.transcript.segments);
+      } else {
+        await reloadTranscript();
+      }
+
+      // 3. Keep documents unpopulated so the right panel stays in "Awaiting Generation" state until the doctor clicks Generate
+      setDocuments([]);
+
+      // 4. Update consultation header/status from upload response without pre-populating draft documents
+      if (data.data.consultation) {
+        setConsultation(data.data.consultation);
+      }
+    } catch (err) {
+      console.error('[ConsultationWorkspace] Audio upload error:', err);
+      setErrorMessage(err.message);
+    } finally {
+      setIsUploadingAudio(false);
     }
   };
 
@@ -415,6 +514,8 @@ export function ConsultationWorkspace() {
     setShowInsightsModal(true);
   };
 
+  const [isRejectingAll, setIsRejectingAll] = useState(false);
+
   const handleApproveAll = async () => {
     if (documents.length === 0) return;
     setIsApprovingAll(true);
@@ -429,10 +530,34 @@ export function ConsultationWorkspace() {
         }
       }
       await loadConsultationData(consultationId);
+      setShowInsightsModal(false);
     } catch (err) {
       setErrorMessage(err.message);
     } finally {
       setIsApprovingAll(false);
+    }
+  };
+
+  const handleRejectAll = async (reason = 'Clinician rejected AI clinical draft') => {
+    if (documents.length === 0) return;
+    setIsRejectingAll(true);
+    setErrorMessage(null);
+    try {
+      for (const doc of documents) {
+        if (doc.status !== 'rejected') {
+          await fetch(`/api/v1/documents/${doc.id}/reject`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-doctor-id': String(activeDoctorId) },
+            body: JSON.stringify({ reason }),
+          });
+        }
+      }
+      await loadConsultationData(consultationId);
+      setShowInsightsModal(false);
+    } catch (err) {
+      setErrorMessage(err.message);
+    } finally {
+      setIsRejectingAll(false);
     }
   };
 
@@ -478,6 +603,7 @@ export function ConsultationWorkspace() {
         <RecordingPanel
           status={consultation?.status || 'scheduled'}
           consentGiven={consultation?.consent_given || false}
+          hasConsultation={!!consultationId}
           onGrantConsent={handleGrantConsent}
           onStart={handleStartRecording}
           onPause={handlePauseRecording}
@@ -494,6 +620,8 @@ export function ConsultationWorkspace() {
           chunkCount={chunkCount}
           micPermission={micPermission}
           micError={micError}
+          onUploadAudio={handleUploadAudio}
+          isUploadingAudio={isUploadingAudio}
           onOpenInsightsModal={handleOpenInsightsModal}
           isGenerating={isGenerating}
         />
@@ -502,7 +630,7 @@ export function ConsultationWorkspace() {
           documents={documents}
           onRefreshDocuments={() => loadConsultationData(consultationId)}
           consultationId={consultationId}
-          onTriggerGenerate={handleTriggerGenerate}
+          onTriggerGenerate={handleOpenInsightsModal}
           onCompleteConsultation={() => handleCompleteConsultation(consultationId)}
           consultationStatus={consultation?.status}
           isGenerating={isGenerating}
@@ -531,6 +659,8 @@ export function ConsultationWorkspace() {
         documents={documents}
         onApproveAll={handleApproveAll}
         isApprovingAll={isApprovingAll}
+        onRejectAll={handleRejectAll}
+        isRejectingAll={isRejectingAll}
         onRegenerate={handleTriggerGenerate}
         isGenerating={isGenerating}
       />

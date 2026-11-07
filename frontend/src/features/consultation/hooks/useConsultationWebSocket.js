@@ -9,6 +9,12 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const seenSequencesRef = useRef(new Set());
+  const activeConsultationIdRef = useRef(consultationId);
+
+  // Keep activeConsultationIdRef in sync with the current consultationId
+  useEffect(() => {
+    activeConsultationIdRef.current = consultationId;
+  }, [consultationId]);
 
   const connect = useCallback(() => {
     if (!consultationId) return;
@@ -20,9 +26,17 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
 
     setConnectionStatus('connecting');
     const ws = new WebSocket(wsUrl);
+    ws._consultationId = consultationId;
+    ws._isExplicitClose = false;
     wsRef.current = ws;
 
     ws.onopen = () => {
+      // If active consultation changed while connecting, abort and close
+      if (ws._consultationId !== activeConsultationIdRef.current) {
+        ws._isExplicitClose = true;
+        ws.close();
+        return;
+      }
       setConnectionStatus('connected');
       ws.send(JSON.stringify({ event: 'auth', token: 'doctor-session-token' }));
 
@@ -32,6 +46,10 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
     };
 
     ws.onmessage = (event) => {
+      // Discard any message received from a socket of an inactive consultation
+      if (ws._consultationId !== activeConsultationIdRef.current) {
+        return;
+      }
       try {
         const msg = JSON.parse(event.data);
 
@@ -92,52 +110,65 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
     };
 
     ws.onerror = (err) => {
-      console.error('[WS Hook] WebSocket error:', err);
-      setConnectionStatus('error');
+      if (ws._consultationId === activeConsultationIdRef.current) {
+        console.error('[WS Hook] WebSocket error:', err);
+        setConnectionStatus('error');
+      }
     };
 
     ws.onclose = () => {
-      setConnectionStatus('disconnected');
-      // Exponential backoff or standard reconnect
-      reconnectTimeoutRef.current = setTimeout(() => {
-        connect();
-      }, 3000);
+      if (ws._consultationId === activeConsultationIdRef.current) {
+        setConnectionStatus('disconnected');
+      }
+      // Reconnect only if this socket belongs to the currently active consultation and wasn't explicitly closed
+      if (!ws._isExplicitClose && ws._consultationId === activeConsultationIdRef.current) {
+        if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connect();
+        }, 3000);
+      }
     };
   }, [consultationId, onDocumentsReady, onStatusChange]);
 
   // ─── Initial HTTP fetch of saved transcript segments ─────────────────────────
   useEffect(() => {
-    if (!consultationId) {
-      setSegments([]);
-      setPartialSegment(null);
-      seenSequencesRef.current = new Set();
-      return;
-    }
-
-    let isCancelled = false;
+    activeConsultationIdRef.current = consultationId;
     setSegments([]);
     setPartialSegment(null);
     seenSequencesRef.current = new Set();
 
-    fetch(`/api/v1/consultations/${consultationId}/transcript`)
+    if (!consultationId) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    fetch(`/api/v1/consultations/${consultationId}/transcript`, { signal })
       .then((res) => res.json())
       .then((data) => {
-        if (!isCancelled && data.success && Array.isArray(data.data)) {
+        if (signal.aborted) return;
+        if (activeConsultationIdRef.current !== consultationId) return;
+        if (data.success && Array.isArray(data.data)) {
           const loaded = data.data;
+          const set = new Set();
           loaded.forEach((seg) => {
             if (seg.sequence_number != null) {
-              seenSequencesRef.current.add(seg.sequence_number);
+              set.add(seg.sequence_number);
             }
           });
+          seenSequencesRef.current = set;
           setSegments(loaded);
         }
       })
       .catch((err) => {
-        console.error('[WS Hook] Error loading initial transcript:', err);
+        if (err.name !== 'AbortError') {
+          console.error('[WS Hook] Error loading initial transcript:', err);
+        }
       });
 
     return () => {
-      isCancelled = true;
+      controller.abort();
     };
   }, [consultationId]);
 
@@ -145,9 +176,35 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
     connect();
     return () => {
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      if (wsRef.current) wsRef.current.close();
+      if (wsRef.current) {
+        wsRef.current._isExplicitClose = true;
+        wsRef.current.close();
+      }
     };
   }, [connect]);
+
+  const reloadTranscript = useCallback(async () => {
+    if (!consultationId) {
+      setSegments([]);
+      setPartialSegment(null);
+      seenSequencesRef.current = new Set();
+      return;
+    }
+    try {
+      const res = await fetch(`/api/v1/consultations/${consultationId}/transcript`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        const set = new Set();
+        data.data.forEach((seg) => {
+          if (seg.sequence_number != null) set.add(seg.sequence_number);
+        });
+        seenSequencesRef.current = set;
+        setSegments(data.data);
+      }
+    } catch (err) {
+      console.error('[WS Hook] Error reloading transcript:', err);
+    }
+  }, [consultationId]);
 
   const sendEvent = useCallback((event, payload = {}) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -170,6 +227,8 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
   return {
     connectionStatus,
     segments,
+    setSegments,
+    reloadTranscript,
     partialSegment,
     extractionProgress,
     sendTranscriptFinal,

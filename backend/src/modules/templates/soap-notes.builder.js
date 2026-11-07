@@ -45,8 +45,21 @@ class SoapNotesBuilder {
     };
 
     const plan = {
-      medications: medications.map(m => `${m.medicine_name} ${m.dosage} ${m.route} ${m.frequency} for ${m.duration}`),
-      diagnostic_workup: labTests.map(t => `[${t.status.toUpperCase()}] ${t.test_name} (${t.priority})`),
+      medications: medications.map(m => {
+        if (typeof m === 'string') return m;
+        return `${m.medicine_name || 'Medication'} ${m.dosage || ''} ${m.route || ''} ${m.frequency || ''} for ${m.duration || ''}`.trim();
+      }),
+      diagnostic_workup: labTests.map(t => {
+        if (typeof t === 'string') {
+          try {
+            const parsed = JSON.parse(t);
+            return `[${(parsed.status || 'ORDERED').toUpperCase()}] ${parsed.test_name || 'Lab Test'} (${parsed.priority || 'routine'})`;
+          } catch {
+            return `[ORDERED] ${t} (routine)`;
+          }
+        }
+        return `[${(t?.status || 'ORDERED').toUpperCase()}] ${t?.test_name || 'Lab Test'} (${t?.priority || 'routine'})`;
+      }),
       follow_up: followUp.timeframe ? `Return in ${followUp.timeframe} for re-evaluation.` : 'PRN (as needed)',
       client_education: followUp.monitoring_instructions || [],
       emergency_red_flags: followUp.warning_signs || [],

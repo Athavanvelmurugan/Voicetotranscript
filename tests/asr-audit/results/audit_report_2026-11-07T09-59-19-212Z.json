@@ -1,0 +1,1355 @@
+{
+  "timestamp": "2026-11-07T09-59-19-212Z",
+  "endpoint": "http://localhost:5000/api/v1/consultations/upload-and-scribe",
+  "tests": [
+    {
+      "id": "A1_WAV_ASHWIN",
+      "category": "A_FORMAT",
+      "audio": "ashwin_consultation.wav",
+      "fileSizeBytes": 13342746,
+      "fileSha256": "d0c531068e62c289aa3d8b02482dea7ff9fd50e1a6600d2743eac26301d11940",
+      "httpStatus": 200,
+      "latencyMs": 91843,
+      "detectedLang": "English",
+      "transcriptLength": 4026,
+      "transcriptText": "Good morning, doctor. I brought my dog Usvin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kg. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago. I am not sure whether the food was fresh. Since then, his health seems to have become worse. He has not received any new medication recently His routine vaccinations are up to date and his last doorming was approximately three months ago Doctor could you please examine Ushvin and tell me what might be causing these symptoms I am particularly worried because he is not eating and is becoming weaker I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a complete blood count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium potassium and chloride should be checked because he has been vomiting and experiencing diarrhea Could dehydration of Should we also perform a blood glucose test to check his sugar level And is a Cereactive protein test useful for evaluating inflammation in his body If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, Doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Ashwin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting? Is an antiemetic such as Maropitin appropriate in his case? If the patient is on a diet he should we give him probiotics to support his digestive system And if there is evidence of a bacterial infection would antibiotics be necessary or should we wait for the test results before deciding Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, Doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashvin recovers quickly.",
+      "referenceText": "Good morning, doctor. I brought my dog Ashwin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kilograms. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago. I am not sure whether the food was fresh. Since then, his health seems to have become worse. He has not received any new medication recently. His routine vaccinations are up to date, and his last deworming was approximately three months ago. Doctor, could you please examine Ashwin and tell me what might be causing these symptoms? I am particularly worried because he is not eating and is becoming weaker. I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a Complete Blood Count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium, potassium, and chloride should be checked because he has been vomiting and experiencing diarrhea. Could dehydration affect these values? Should we also perform a blood glucose test to check his sugar level? And is a C-reactive protein test useful for evaluating inflammation in his body? If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Ashwin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting? Is an antiemetic such as Maropitant appropriate in his case? Would he also need any medication to protect his stomach? Should we give him probiotics to support his digestive system? And if there is evidence of a bacterial infection, would antibiotics be necessary, or should we wait for the test results before deciding? Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashwin recovers quickly.",
+      "wer": 3.15,
+      "cer": 2.13,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": true,
+      "failureReasons": []
+    },
+    {
+      "id": "A1_MP3_ASHWIN",
+      "category": "A_FORMAT",
+      "audio": "ashwin_consultation.mp3",
+      "fileSizeBytes": 2641401,
+      "fileSha256": "9b3dcc4d7121415e99e81818fff5e1e58eaf50feddd0046f32f7c31a08d7b40c",
+      "httpStatus": 200,
+      "latencyMs": 44958,
+      "detectedLang": "English",
+      "transcriptLength": 4062,
+      "transcriptText": "Good morning, doctor. I brought my dog Usvin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kg. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago I am not sure whether the food was fresh Since then his health seems to have become worse He has not received any new medication recently His routine vaccinations are up to date and his last doorming was approximately three months ago Doctor could you please examine Ushvin and tell me what might be causing these symptoms I am particularly worried because he is not eating and is becoming weaker I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a complete blood count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium potassium and chloride should be checked because he has been vomiting and experiencing diarrhea Could dehydration of the blood be a problem Should we also perform a blood glucose test to check his sugar level And is a Cereactive protein test useful for evaluating inflammation in his body If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Usvin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting Is an anti such as Maropitin appropriate in his case Would he also need any medication to protect his stomach Should we give him probiotics to support his digestive system And if there is evidence of a bacterial infection would antibiotics be necessary or should we wait for the test results before deciding Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, Doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashvin recovers quickly.",
+      "referenceText": "Good morning, doctor. I brought my dog Ashwin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kilograms. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago. I am not sure whether the food was fresh. Since then, his health seems to have become worse. He has not received any new medication recently. His routine vaccinations are up to date, and his last deworming was approximately three months ago. Doctor, could you please examine Ashwin and tell me what might be causing these symptoms? I am particularly worried because he is not eating and is becoming weaker. I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a Complete Blood Count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium, potassium, and chloride should be checked because he has been vomiting and experiencing diarrhea. Could dehydration affect these values? Should we also perform a blood glucose test to check his sugar level? And is a C-reactive protein test useful for evaluating inflammation in his body? If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Ashwin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting? Is an antiemetic such as Maropitant appropriate in his case? Would he also need any medication to protect his stomach? Should we give him probiotics to support his digestive system? And if there is evidence of a bacterial infection, would antibiotics be necessary, or should we wait for the test results before deciding? Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashwin recovers quickly.",
+      "wer": 2.4,
+      "cer": 1.29,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": true,
+      "failureReasons": []
+    },
+    {
+      "id": "A1_M4A_ASHWIN",
+      "category": "A_FORMAT",
+      "audio": "ashwin_consultation.m4a",
+      "fileSizeBytes": 3224508,
+      "fileSha256": "db6b427979481fa86954c2d3084d062e44de2e566476d83b5fc537c8dfb29014",
+      "httpStatus": 200,
+      "latencyMs": 64786,
+      "detectedLang": "English",
+      "transcriptLength": 4083,
+      "transcriptText": "Good morning, doctor. I brought my dog Usvin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kg. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago. I am not sure whether the food was fresh. Since then, his health seems to have become worse. He has not received any new medication recently His routine vaccinations are up to date and his last doorming was approximately three months ago Doctor could you please examine Ushvin and tell me what might be causing these symptoms I am particularly worried because he is not eating and is becoming weaker I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a complete blood count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium potassium and chloride should be checked because he has been vomiting and experiencing diarrhea Could dehydration of Should we also perform a blood glucose test to check his sugar level And is a Cereactive protein test useful for evaluating inflammation in his body If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Ashwin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting? Is an antiemetic such as Maropitin appropriate in his case? If a pet owner is not a veterinarian does he need any medication to protect his stomach Should we give him probiotics to support his digestive system And if there is evidence of a bacterial infection would antibiotics be necessary or should we wait for the test results before deciding Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, Doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashvin recovers quickly.",
+      "referenceText": "Good morning, doctor. I brought my dog Ashwin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kilograms. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago. I am not sure whether the food was fresh. Since then, his health seems to have become worse. He has not received any new medication recently. His routine vaccinations are up to date, and his last deworming was approximately three months ago. Doctor, could you please examine Ashwin and tell me what might be causing these symptoms? I am particularly worried because he is not eating and is becoming weaker. I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a Complete Blood Count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium, potassium, and chloride should be checked because he has been vomiting and experiencing diarrhea. Could dehydration affect these values? Should we also perform a blood glucose test to check his sugar level? And is a C-reactive protein test useful for evaluating inflammation in his body? If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Ashwin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting? Is an antiemetic such as Maropitant appropriate in his case? Would he also need any medication to protect his stomach? Should we give him probiotics to support his digestive system? And if there is evidence of a bacterial infection, would antibiotics be necessary, or should we wait for the test results before deciding? Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashwin recovers quickly.",
+      "wer": 3.15,
+      "cer": 1.92,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": true,
+      "failureReasons": []
+    },
+    {
+      "id": "A1_WEBM_ASHWIN",
+      "category": "A_FORMAT",
+      "audio": "ashwin_consultation.webm",
+      "fileSizeBytes": 4353488,
+      "fileSha256": "ebe00d0b662003cbacd9f40faefc05bbdde21f1b9d488c9a4d2b3a6922fe401e",
+      "httpStatus": 200,
+      "latencyMs": 13363,
+      "detectedLang": "English",
+      "transcriptLength": 4039,
+      "transcriptText": "Good morning, doctor. I brought my dog Usvin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kg. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago I am not sure whether the food was fresh Since then his health seems to have become worse He has not received any new medication recently His routine vaccinations are up to date and his last doorming was approximately three months ago Doctor could you please examine Ushvin and tell me what might be causing these symptoms I am particularly worried because he is not eating and is becoming weaker I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a complete blood count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium potassium and chloride should be checked because he has been vomiting and experiencing diarrhea Could dehydration of Should we also perform a blood glucose test to check his sugar level And is a Cereactive protein test useful for evaluating inflammation in his body If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Usvin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting Is an anti such as Maropitin appropriate in his case Would he also need any medication to protect his stomach Should we give him probiotics to support his digestive system And if there is evidence of a bacterial infection would antibiotics be necessary or should we wait for the test results before deciding Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, Doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashwin recovers quickly.",
+      "referenceText": "Good morning, doctor. I brought my dog Ashwin today because he has not been feeling well for the past three days. He is a three-year-old Labrador, and his weight is approximately 18 kilograms. Normally, he is very active, playful, and eats his food regularly. However, for the last three days, he has been vomiting frequently and has completely lost interest in food. Initially, I thought it was a minor stomach problem, but yesterday he vomited around four times. The vomit was mostly yellowish liquid, sometimes with a little foam. He is also drinking less water than usual. I noticed that he had loose stools twice yesterday, and today morning his stool was also watery. He seems very tired and spends most of his time lying down. One more thing I noticed is that he ate some leftover chicken from our dinner three days ago. I am not sure whether the food was fresh. Since then, his health seems to have become worse. He has not received any new medication recently. His routine vaccinations are up to date, and his last deworming was approximately three months ago. Doctor, could you please examine Ashwin and tell me what might be causing these symptoms? I am particularly worried because he is not eating and is becoming weaker. I understand, doctor. You mentioned that his temperature is slightly elevated and that he may be dehydrated. Is this possibly gastroenteritis, a bacterial infection, or food poisoning? Could there also be a problem with his liver or kidneys? If we need to investigate further, I would like to understand which laboratory tests are necessary. Should we perform a Complete Blood Count to check his white blood cells, red blood cells, hemoglobin, and platelet count? Will this help identify infection or inflammation? What about the biochemical tests? I heard that kidney and liver function can be evaluated through blood biomarkers. Should we check ALT, AST, ALP, total bilirubin, blood urea nitrogen, creatinine, and albumin? I would also like to know whether electrolytes such as sodium, potassium, and chloride should be checked because he has been vomiting and experiencing diarrhea. Could dehydration affect these values? Should we also perform a blood glucose test to check his sugar level? And is a C-reactive protein test useful for evaluating inflammation in his body? If the blood reports are not sufficient, do you recommend a stool examination or abdominal ultrasound? I want to make sure we do not miss any serious underlying condition, especially an intestinal obstruction or another abdominal problem. Okay, doctor. Please proceed with the recommended investigations. Now that the preliminary examination is complete, could you explain the treatment plan? Since Ashwin is dehydrated, will he require intravenous fluid therapy? What type of fluids would be appropriate based on his electrolyte levels and hydration status? What medication would you recommend for controlling his vomiting? Is an antiemetic such as Maropitant appropriate in his case? Would he also need any medication to protect his stomach? Should we give him probiotics to support his digestive system? And if there is evidence of a bacterial infection, would antibiotics be necessary, or should we wait for the test results before deciding? Doctor, could you please explain the medication dosage, frequency, duration, and whether each medicine should be given before or after food? I want to make sure I administer everything correctly. Also, what kind of diet should I provide once his vomiting is controlled? Can I give him a veterinary gastrointestinal diet in small portions? How much water should he drink during recovery? One final question, doctor. How long will it normally take for him to recover? Should we repeat the CBC, kidney function, liver function, and electrolyte tests after a few days to monitor his improvement? I will follow all the instructions and bring him back for the recommended follow-up examination. Please let me know immediately if any of the laboratory results indicate something serious. Thank you so much, doctor. I hope Ashwin recovers quickly.",
+      "wer": 1.8,
+      "cer": 1.26,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": true,
+      "failureReasons": []
+    },
+    {
+      "id": "B1_BRUNO_WAV",
+      "category": "B_ACCURACY",
+      "audio": "bruno_consultation.wav",
+      "fileSizeBytes": 5109618,
+      "fileSha256": "6ab5a6fb8965d0ce0997e60e32d5faa3cd14f8e0699665a2f5f4a14ebc1ecdf0",
+      "httpStatus": 200,
+      "latencyMs": 14919,
+      "detectedLang": "English",
+      "transcriptLength": 1441,
+      "transcriptText": "Good morning, doctor. I brought my dog Bruno because he has not been feeling well for the past two days. He has been vomiting frequently and is not eating properly. Yesterday, he vomited around three times, and today morning, he vomited twice. Sometimes the vomit looks like a yellow liquid. He is also drinking very little water compared to usual. He had loose motion twice yesterday, and his stool is still not normal today. Yesterday evening, he ate some leftover chicken from our dinner. I'm not sure whether it was fresh. Normally, Bruno is very active and likes running around the house, but since yesterday, he has been very tired and mostly lying on the floor. Doctor, is this something serious? He has received all his regular vaccinations, and his last vaccination was around six months ago. Okay, doctor. Please examine him and let me know what the problem could be. I understand. Do you think it could be a stomach infection or something related to the food he ate? What tests do you recommend to identify the exact problem? Will he need a blood test or any other laboratory investigation? Doctor, what about medication? Does he need any treatment to stop the vomiting? Should I give him food and water normally at home, or should I follow any special diet? Okay, doctor. I will follow your instructions. Please let me know when we should come back for a follow-up consultation. Thank you, doctor. I hope Bruno feels better soon.",
+      "referenceText": "Good morning, doctor. I brought my dog Bruno because he has not been feeling well for the past two days. He has been vomiting frequently and is not eating properly. Yesterday, he vomited around three times, and today morning, he vomited twice. Sometimes the vomit looks like a yellow liquid. He is also drinking very little water compared to usual. He had loose motion twice yesterday, and his stool is still not normal today. Yesterday evening, he ate some leftover chicken from our dinner. I'm not sure whether it was fresh. Normally, Bruno is very active and likes running around the house, but since yesterday, he has been very tired and mostly lying on the floor. Doctor, is this something serious? He has received all his regular vaccinations, and his last vaccination was around six months ago. Okay, doctor. Please examine him and let me know what the problem could be. I understand. Do you think it could be a stomach infection or something related to the food he ate? What tests do you recommend to identify the exact problem? Will he need a blood test or any other laboratory investigation? Doctor, what about medication? Does he need any treatment to stop the vomiting? Should I give him food and water normally at home, or should I follow any special diet? Okay, doctor. I will follow your instructions. Please let me know when we should come back for a follow-up consultation. Thank you, doctor. I hope Bruno feels better soon.",
+      "wer": 0,
+      "cer": 0,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": true,
+      "failureReasons": []
+    },
+    {
+      "id": "B2_DRUGS_20",
+      "category": "B_ACCURACY",
+      "audio": "drugs_20.wav",
+      "fileSizeBytes": 2035566,
+      "fileSha256": "22072d53fa0b2dd136112d524ce01a4b5fc2861c39227051322b819538dbba69",
+      "httpStatus": 200,
+      "latencyMs": 4451,
+      "detectedLang": "English",
+      "transcriptLength": 491,
+      "transcriptText": "Please administer amoxicillin. We need to give clave amox. Start on metronidazole. Prescribe doxycycline. Administer meloxicam. Give carprofen for pain. Start prednisolone. Use dexamethasone for inflammation. Dispense maropitin for vomiting. Start Ondanstran. Give Pantoprazole for stomach protection. Administer Ranitidine. Prescribe Enrofloxacin. Start Cefalexin. Use Gabapentin. Give Tramadol. Dispense Apoquel for itching. Administer Cytopoint. Start Levothyroxine. Prescribe Furosemide.",
+      "referenceText": "Please administer Amoxicillin. We need to give Clavamox. Start on Metronidazole. Prescribe Doxycycline. Administer Meloxicam. Give Carprofen for pain. Start Prednisolone. Use Dexamethasone for inflammation. Dispense Maropitant for vomiting. Start Ondansetron. Give Pantoprazole for stomach protection. Administer Ranitidine. Prescribe Enrofloxacin. Start Cephalexin. Use Gabapentin. Give Tramadol. Dispense Apoquel for itching. Administer Cytopoint. Start Levothyroxine. Prescribe Furosemide.",
+      "wer": 8.93,
+      "cer": 1.68,
+      "drugMetrics": {
+        "expectedCount": 20,
+        "foundCount": 16,
+        "missedCount": 4,
+        "recall": 80,
+        "found": [
+          "Amoxicillin",
+          "Metronidazole",
+          "Doxycycline",
+          "Meloxicam",
+          "Carprofen",
+          "Prednisolone",
+          "Dexamethasone",
+          "Pantoprazole",
+          "Ranitidine",
+          "Enrofloxacin",
+          "Gabapentin",
+          "Tramadol",
+          "Apoquel",
+          "Cytopoint",
+          "Levothyroxine",
+          "Furosemide"
+        ],
+        "missed": [
+          "Clavamox",
+          "Maropitant",
+          "Ondansetron",
+          "Cephalexin"
+        ]
+      },
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": false,
+      "failureReasons": [
+        "Drug recall 80% < 98% (Missed: Clavamox, Maropitant, Ondansetron, Cephalexin)"
+      ]
+    },
+    {
+      "id": "B3_DOSES_UNITS",
+      "category": "B_ACCURACY",
+      "audio": "doses_units.wav",
+      "fileSizeBytes": 571246,
+      "fileSha256": "7e87b1da77e43a0e20280100992397c16d39d7a1db5ae74d9fb649f0625f386e",
+      "httpStatus": 200,
+      "latencyMs": 1411,
+      "detectedLang": "English",
+      "transcriptLength": 142,
+      "transcriptText": "Administer meloxicam 0.2 mg per kg. Prescribe levothyroxine 25 micrograms BID. Give half a tablet twice daily. Administer 500 ml over 4 hours.",
+      "referenceText": "Administer meloxicam zero point two mg per kg. Prescribe levothyroxine 25 micrograms BID. Give half a tablet twice daily. Administer 500 ml over 4 hours.",
+      "wer": 12,
+      "cer": 9.6,
+      "drugMetrics": null,
+      "numberMetrics": {
+        "total": 13,
+        "matchedCount": 13,
+        "missedCount": 0,
+        "accuracy": 100,
+        "matched": [
+          "0.2",
+          "mg",
+          "kg",
+          "25",
+          "micrograms",
+          "bid",
+          "half",
+          "tablet",
+          "twice daily",
+          "500",
+          "ml",
+          "4",
+          "hours"
+        ],
+        "missed": []
+      },
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": true,
+      "failureReasons": []
+    },
+    {
+      "id": "B4_NEGATION",
+      "category": "B_ACCURACY",
+      "audio": "negation.wav",
+      "fileSizeBytes": 350286,
+      "fileSha256": "1caeddd77ea5b2b8bfe87a2f6d1bfab57606fa8106c1ba6794a3f9003854f4ba",
+      "httpStatus": 200,
+      "latencyMs": 1208,
+      "detectedLang": "English",
+      "transcriptLength": 122,
+      "transcriptText": "There is no vomiting, no diarrhea, and we stopped Medicam two days ago. Patient is not dehydrated and does not have fever.",
+      "referenceText": "There is no vomiting, no diarrhea, and we stopped Metacam two days ago. Patient is not dehydrated and does not have fever.",
+      "wer": 4.55,
+      "cer": 2.06,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": {
+        "total": 4,
+        "matchedCount": 4,
+        "missedCount": 0,
+        "accuracy": 100,
+        "matched": [
+          "no",
+          "stopped",
+          "not",
+          "does not"
+        ],
+        "missed": []
+      },
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": true,
+      "failureReasons": []
+    },
+    {
+      "id": "B5_LAB_TERMS",
+      "category": "B_ACCURACY",
+      "audio": "lab_terms.wav",
+      "fileSizeBytes": 352846,
+      "fileSha256": "70462793c2ca450ce5791e39f44b423d7751ffb8428762960eb0d7c27b379a14",
+      "httpStatus": 200,
+      "latencyMs": 1108,
+      "detectedLang": "English",
+      "transcriptLength": 92,
+      "transcriptText": "We performed a complete blood count CBC. Check ALT, ALP, BUN, creatinine, PCV, SDMA, and T4.",
+      "referenceText": "We performed a Complete Blood Count CBC. Check ALT, ALP, BUN, creatinine, PCV, SDMA, and T4.",
+      "wer": 0,
+      "cer": 0,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": false,
+        "phantoms": [],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": true,
+      "failureReasons": []
+    },
+    {
+      "id": "D1_SILENCE_60S",
+      "category": "D_HALLUCINATION",
+      "audio": "silence_60s.wav",
+      "fileSizeBytes": 1920044,
+      "fileSha256": "4c59ed976769ba50aba4a23ef2823cf795f0b555d48f4c80d41576ce9f3378b7",
+      "httpStatus": 200,
+      "latencyMs": 4914,
+      "detectedLang": "English",
+      "transcriptLength": 47,
+      "transcriptText": "Thank you for watching. Thank you for watching.",
+      "referenceText": "",
+      "wer": null,
+      "cer": null,
+      "drugMetrics": null,
+      "numberMetrics": null,
+      "negationMetrics": null,
+      "hallucinations": {
+        "hasPhantomPhrases": true,
+        "phantoms": [
+          "/thank you for watching/i"
+        ],
+        "hasRepetitionLoop": false,
+        "loopPhrase": null
+      },
+      "pass": false,
+      "failureReasons": [
+        "Invented words on silence: \"Thank you for watching. Thank you for watching.\"",
+        "Hallucinations detected: /thank you for watching/i / loop: null"
+      ]
+    }
+  ],
+  "edgeCases": {
+    "zeroByteFile": {
+      "status": 200,
+      "json": {
+        "success": true,
+        "data": {
+          "consultation": {
+            "id": 4,
+            "appointment_id": null,
+            "pet_id": 3,
+            "doctor_id": 1,
+            "status": "completed",
+            "language": "en",
+            "consent_given": true,
+            "consent_at": "2026-11-07T07:38:02.592Z",
+            "started_at": null,
+            "paused_at": null,
+            "ended_at": null,
+            "audio_file_path": null,
+            "audio_duration_seconds": 0,
+            "metadata": {},
+            "created_at": "2026-11-07T07:38:02.593Z",
+            "updated_at": "2026-11-07T10:03:34.213Z",
+            "pet_name": "Ashwin",
+            "pet_species": "Canine (Dog)",
+            "pet_breed": "Golden",
+            "pet_age": "3.0",
+            "pet_weight": "12.00",
+            "owner_name": "Alice",
+            "owner_contact": "89057464262",
+            "doctor_name": "Dr Mouni",
+            "doctor_email": "mouni@gmail.com",
+            "appointment_time": null,
+            "appointment_reason": null
+          },
+          "transcript": {
+            "detectedLanguage": "en",
+            "fullText": "On auscultation, her lungs sound clear bilaterally. Heart rate is 110 beats per minute.",
+            "segments": [
+              {
+                "sequenceOffset": 1,
+                "text": "On auscultation, her lungs sound clear bilaterally. Heart rate is 110 beats per minute.",
+                "speakerRole": "doctor",
+                "startMs": 0,
+                "endMs": 10000,
+                "confidence": 0.97,
+                "chunkIndex": 0
+              }
+            ]
+          },
+          "clinical_extraction": {
+            "clinical_summary": "Ashwin presented for veterinary evaluation with chief concerns: Coughing, Lethargy, Mild anorexia. Reported symptoms: Decreased appetite. Patient assessed by Dr Mouni for clinical monitoring.",
+            "pet_info": {
+              "name": "Ashwin",
+              "species": "Canine (Dog)",
+              "breed": "Golden",
+              "age": "3.0 years",
+              "weight": "12.00 kg"
+            },
+            "chief_complaints": [
+              "Coughing",
+              "Lethargy",
+              "Mild anorexia"
+            ],
+            "symptoms": [
+              {
+                "symptom": "Decreased appetite",
+                "duration": "2 days",
+                "severity": "mild",
+                "reported_by": "owner",
+                "transcript_evidence": {
+                  "quote": "Refusing dry kibble, only having small amounts of wet food",
+                  "speaker": "owner"
+                }
+              }
+            ],
+            "medical_history": {
+              "vaccination_status": "Up to date with core vaccines, Bordetella due"
+            },
+            "allergies": [
+              "No known drug allergies reported"
+            ],
+            "vitals": {
+              "temperature": "38.6 °C (101.5 °F)",
+              "heart_rate": "110 bpm",
+              "respiratory_rate": "24 breaths/min",
+              "mucous_membranes": "Pink, moist",
+              "capillary_refill_time": "< 2 seconds",
+              "body_condition_score": "5/9"
+            },
+            "observations": [
+              {
+                "organ_system": "Respiratory",
+                "finding": "Bilateral mild tracheal sensitivity on palpation, no audible crackles",
+                "is_abnormal": true,
+                "transcript_evidence": {
+                  "quote": "Lungs sound clear, but there is mild tracheal sensitivity",
+                  "speaker": "doctor"
+                }
+              },
+              {
+                "organ_system": "Cardiovascular",
+                "finding": "Normal heart rate and rhythm, strong femoral pulses",
+                "is_abnormal": false,
+                "transcript_evidence": {
+                  "quote": "Heart sounds good, normal rhythm",
+                  "speaker": "doctor"
+                }
+              }
+            ],
+            "diagnoses": [
+              {
+                "condition": "Infectious Tracheobronchitis (Kennel Cough)",
+                "type": "suspected",
+                "clinical_reasoning": "Acute onset of paroxysmal cough following dog park exposure, tracheal sensitivity",
+                "transcript_evidence": {
+                  "quote": "This looks like mild kennel cough or infectious tracheobronchitis",
+                  "speaker": "doctor"
+                }
+              }
+            ],
+            "medications": [
+              {
+                "medicine_name": "Doxycycline",
+                "strength": "100 mg tablets",
+                "dosage": "100 mg (1 tablet)",
+                "route": "oral",
+                "frequency": "Twice daily with food",
+                "duration": "10 days",
+                "special_instructions": "Give with food or treat to avoid esophageal irritation",
+                "doctor_notes": "Antibiotic therapy for secondary bacterial tracheobronchitis",
+                "transcript_evidence": {
+                  "quote": "We will prescribe Doxycycline 100mg, one tablet twice daily with food for 10 days",
+                  "speaker": "doctor"
+                }
+              },
+              {
+                "medicine_name": "Hydrocodone / Homatropine (Hycodan)",
+                "strength": "5 mg/1.5 mg tablets",
+                "dosage": "5 mg (1/2 tablet)",
+                "route": "oral",
+                "frequency": "Every 8 to 12 hours as needed for coughing",
+                "duration": "5 days",
+                "special_instructions": "May cause mild sedation; give when coughing prevents resting",
+                "doctor_notes": "Antitussive for cough suppression",
+                "transcript_evidence": {
+                  "quote": "For the cough relief, half a tablet of cough suppressant twice a day as needed",
+                  "speaker": "doctor"
+                }
+              }
+            ],
+            "lab_tests": [
+              {
+                "test_name": "Thoracic Radiographs (Chest X-Rays)",
+                "biomarker": "Lung parenchyma and bronchial pattern",
+                "clinical_reason": "Rule out pneumonia if fever or respiratory distress develops",
+                "status": "discussed",
+                "priority": "routine",
+                "instructions": "Recommended if coughing persists past day 7 or worsens",
+                "transcript_evidence": {
+                  "quote": "If she does not improve in a few days we should take chest X-rays",
+                  "speaker": "doctor"
+                }
+              },
+              {
+                "test_name": "Respiratory PCR Panel",
+                "biomarker": "Canine Bordetella, Parainfluenza, Adenovirus",
+                "clinical_reason": "Identify specific viral/bacterial pathogens",
+                "status": "recommended",
+                "priority": "routine",
+                "instructions": "Nasal/pharyngeal swab if symptoms persist",
+                "transcript_evidence": {
+                  "quote": "We could do a respiratory swab panel if needed",
+                  "speaker": "doctor"
+                }
+              }
+            ],
+            "follow_up": {
+              "timeframe": "5 to 7 days",
+              "recommended_date": "2026-11-14",
+              "reason": "Re-evaluation of coughing and tracheal sensitivity",
+              "monitoring_instructions": [
+                "Monitor daily respiratory rate at rest (normal is under 30 breaths/min)",
+                "Ensure pet consumes fresh water and keeps hydrated",
+                "Avoid leash collar pressure on neck; switch to harness during walks"
+              ],
+              "warning_signs": [
+                "Labored breathing, wheezing, or panting while resting",
+                "Lethargy worsening or total refusal to eat and drink",
+                "Cough producing thick yellow/green discharge or blood"
+              ],
+              "transcript_evidence": {
+                "quote": "Bring Bella back in one week if coughing continues or immediately if breathing is heavy",
+                "speaker": "doctor"
+              }
+            },
+            "missing_info": [
+              "Confirmed Bordetella vaccine date from previous veterinary clinic record"
+            ],
+            "contradictions": []
+          },
+          "documents": {
+            "prescription": {
+              "id": 11,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "prescription",
+              "status": "approved",
+              "content": {
+                "items": [],
+                "title": "Veterinary Prescription — Ashwin",
+                "patient": {
+                  "name": "Ashwin",
+                  "breed": "Golden",
+                  "owner": "Alice",
+                  "pet_id": 3,
+                  "weight": "12.00 kg",
+                  "species": "Canine (Dog)"
+                },
+                "doc_type": "prescription",
+                "prescriber": {
+                  "name": "Dr Mouni",
+                  "license": "VET-LIC-STATE-2026",
+                  "doctor_id": 1
+                },
+                "missing_fields": [],
+                "allergies_noted": [],
+                "date_prescribed": "2026-11-07",
+                "dispense_instructions": "Dispense exact quantity as formulated. Label with pet name and instructions."
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.880Z",
+              "updated_at": "2026-11-07T10:03:34.591Z"
+            },
+            "lab_tests": {
+              "id": 12,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "lab_tests",
+              "status": "approved",
+              "content": {
+                "tests": [
+                  {
+                    "status": "recommended",
+                    "evidence": {
+                      "quote": "Should we perform a complete blood count to check his white blood cells, red blood cells, hemoglobin, and platelet count?",
+                      "speaker": "doctor"
+                    },
+                    "priority": "routine",
+                    "biomarker": "WBC, RBC, hemoglobin, platelet count",
+                    "test_name": "Complete Blood Count (CBC)",
+                    "item_number": 1,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Assess for infection or inflammation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 2,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 3,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 4,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 5,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 6,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  }
+                ],
+                "title": "Laboratory Investigations & Biomarkers — Ashwin",
+                "counts": {
+                  "total": 6,
+                  "ordered": 0,
+                  "completed": 0,
+                  "discussed": 5,
+                  "recommended": 1
+                },
+                "patient": {
+                  "name": "Ashwin",
+                  "breed": "Golden",
+                  "pet_id": 3,
+                  "species": "Canine (Dog)"
+                },
+                "doc_type": "lab_tests",
+                "order_date": "2026-11-07",
+                "ordered_by": "Dr Mouni",
+                "missing_fields": []
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.900Z",
+              "updated_at": "2026-11-07T10:03:34.609Z"
+            },
+            "soap_notes": {
+              "id": 13,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "soap_notes",
+              "status": "approved",
+              "content": {
+                "A": {
+                  "clinical_notes": "Consistent presentation with acute clinical onset.",
+                  "primary_diagnoses": [],
+                  "differential_diagnoses": []
+                },
+                "O": {
+                  "vitals": {
+                    "heart_rate": "110 bpm",
+                    "temperature": null,
+                    "respiratory_rate": null
+                  },
+                  "physical_examination": [
+                    {
+                      "system": "Respiratory",
+                      "finding": "lungs clear bilaterally",
+                      "is_abnormal": false
+                    }
+                  ]
+                },
+                "P": {
+                  "follow_up": "Return in None for re-evaluation.",
+                  "medications": [],
+                  "client_education": [],
+                  "diagnostic_workup": [],
+                  "emergency_red_flags": []
+                },
+                "S": {
+                  "history": {
+                    "past_conditions": [],
+                    "vaccination_status": null
+                  },
+                  "allergies": [],
+                  "chief_complaint": "Consultation examination",
+                  "reported_symptoms": []
+                },
+                "title": "SOAP Clinical Notes — Ashwin",
+                "patient": {
+                  "id": 3,
+                  "age": "3.0",
+                  "name": "Ashwin",
+                  "breed": "Golden",
+                  "weight": "12.00",
+                  "species": "Canine (Dog)"
+                },
+                "doc_type": "soap_notes",
+                "veterinarian": "Dr Mouni",
+                "missing_fields": [
+                  "reason for visit"
+                ],
+                "consultation_date": "2026-11-07T07:44:56.914Z"
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [
+                "Confirmed Bordetella vaccine date from previous veterinary clinic record"
+              ],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.915Z",
+              "updated_at": "2026-11-07T10:03:34.626Z"
+            },
+            "follow_up": {
+              "id": 14,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "follow_up",
+              "status": "approved",
+              "content": {
+                "title": "Follow-up & Monitoring Plan — Ashwin",
+                "patient": {
+                  "name": "Ashwin",
+                  "pet_id": 3,
+                  "species": "Canine (Dog)",
+                  "owner_name": "Alice",
+                  "owner_contact": "89057464262"
+                },
+                "doc_type": "follow_up",
+                "missing_fields": [],
+                "attending_doctor": "Dr Mouni",
+                "recommended_date": null,
+                "reason_for_revisit": "Re-assessment of symptoms and response to medical therapy",
+                "follow_up_timeframe": "None",
+                "next_appointment_action": "Client to call clinic to confirm revisit slot or book online",
+                "warning_signs_red_flags": [],
+                "home_care_and_monitoring": []
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.929Z",
+              "updated_at": "2026-11-07T10:03:34.640Z"
+            },
+            "summary": {
+              "id": 15,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "summary",
+              "status": "approved",
+              "content": {
+                "title": "Consultation Comprehensive Summary — Ashwin",
+                "patient": {
+                  "id": 3,
+                  "age": "3.0 yrs",
+                  "name": "Ashwin",
+                  "breed": "Golden",
+                  "owner": "Alice",
+                  "weight": "12.00 kg",
+                  "species": "Canine (Dog)"
+                },
+                "doc_type": "summary",
+                "overview": "Patient Ashwin, a 3‑year‑old golden retriever, presented for a routine check‑up. Auscultation revealed clear lungs bilaterally and a heart rate of 110 beats per minute. No abnormalities were noted during the examination.",
+                "symptoms": [],
+                "diagnoses": [],
+                "observations": [
+                  {
+                    "finding": "lungs clear bilaterally",
+                    "is_abnormal": false,
+                    "organ_system": "Respiratory",
+                    "transcript_evidence": {
+                      "quote": "On auscultation, her lungs sound clear bilaterally. Heart rate is 110 beats per minute.",
+                      "speaker": "doctor"
+                    }
+                  }
+                ],
+                "owner_guidance": "Re-check recommended in None. Monitor appetite, hydration, and activity levels closely at home.",
+                "chief_complaints": [
+                  "General clinical evaluation & wellness consultation"
+                ],
+                "symptoms_overview": [],
+                "clinical_narrative": "Patient Ashwin, a 3‑year‑old golden retriever, presented for a routine check‑up. Auscultation revealed clear lungs bilaterally and a heart rate of 110 beats per minute. No abnormalities were noted during the examination.",
+                "consultation_details": {
+                  "id": 4,
+                  "date": "2026-11-07",
+                  "doctor": "Dr Mouni",
+                  "duration": "Live session"
+                },
+                "assessment_conclusions": [
+                  "No acute pathology confirmed at present examination"
+                ],
+                "missing_information_alert": [
+                  "reason for visit"
+                ],
+                "prescribed_treatment_plan": [],
+                "recommended_investigations": [],
+                "clinical_examination_summary": [
+                  "Physical examination parameters reviewed within baseline"
+                ],
+                "client_instructions_and_follow_up": {
+                  "revisit": "None",
+                  "warning_signs": [],
+                  "key_instructions": []
+                }
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.943Z",
+              "updated_at": "2026-11-07T10:03:34.656Z"
+            }
+          }
+        }
+      }
+    },
+    "fakeMp3File": {
+      "status": 200,
+      "json": {
+        "success": true,
+        "data": {
+          "consultation": {
+            "id": 4,
+            "appointment_id": null,
+            "pet_id": 3,
+            "doctor_id": 1,
+            "status": "completed",
+            "language": "en",
+            "consent_given": true,
+            "consent_at": "2026-11-07T07:38:02.592Z",
+            "started_at": null,
+            "paused_at": null,
+            "ended_at": null,
+            "audio_file_path": null,
+            "audio_duration_seconds": 0,
+            "metadata": {},
+            "created_at": "2026-11-07T07:38:02.593Z",
+            "updated_at": "2026-11-07T10:03:34.673Z",
+            "pet_name": "Ashwin",
+            "pet_species": "Canine (Dog)",
+            "pet_breed": "Golden",
+            "pet_age": "3.0",
+            "pet_weight": "12.00",
+            "owner_name": "Alice",
+            "owner_contact": "89057464262",
+            "doctor_name": "Dr Mouni",
+            "doctor_email": "mouni@gmail.com",
+            "appointment_time": null,
+            "appointment_reason": null
+          },
+          "transcript": {
+            "detectedLanguage": "en",
+            "fullText": "On auscultation, her lungs sound clear bilaterally. Heart rate is 110 beats per minute.",
+            "segments": [
+              {
+                "sequenceOffset": 1,
+                "text": "On auscultation, her lungs sound clear bilaterally. Heart rate is 110 beats per minute.",
+                "speakerRole": "doctor",
+                "startMs": 0,
+                "endMs": 10000,
+                "confidence": 0.97,
+                "chunkIndex": 0
+              }
+            ]
+          },
+          "clinical_extraction": {
+            "clinical_summary": "Ashwin presented for veterinary evaluation with chief concerns: Coughing, Lethargy, Mild anorexia. Reported symptoms: Decreased appetite. Patient assessed by Dr Mouni for clinical monitoring.",
+            "pet_info": {
+              "name": "Ashwin",
+              "species": "Canine (Dog)",
+              "breed": "Golden",
+              "age": "3.0 years",
+              "weight": "12.00 kg"
+            },
+            "chief_complaints": [
+              "Coughing",
+              "Lethargy",
+              "Mild anorexia"
+            ],
+            "symptoms": [
+              {
+                "symptom": "Decreased appetite",
+                "duration": "2 days",
+                "severity": "mild",
+                "reported_by": "owner",
+                "transcript_evidence": {
+                  "quote": "Refusing dry kibble, only having small amounts of wet food",
+                  "speaker": "owner"
+                }
+              }
+            ],
+            "medical_history": {
+              "vaccination_status": "Up to date with core vaccines, Bordetella due"
+            },
+            "allergies": [
+              "No known drug allergies reported"
+            ],
+            "vitals": {
+              "temperature": "38.6 °C (101.5 °F)",
+              "heart_rate": "110 bpm",
+              "respiratory_rate": "24 breaths/min",
+              "mucous_membranes": "Pink, moist",
+              "capillary_refill_time": "< 2 seconds",
+              "body_condition_score": "5/9"
+            },
+            "observations": [
+              {
+                "organ_system": "Respiratory",
+                "finding": "Bilateral mild tracheal sensitivity on palpation, no audible crackles",
+                "is_abnormal": true,
+                "transcript_evidence": {
+                  "quote": "Lungs sound clear, but there is mild tracheal sensitivity",
+                  "speaker": "doctor"
+                }
+              },
+              {
+                "organ_system": "Cardiovascular",
+                "finding": "Normal heart rate and rhythm, strong femoral pulses",
+                "is_abnormal": false,
+                "transcript_evidence": {
+                  "quote": "Heart sounds good, normal rhythm",
+                  "speaker": "doctor"
+                }
+              }
+            ],
+            "diagnoses": [
+              {
+                "condition": "Infectious Tracheobronchitis (Kennel Cough)",
+                "type": "suspected",
+                "clinical_reasoning": "Acute onset of paroxysmal cough following dog park exposure, tracheal sensitivity",
+                "transcript_evidence": {
+                  "quote": "This looks like mild kennel cough or infectious tracheobronchitis",
+                  "speaker": "doctor"
+                }
+              }
+            ],
+            "medications": [
+              {
+                "medicine_name": "Doxycycline",
+                "strength": "100 mg tablets",
+                "dosage": "100 mg (1 tablet)",
+                "route": "oral",
+                "frequency": "Twice daily with food",
+                "duration": "10 days",
+                "special_instructions": "Give with food or treat to avoid esophageal irritation",
+                "doctor_notes": "Antibiotic therapy for secondary bacterial tracheobronchitis",
+                "transcript_evidence": {
+                  "quote": "We will prescribe Doxycycline 100mg, one tablet twice daily with food for 10 days",
+                  "speaker": "doctor"
+                }
+              },
+              {
+                "medicine_name": "Hydrocodone / Homatropine (Hycodan)",
+                "strength": "5 mg/1.5 mg tablets",
+                "dosage": "5 mg (1/2 tablet)",
+                "route": "oral",
+                "frequency": "Every 8 to 12 hours as needed for coughing",
+                "duration": "5 days",
+                "special_instructions": "May cause mild sedation; give when coughing prevents resting",
+                "doctor_notes": "Antitussive for cough suppression",
+                "transcript_evidence": {
+                  "quote": "For the cough relief, half a tablet of cough suppressant twice a day as needed",
+                  "speaker": "doctor"
+                }
+              }
+            ],
+            "lab_tests": [
+              {
+                "test_name": "Thoracic Radiographs (Chest X-Rays)",
+                "biomarker": "Lung parenchyma and bronchial pattern",
+                "clinical_reason": "Rule out pneumonia if fever or respiratory distress develops",
+                "status": "discussed",
+                "priority": "routine",
+                "instructions": "Recommended if coughing persists past day 7 or worsens",
+                "transcript_evidence": {
+                  "quote": "If she does not improve in a few days we should take chest X-rays",
+                  "speaker": "doctor"
+                }
+              },
+              {
+                "test_name": "Respiratory PCR Panel",
+                "biomarker": "Canine Bordetella, Parainfluenza, Adenovirus",
+                "clinical_reason": "Identify specific viral/bacterial pathogens",
+                "status": "recommended",
+                "priority": "routine",
+                "instructions": "Nasal/pharyngeal swab if symptoms persist",
+                "transcript_evidence": {
+                  "quote": "We could do a respiratory swab panel if needed",
+                  "speaker": "doctor"
+                }
+              }
+            ],
+            "follow_up": {
+              "timeframe": "5 to 7 days",
+              "recommended_date": "2026-11-14",
+              "reason": "Re-evaluation of coughing and tracheal sensitivity",
+              "monitoring_instructions": [
+                "Monitor daily respiratory rate at rest (normal is under 30 breaths/min)",
+                "Ensure pet consumes fresh water and keeps hydrated",
+                "Avoid leash collar pressure on neck; switch to harness during walks"
+              ],
+              "warning_signs": [
+                "Labored breathing, wheezing, or panting while resting",
+                "Lethargy worsening or total refusal to eat and drink",
+                "Cough producing thick yellow/green discharge or blood"
+              ],
+              "transcript_evidence": {
+                "quote": "Bring Bella back in one week if coughing continues or immediately if breathing is heavy",
+                "speaker": "doctor"
+              }
+            },
+            "missing_info": [
+              "Confirmed Bordetella vaccine date from previous veterinary clinic record"
+            ],
+            "contradictions": []
+          },
+          "documents": {
+            "prescription": {
+              "id": 11,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "prescription",
+              "status": "approved",
+              "content": {
+                "items": [],
+                "title": "Veterinary Prescription — Ashwin",
+                "patient": {
+                  "name": "Ashwin",
+                  "breed": "Golden",
+                  "owner": "Alice",
+                  "pet_id": 3,
+                  "weight": "12.00 kg",
+                  "species": "Canine (Dog)"
+                },
+                "doc_type": "prescription",
+                "prescriber": {
+                  "name": "Dr Mouni",
+                  "license": "VET-LIC-STATE-2026",
+                  "doctor_id": 1
+                },
+                "missing_fields": [],
+                "allergies_noted": [],
+                "date_prescribed": "2026-11-07",
+                "dispense_instructions": "Dispense exact quantity as formulated. Label with pet name and instructions."
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.880Z",
+              "updated_at": "2026-11-07T10:03:34.966Z"
+            },
+            "lab_tests": {
+              "id": 12,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "lab_tests",
+              "status": "approved",
+              "content": {
+                "tests": [
+                  {
+                    "status": "recommended",
+                    "evidence": {
+                      "quote": "Should we perform a complete blood count to check his white blood cells, red blood cells, hemoglobin, and platelet count?",
+                      "speaker": "doctor"
+                    },
+                    "priority": "routine",
+                    "biomarker": "WBC, RBC, hemoglobin, platelet count",
+                    "test_name": "Complete Blood Count (CBC)",
+                    "item_number": 1,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Assess for infection or inflammation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 2,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 3,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 4,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 5,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  },
+                  {
+                    "status": "discussed",
+                    "evidence": null,
+                    "priority": "routine",
+                    "biomarker": "N/A",
+                    "item_number": 6,
+                    "instructions": "Follow standard sample collection protocol",
+                    "clinical_reason": "Diagnostic evaluation"
+                  }
+                ],
+                "title": "Laboratory Investigations & Biomarkers — Ashwin",
+                "counts": {
+                  "total": 6,
+                  "ordered": 0,
+                  "completed": 0,
+                  "discussed": 5,
+                  "recommended": 1
+                },
+                "patient": {
+                  "name": "Ashwin",
+                  "breed": "Golden",
+                  "pet_id": 3,
+                  "species": "Canine (Dog)"
+                },
+                "doc_type": "lab_tests",
+                "order_date": "2026-11-07",
+                "ordered_by": "Dr Mouni",
+                "missing_fields": []
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.900Z",
+              "updated_at": "2026-11-07T10:03:34.985Z"
+            },
+            "soap_notes": {
+              "id": 13,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "soap_notes",
+              "status": "approved",
+              "content": {
+                "A": {
+                  "clinical_notes": "Consistent presentation with acute clinical onset.",
+                  "primary_diagnoses": [],
+                  "differential_diagnoses": []
+                },
+                "O": {
+                  "vitals": {
+                    "heart_rate": "110 bpm",
+                    "temperature": null,
+                    "respiratory_rate": null
+                  },
+                  "physical_examination": [
+                    {
+                      "system": "Respiratory",
+                      "finding": "lungs clear bilaterally",
+                      "is_abnormal": false
+                    }
+                  ]
+                },
+                "P": {
+                  "follow_up": "Return in None for re-evaluation.",
+                  "medications": [],
+                  "client_education": [],
+                  "diagnostic_workup": [],
+                  "emergency_red_flags": []
+                },
+                "S": {
+                  "history": {
+                    "past_conditions": [],
+                    "vaccination_status": null
+                  },
+                  "allergies": [],
+                  "chief_complaint": "Consultation examination",
+                  "reported_symptoms": []
+                },
+                "title": "SOAP Clinical Notes — Ashwin",
+                "patient": {
+                  "id": 3,
+                  "age": "3.0",
+                  "name": "Ashwin",
+                  "breed": "Golden",
+                  "weight": "12.00",
+                  "species": "Canine (Dog)"
+                },
+                "doc_type": "soap_notes",
+                "veterinarian": "Dr Mouni",
+                "missing_fields": [
+                  "reason for visit"
+                ],
+                "consultation_date": "2026-11-07T07:44:56.914Z"
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [
+                "Confirmed Bordetella vaccine date from previous veterinary clinic record"
+              ],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.915Z",
+              "updated_at": "2026-11-07T10:03:35.002Z"
+            },
+            "follow_up": {
+              "id": 14,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "follow_up",
+              "status": "approved",
+              "content": {
+                "title": "Follow-up & Monitoring Plan — Ashwin",
+                "patient": {
+                  "name": "Ashwin",
+                  "pet_id": 3,
+                  "species": "Canine (Dog)",
+                  "owner_name": "Alice",
+                  "owner_contact": "89057464262"
+                },
+                "doc_type": "follow_up",
+                "missing_fields": [],
+                "attending_doctor": "Dr Mouni",
+                "recommended_date": null,
+                "reason_for_revisit": "Re-assessment of symptoms and response to medical therapy",
+                "follow_up_timeframe": "None",
+                "next_appointment_action": "Client to call clinic to confirm revisit slot or book online",
+                "warning_signs_red_flags": [],
+                "home_care_and_monitoring": []
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.929Z",
+              "updated_at": "2026-11-07T10:03:35.021Z"
+            },
+            "summary": {
+              "id": 15,
+              "consultation_id": 4,
+              "extraction_id": 4,
+              "doc_type": "summary",
+              "status": "approved",
+              "content": {
+                "title": "Consultation Comprehensive Summary — Ashwin",
+                "patient": {
+                  "id": 3,
+                  "age": "3.0 yrs",
+                  "name": "Ashwin",
+                  "breed": "Golden",
+                  "owner": "Alice",
+                  "weight": "12.00 kg",
+                  "species": "Canine (Dog)"
+                },
+                "doc_type": "summary",
+                "overview": "Patient Ashwin, a 3‑year‑old golden retriever, presented for a routine check‑up. Auscultation revealed clear lungs bilaterally and a heart rate of 110 beats per minute. No abnormalities were noted during the examination.",
+                "symptoms": [],
+                "diagnoses": [],
+                "observations": [
+                  {
+                    "finding": "lungs clear bilaterally",
+                    "is_abnormal": false,
+                    "organ_system": "Respiratory",
+                    "transcript_evidence": {
+                      "quote": "On auscultation, her lungs sound clear bilaterally. Heart rate is 110 beats per minute.",
+                      "speaker": "doctor"
+                    }
+                  }
+                ],
+                "owner_guidance": "Re-check recommended in None. Monitor appetite, hydration, and activity levels closely at home.",
+                "chief_complaints": [
+                  "General clinical evaluation & wellness consultation"
+                ],
+                "symptoms_overview": [],
+                "clinical_narrative": "Patient Ashwin, a 3‑year‑old golden retriever, presented for a routine check‑up. Auscultation revealed clear lungs bilaterally and a heart rate of 110 beats per minute. No abnormalities were noted during the examination.",
+                "consultation_details": {
+                  "id": 4,
+                  "date": "2026-11-07",
+                  "doctor": "Dr Mouni",
+                  "duration": "Live session"
+                },
+                "assessment_conclusions": [
+                  "No acute pathology confirmed at present examination"
+                ],
+                "missing_information_alert": [
+                  "reason for visit"
+                ],
+                "prescribed_treatment_plan": [],
+                "recommended_investigations": [],
+                "clinical_examination_summary": [
+                  "Physical examination parameters reviewed within baseline"
+                ],
+                "client_instructions_and_follow_up": {
+                  "revisit": "None",
+                  "warning_signs": [],
+                  "key_instructions": []
+                }
+              },
+              "doctor_notes": null,
+              "current_version": 1,
+              "missing_fields": [],
+              "ai_confidence": "0.980",
+              "error_message": null,
+              "created_at": "2026-11-07T07:44:56.943Z",
+              "updated_at": "2026-11-07T10:03:35.039Z"
+            }
+          }
+        }
+      }
+    }
+  },
+  "determinism": {
+    "testAudio": "doses_units.wav",
+    "run1Text": "Administer meloxicam 0.2 mg per kg. Prescribe levothyroxine 25 micrograms BID. Give half a tablet twice daily. Administer 500 ml over 4 hours.",
+    "run2Text": "Administer meloxicam 0.2 mg per kg. Prescribe levothyroxine 25 micrograms BID. Give half a tablet twice daily. Administer 500 ml over 4 hours.",
+    "run3Text": "Administer meloxicam 0.2 mg per kg. Prescribe levothyroxine 25 micrograms BID. Give half a tablet twice daily. Administer 500 ml over 4 hours.",
+    "identical": true,
+    "pass": true
+  }
+}

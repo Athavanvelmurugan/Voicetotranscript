@@ -7,6 +7,7 @@ import {
 export function RecordingControls({
   status,
   consentGiven,
+  hasConsultation = true,
   onGrantConsent,
   onStart,
   onPause,
@@ -23,6 +24,9 @@ export function RecordingControls({
   chunkCount,
   micPermission,
   micError,
+  // Audio Upload & Scribe Props
+  onUploadAudio,
+  isUploadingAudio = false,
 }) {
   const [seconds, setSeconds] = useState(0);
 
@@ -85,7 +89,14 @@ export function RecordingControls({
       )}
 
       {/* Dynamic Consent guard with Owner Name */}
-      {!consentGiven && (
+      {!hasConsultation ? (
+        <div className="consent-box" style={{ background: '#f8fafc', borderColor: '#cbd5e1', color: '#475569' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <AlertCircle size={16} color="#64748b" />
+            <span>No active consultation selected. Please click <strong>+ New Consultation</strong> above to begin.</span>
+          </div>
+        </div>
+      ) : !consentGiven && (
         <div className="consent-box">
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <AlertCircle size={16} color="#d97706" />
@@ -120,19 +131,17 @@ export function RecordingControls({
           )}
 
           <span className="tabular-timer">{formatTimer(seconds)}</span>
-          <span style={{ fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>
-            [{status}]
-          </span>
+          <span className="status-pill">{status}</span>
         </div>
 
         <div className="button-group">
           {/* While recording */}
           {status === 'recording' && (
             <>
-              <button className="btn btn-outline" onClick={onPause} title="Pause — uploads current audio chunk">
+              <button className="btn btn-outline btn-control-action" onClick={onPause} title="Pause — uploads current audio chunk">
                 <Pause size={14} /> Pause
               </button>
-              <button className="btn btn-danger" onClick={() => onStop(seconds)} title="Stop & generate clinical documents">
+              <button className="btn btn-danger btn-control-action" onClick={() => onStop(seconds)} title="Stop & generate clinical documents">
                 <Square size={14} /> Stop & Scribe
               </button>
             </>
@@ -141,35 +150,68 @@ export function RecordingControls({
           {/* While paused */}
           {status === 'paused' && (
             <>
-              <button className="btn btn-primary" onClick={onResume}>
+              <button className="btn btn-primary btn-control-action" onClick={onResume}>
                 <Play size={14} /> Resume
               </button>
-              <button className="btn btn-danger" onClick={() => onStop(seconds)}>
+              <button className="btn btn-danger btn-control-action" onClick={() => onStop(seconds)}>
                 <Square size={14} /> Stop & Scribe
               </button>
             </>
           )}
 
-          {/* Idle states (scheduled, processing, completed): ALWAYS show Start Recording */}
+          {/* Idle states (scheduled, processing, completed): ALWAYS show Start Recording & Upload Audio */}
           {status !== 'recording' && status !== 'paused' && (
             <>
               <button
-                className="btn btn-primary"
-                disabled={!consentGiven}
+                className="btn btn-primary btn-control-action"
+                disabled={!hasConsultation || !consentGiven || isUploadingAudio}
                 onClick={onStart}
-                title={!consentGiven ? 'Provide consent first' : 'Start live Whisper audio capture'}
+                title={!hasConsultation ? 'Create or select a consultation first' : (!consentGiven ? 'Provide consent first' : 'Start live Whisper audio capture')}
               >
-                <Mic size={14} /> {status === 'completed' || status === 'processing' ? 'Record More Audio' : 'Start Recording'}
+                <Mic size={14} />
+                <span>{status === 'completed' || status === 'processing' ? 'Record More' : 'Start Recording'}</span>
               </button>
+
+              <label
+                className="btn-upload-action"
+                style={{
+                  opacity: isUploadingAudio ? 0.7 : 1,
+                  cursor: isUploadingAudio ? 'not-allowed' : 'pointer',
+                }}
+                title="Upload pre-recorded consultation audio file (.wav, .mp3, .m4a, .webm)"
+              >
+                {isUploadingAudio ? (
+                  <>
+                    <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Scribing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={14} color="#0284c7" />
+                    <span>Upload Audio</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.m4a,.webm,.ogg,.flac,.aac,.mp4"
+                  style={{ display: 'none' }}
+                  disabled={isUploadingAudio}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && onUploadAudio) onUploadAudio(file);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
 
               {onReset && (status === 'processing' || status === 'completed') && (
                 <button
-                  className="btn btn-outline"
+                  className="btn btn-outline btn-control-action btn-reset-action"
                   onClick={onReset}
                   title="Reset consultation to clean scheduled state"
-                  style={{ fontSize: '0.78rem' }}
                 >
-                  <RotateCcw size={13} /> Reset
+                  <RotateCcw size={13} />
+                  <span>Reset</span>
                 </button>
               )}
             </>

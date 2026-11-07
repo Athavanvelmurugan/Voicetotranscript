@@ -16,14 +16,22 @@ class ClinicalExtractor {
     const hasLiveOpenAI = config.openai?.apiKey && !config.openai.apiKey.startsWith('mock');
 
     if (hasLiveGroq) {
+      modelUsed = config.groq.llmModel || 'openai/gpt-oss-120b';
       try {
-        modelUsed = config.groq.llmModel || 'llama-3.3-70b-versatile';
-        rawJson = await this.callGroqLLM(consultation, transcriptText);
+        rawJson = await this.callGroqLLM(consultation, transcriptText, modelUsed);
         console.log(`[ClinicalAI] ✅ Successfully extracted clinical JSON using Groq (${modelUsed})`);
       } catch (err) {
-        console.warn('[ClinicalAI] Groq LLM error, trying fallback:', err.message);
-        rawJson = this.generateFallbackExtraction(consultation, transcriptText);
-        modelUsed = 'clinical-fallback-parser';
+        console.warn(`[ClinicalAI] Groq primary model (${modelUsed}) failed: ${err.message}. Trying secondary Groq model...`);
+        const secondaryModel = modelUsed === 'openai/gpt-oss-120b' ? 'qwen/qwen3.8-27b' : 'openai/gpt-oss-120b';
+        try {
+          rawJson = await this.callGroqLLM(consultation, transcriptText, secondaryModel);
+          modelUsed = secondaryModel;
+          console.log(`[ClinicalAI] ✅ Successfully extracted clinical JSON using Groq secondary (${modelUsed})`);
+        } catch (secondaryErr) {
+          console.warn('[ClinicalAI] Groq secondary model also failed:', secondaryErr.message);
+          rawJson = this.generateFallbackExtraction(consultation, transcriptText);
+          modelUsed = 'clinical-fallback-parser';
+        }
       }
     } else if (hasLiveOpenAI) {
       try {
@@ -42,11 +50,27 @@ class ClinicalExtractor {
     // Normalize LLM output to match ClinicalExtractionSchema contract defensively
     const normalizedJson = this.normalizeExtractionJson(rawJson, consultation);
 
+    // Formulary Safety Intercept Engine: Check critical contraindications & drug interactions
+    const safetyResult = this.validateSafetyContraindications(normalizedJson, consultation);
+
     // Validate strictly against Zod Schema
     const validationResult = ClinicalExtractionSchema.safeParse(normalizedJson);
-    const isValid = validationResult.success;
-    const validatedData = isValid ? validationResult.data : normalizedJson;
-    const validationErrors = isValid ? [] : validationResult.error.errors;
+    const isExtractionUnavailable = rawJson?.status === 'extraction_unavailable';
+    const isValid = validationResult.success && !safetyResult.hasFatalContraindication && !isExtractionUnavailable;
+    const validatedData = validationResult.success ? validationResult.data : normalizedJson;
+    const validationErrors = validationResult.success ? [] : validationResult.error.errors;
+    if (safetyResult.hasFatalContraindication) {
+      validationErrors.push({
+        path: ['medications'],
+        message: 'Lethal contraindication intercepted: Paracetamol in feline patient.',
+      });
+    }
+    if (isExtractionUnavailable) {
+      validationErrors.push({
+        path: ['extraction'],
+        message: 'Clinical extraction unavailable due to upstream LLM service interruption.',
+      });
+    }
     const processingMs = Date.now() - startTime;
 
     // Persist to clinical_extractions table
@@ -116,12 +140,30 @@ class ClinicalExtractor {
       afterState: { status: extractionRecord.status, modelUsed },
     });
 
+    // Also append to the tamper-evident cryptographic audit ledger
+    if (consultation && consultation.id) {
+      await auditService.logChainedEvent({
+        consultationId: consultation.id,
+        eventType: safetyResult.hasSafetyAlert ? 'CLINICAL_EXTRACTION_SAFETY_ALERT' : 'CLINICAL_EXTRACTION_COMPLETED',
+        actorType: 'ai',
+        payloadSnapshot: {
+          extractionId: extractionRecord.id,
+          status: extractionRecord.status,
+          modelUsed,
+          hasFatalContraindication: safetyResult.hasFatalContraindication,
+          hasHighRiskInteraction: safetyResult.hasHighRiskInteraction,
+          alerts: safetyResult.alerts,
+        },
+      }).catch((err) => console.warn('[AuditLedger] Failed to append chained event:', err.message));
+    }
+
     return extractionRecord;
   }
 
-  async callGroqLLM(consultation, transcriptText) {
+  async callGroqLLM(consultation, transcriptText, modelOverride = null) {
     const systemPrompt = ClinicalPromptBuilder.buildSystemPrompt();
     const userPrompt = ClinicalPromptBuilder.buildUserPrompt(consultation, transcriptText);
+    const chosenModel = modelOverride || config.groq.llmModel || 'openai/gpt-oss-120b';
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -130,12 +172,13 @@ class ClinicalExtractor {
         Authorization: `Bearer ${config.groq.apiKey}`,
       },
       body: JSON.stringify({
-        model: config.groq.llmModel || 'llama-3.3-70b-versatile',
+        model: chosenModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
         response_format: { type: 'json_object' },
+        max_tokens: 4096,
         temperature: 0.1,
       }),
     });
@@ -167,6 +210,7 @@ class ClinicalExtractor {
           { role: 'user', content: userPrompt },
         ],
         response_format: { type: 'json_object' },
+        max_tokens: 4096,
         temperature: 0.1,
       }),
     });
@@ -182,195 +226,32 @@ class ClinicalExtractor {
   }
 
   generateFallbackExtraction(consultation, transcriptText) {
-    // Intelligent clinical extraction parser for testing & offline mode
-    const textLower = (transcriptText || '').toLowerCase();
-
-    // Pet info
-    const petInfo = {
-      name: consultation.pet_name || 'Bella',
-      species: consultation.pet_species || 'Canine',
-      breed: consultation.pet_breed || 'Golden Retriever',
-      age: consultation.pet_age ? `${consultation.pet_age} years` : '4.5 years',
-      weight: consultation.pet_weight ? `${consultation.pet_weight} kg` : '28.5 kg',
-    };
-
-    // Extract symptoms
-    const symptoms = [];
-    if (textLower.includes('cough') || textLower.includes('coughing')) {
-      symptoms.push({
-        symptom: 'Persistent hacking cough',
-        duration: '3 days',
-        severity: 'moderate',
-        reported_by: 'owner',
-        transcript_evidence: {
-          quote: 'Bella has been coughing a lot for the past three days',
-          speaker: 'owner',
-        },
-      });
-    }
-    if (textLower.includes('letharg') || textLower.includes('tired')) {
-      symptoms.push({
-        symptom: 'Lethargy and low energy',
-        duration: '3 days',
-        severity: 'moderate',
-        reported_by: 'owner',
-        transcript_evidence: {
-          quote: 'She is not as active as usual and seems very tired',
-          speaker: 'owner',
-        },
-      });
-    }
-    if (textLower.includes('appetite') || textLower.includes('eat')) {
-      symptoms.push({
-        symptom: 'Decreased appetite',
-        duration: '2 days',
-        severity: 'mild',
-        reported_by: 'owner',
-        transcript_evidence: {
-          quote: 'Refusing dry kibble, only having small amounts of wet food',
-          speaker: 'owner',
-        },
-      });
-    }
-
-    // Extract observations
-    const observations = [
-      {
-        organ_system: 'Respiratory',
-        finding: 'Bilateral mild tracheal sensitivity on palpation, no audible crackles',
-        is_abnormal: true,
-        transcript_evidence: {
-          quote: 'Lungs sound clear, but there is mild tracheal sensitivity',
-          speaker: 'doctor',
-        },
-      },
-      {
-        organ_system: 'Cardiovascular',
-        finding: 'Normal heart rate and rhythm, strong femoral pulses',
-        is_abnormal: false,
-        transcript_evidence: {
-          quote: 'Heart sounds good, normal rhythm',
-          speaker: 'doctor',
-        },
-      },
-    ];
-
-    // Diagnoses (strictly suspected vs confirmed)
-    const diagnoses = [
-      {
-        condition: 'Infectious Tracheobronchitis (Kennel Cough)',
-        type: 'suspected',
-        clinical_reasoning: 'Acute onset of paroxysmal cough following dog park exposure, tracheal sensitivity',
-        transcript_evidence: {
-          quote: 'This looks like mild kennel cough or infectious tracheobronchitis',
-          speaker: 'doctor',
-        },
-      },
-    ];
-
-    // Medications
-    const medications = [
-      {
-        medicine_name: 'Doxycycline',
-        strength: '100 mg tablets',
-        dosage: '100 mg (1 tablet)',
-        route: 'oral',
-        frequency: 'Twice daily with food',
-        duration: '10 days',
-        special_instructions: 'Give with food or treat to avoid esophageal irritation',
-        doctor_notes: 'Antibiotic therapy for secondary bacterial tracheobronchitis',
-        transcript_evidence: {
-          quote: 'We will prescribe Doxycycline 100mg, one tablet twice daily with food for 10 days',
-          speaker: 'doctor',
-        },
-      },
-      {
-        medicine_name: 'Hydrocodone / Homatropine (Hycodan)',
-        strength: '5 mg/1.5 mg tablets',
-        dosage: '5 mg (1/2 tablet)',
-        route: 'oral',
-        frequency: 'Every 8 to 12 hours as needed for coughing',
-        duration: '5 days',
-        special_instructions: 'May cause mild sedation; give when coughing prevents resting',
-        doctor_notes: 'Antitussive for cough suppression',
-        transcript_evidence: {
-          quote: 'For the cough relief, half a tablet of cough suppressant twice a day as needed',
-          speaker: 'doctor',
-        },
-      },
-    ];
-
-    // Lab Tests (differentiating discussed vs ordered)
-    const labTests = [
-      {
-        test_name: 'Thoracic Radiographs (Chest X-Rays)',
-        biomarker: 'Lung parenchyma and bronchial pattern',
-        clinical_reason: 'Rule out pneumonia if fever or respiratory distress develops',
-        status: 'discussed',
-        priority: 'routine',
-        instructions: 'Recommended if coughing persists past day 7 or worsens',
-        transcript_evidence: {
-          quote: 'If she does not improve in a few days we should take chest X-rays',
-          speaker: 'doctor',
-        },
-      },
-      {
-        test_name: 'Respiratory PCR Panel',
-        biomarker: 'Canine Bordetella, Parainfluenza, Adenovirus',
-        clinical_reason: 'Identify specific viral/bacterial pathogens',
-        status: 'recommended',
-        priority: 'routine',
-        instructions: 'Nasal/pharyngeal swab if symptoms persist',
-        transcript_evidence: {
-          quote: 'We could do a respiratory swab panel if needed',
-          speaker: 'doctor',
-        },
-      },
-    ];
-
-    // Follow up
-    const followUp = {
-      timeframe: '5 to 7 days',
-      recommended_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      reason: 'Re-evaluation of coughing and tracheal sensitivity',
-      monitoring_instructions: [
-        'Monitor daily respiratory rate at rest (normal is under 30 breaths/min)',
-        'Ensure pet consumes fresh water and keeps hydrated',
-        'Avoid leash collar pressure on neck; switch to harness during walks',
-      ],
-      warning_signs: [
-        'Labored breathing, wheezing, or panting while resting',
-        'Lethargy worsening or total refusal to eat and drink',
-        'Cough producing thick yellow/green discharge or blood',
-      ],
-      transcript_evidence: {
-        quote: 'Bring Bella back in one week if coughing continues or immediately if breathing is heavy',
-        speaker: 'doctor',
-      },
-    };
-
+    // Clinical Safety Rule: When LLM fails, NEVER fabricate symptoms, observations, diagnoses, or medications!
     return {
-      pet_info: petInfo,
-      chief_complaints: ['Coughing', 'Lethargy', 'Mild anorexia'],
-      symptoms,
-      medical_history: { vaccination_status: 'Up to date with core vaccines, Bordetella due' },
-      allergies: ['No known drug allergies reported'],
-      vitals: {
-        temperature: '38.6 °C (101.5 °F)',
-        heart_rate: '110 bpm',
-        respiratory_rate: '24 breaths/min',
-        mucous_membranes: 'Pink, moist',
-        capillary_refill_time: '< 2 seconds',
-        body_condition_score: '5/9',
+      status: 'extraction_unavailable',
+      clinical_summary: 'Automated clinical extraction unavailable due to upstream LLM service interruption. Please review raw transcript manually.',
+      pet_info: {
+        name: consultation?.pet_name || 'Unrecorded',
+        species: consultation?.pet_species || 'Unrecorded',
+        breed: consultation?.pet_breed || 'Unrecorded',
+        age: consultation?.pet_age ? `${consultation.pet_age} years` : 'Unrecorded',
+        weight: consultation?.pet_weight ? `${consultation.pet_weight} kg` : 'Unrecorded',
       },
-      observations,
-      diagnoses,
-      medications,
-      lab_tests: labTests,
-      follow_up: followUp,
-      missing_info: [
-        'Confirmed Bordetella vaccine date from previous veterinary clinic record',
-      ],
+      chief_complaints: [],
+      symptoms: [],
+      medical_history: {},
+      allergies: [],
+      vitals: {},
+      observations: [],
+      diagnoses: [],
+      medications: [],
+      lab_tests: [],
+      follow_up: {
+        reason: 'Manual clinician review required.',
+        monitoring_instructions: [],
+        warning_signs: [],
+      },
+      missing_info: ['Automated LLM extraction unavailable; manual review required'],
       contradictions: [],
     };
   }
@@ -453,7 +334,11 @@ class ClinicalExtractor {
     }
 
     // 5. Normalize medications
-    const medications = toArr(raw.medications || raw.prescriptions).map((m) => {
+    const medications = toArr(raw.medications || raw.prescriptions).map((item) => {
+      let m = item;
+      if (typeof m === 'string' && m.trim().startsWith('{')) {
+        try { m = JSON.parse(m); } catch (e) {}
+      }
       const medName = m.medicine_name || m.name || m.drug || (typeof m === 'string' ? m : 'Unspecified Medication');
       const evidence = m.transcript_evidence || (Array.isArray(m.evidence) ? m.evidence[0] : (typeof m.evidence === 'string' ? { quote: m.evidence, speaker: 'doctor' } : null));
       const validRoutes = ['oral', 'topical', 'subcutaneous', 'intramuscular', 'intravenous', 'ophthalmic', 'otic', 'inhalation', 'other'];
@@ -474,7 +359,11 @@ class ClinicalExtractor {
     });
 
     // 6. Normalize lab tests
-    const lab_tests = toArr(raw.lab_tests || raw.tests).map((t) => {
+    const lab_tests = toArr(raw.lab_tests || raw.tests).map((item) => {
+      let t = item;
+      if (typeof t === 'string' && t.trim().startsWith('{')) {
+        try { t = JSON.parse(t); } catch (e) {}
+      }
       const testName = t.test_name || t.name || (typeof t === 'string' ? t : 'Clinical diagnostic test');
       const evidence = t.transcript_evidence || (Array.isArray(t.evidence) ? t.evidence[0] : (typeof t.evidence === 'string' ? { quote: t.evidence, speaker: 'doctor' } : null));
       const validStatuses = ['discussed', 'recommended', 'ordered', 'completed'];
@@ -522,6 +411,92 @@ class ClinicalExtractor {
       follow_up: raw.follow_up && typeof raw.follow_up === 'object' ? raw.follow_up : {},
       missing_info: toArr(raw.missing_info).map(String),
       contradictions: toArr(raw.contradictions).map(String),
+    };
+  }
+
+  /**
+   * Formulary Safety Intercept Engine:
+   * 1. Hard-blocks lethal feline Paracetamol orders (glucuronyl transferase deficiency)
+   * 2. Intercepts concurrent NSAID + Corticosteroid orders (severe GI perforation risk)
+   */
+  validateSafetyContraindications(data, consultation) {
+    const contradictions = Array.isArray(data.contradictions) ? [...data.contradictions] : [];
+    const meds = Array.isArray(data.medications) ? data.medications : [];
+    const species = String(consultation?.pet_species || data.pet_info?.species || '').toLowerCase();
+    const isFeline = species.includes('cat') || species.includes('fel');
+
+    let hasFatalContraindication = false;
+    let hasHighRiskInteraction = false;
+    const interceptedAlerts = [];
+
+    // 1. Feline Paracetamol / Acetaminophen Intercept
+    const paracetamolKeywords = ['paracetamol', 'acetaminophen', 'crocin', 'dolo', 'calpol', 'tylenol', 'panadol', 'pyigesic'];
+    if (isFeline) {
+      meds.forEach((m) => {
+        const medName = String(m.medicine_name || '').toLowerCase();
+        const matches = paracetamolKeywords.some((k) => medName.includes(k));
+        if (matches) {
+          hasFatalContraindication = true;
+          const alert = `[FATAL CONTRAINDICATION INTERCEPTED] Paracetamol (${m.medicine_name}) is lethal to felines due to deficient glucuronyl transferase leading to methemoglobinemia and fatal hepatic necrosis. Auto-approval blocked.`;
+          interceptedAlerts.push(alert);
+          m.doctor_notes = m.doctor_notes ? `${m.doctor_notes} | BLOCKED: ${alert}` : `BLOCKED: ${alert}`;
+          m.special_instructions = `CONTRAINDICATED: Do not dispense to feline patient.`;
+        }
+      });
+    }
+
+    // 2. Concurrent NSAID + Corticosteroid Intercept
+    const nsaidKeywords = [
+      'meloxicam', 'metacam', 'carprofen', 'rimadyl', 'ketoprofen', 'ketofen',
+      'firocoxib', 'previcox', 'aspirin', 'ibuprofen', 'tolfenamic', 'flunixin',
+      'deracoxib', 'deramaxx', 'robenacoxib', 'onsior', 'grapiprant', 'galliprant'
+    ];
+    const steroidKeywords = [
+      'prednisolone', 'prednisone', 'dexamethasone', 'hydrocortisone', 'betamethasone',
+      'triamcinolone', 'cortisone', 'depo-medrol', 'methylprednisolone', 'budesonide'
+    ];
+
+    const detectedNsaids = [];
+    const detectedSteroids = [];
+
+    meds.forEach((m) => {
+      const medName = String(m.medicine_name || '').toLowerCase();
+      if (nsaidKeywords.some((k) => medName.includes(k))) {
+        detectedNsaids.push(m);
+      }
+      if (steroidKeywords.some((k) => medName.includes(k))) {
+        detectedSteroids.push(m);
+      }
+    });
+
+    if (detectedNsaids.length > 0 && detectedSteroids.length > 0) {
+      hasHighRiskInteraction = true;
+      const nsaidNames = detectedNsaids.map((m) => m.medicine_name).join(', ');
+      const steroidNames = detectedSteroids.map((m) => m.medicine_name).join(', ');
+      const alert = `[HIGH-RISK DRUG INTERACTION] Concurrent NSAID (${nsaidNames}) and Corticosteroid (${steroidNames}) detected. Concomitant administration induces severe gastrointestinal ulceration, hemorrhage, and acute renal failure. Requires mandatory washout or explicit clinical override.`;
+      interceptedAlerts.push(alert);
+
+      [...detectedNsaids, ...detectedSteroids].forEach((m) => {
+        m.doctor_notes = m.doctor_notes
+          ? `${m.doctor_notes} | WARNING: ${alert}`
+          : `WARNING: ${alert}`;
+      });
+    }
+
+    // Append intercepted alerts to contradictions without duplicates
+    interceptedAlerts.forEach((alert) => {
+      if (!contradictions.includes(alert)) {
+        contradictions.push(alert);
+      }
+    });
+
+    data.contradictions = contradictions;
+
+    return {
+      hasFatalContraindication,
+      hasHighRiskInteraction,
+      hasSafetyAlert: hasFatalContraindication || hasHighRiskInteraction,
+      alerts: interceptedAlerts,
     };
   }
 }

@@ -16,7 +16,7 @@ const config = {
     apiKey: process.env.GROQ_API_KEY || '',
     baseURL: 'https://api.groq.com/openai/v1',
     whisperModel: process.env.GROQ_WHISPER_MODEL || 'whisper-large-v3',
-    llmModel: process.env.GROQ_LLM_MODEL || 'llama-3.3-70b-versatile',
+    llmModel: process.env.GROQ_LLM_MODEL || 'openai/gpt-oss-120b',
   },
   openai: {
     apiKey: process.env.OPENAI_API_KEY || '',

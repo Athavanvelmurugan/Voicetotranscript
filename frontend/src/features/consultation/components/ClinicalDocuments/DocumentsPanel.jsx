@@ -134,26 +134,26 @@ export function DocumentsPanel({
               <Sparkles size={28} color="#0284c7" />
             </div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 750, color: '#0f172a', marginBottom: '8px' }}>
-              AI Clinical Documents Awaiting Audio Extraction
+              Consultation Transcribed — Awaiting Synthesis
             </h3>
             <p style={{ color: '#64748b', fontSize: '0.86rem', lineHeight: 1.55, marginBottom: '22px' }}>
-              Capture the live consultation or trigger generation now to populate all 5 veterinary clinical templates (Prescription, Lab Tests, SOAP Notes, Follow-up, and Summary).
+              Audio dialogue has been transcribed via Whisper Large V3. Click below to synthesize the clinical summary, prescription orders, and laboratory investigations for veterinarian review and sign-off.
             </p>
             <button
               className="btn btn-primary"
               disabled={isGenerating}
               onClick={onTriggerGenerate}
-              style={{ padding: '9px 20px', fontSize: '0.86rem' }}
+              style={{ padding: '9px 20px', fontSize: '0.86rem', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
             >
               {isGenerating ? (
                 <>
                   <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                  <span>Extracting with AI...</span>
+                  <span>Synthesizing Clinical Insights...</span>
                 </>
               ) : (
                 <>
                   <Sparkles size={16} />
-                  <span>Generate Clinical Documents Now</span>
+                  <span>Generate & Review Clinical Insights</span>
                 </>
               )}
             </button>

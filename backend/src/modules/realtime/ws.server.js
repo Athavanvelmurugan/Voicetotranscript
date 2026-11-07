@@ -160,6 +160,16 @@ function setupWebSocketServer(httpServer) {
               });
 
               sessionManager.broadcast(consultationId, { event: 'status_change', status: 'completed' });
+
+              // Trigger dual-pass final pass over full stitched audio (Bug 4)
+              try {
+                const dualPassService = require('../transcription/dual-pass.service');
+                dualPassService.runFinalPass(consultationId, doctorId).catch((dpErr) => {
+                  console.warn('[WS] Dual-pass final pass warning:', dpErr.message);
+                });
+              } catch (dpInitErr) {
+                console.warn('[WS] Dual-pass service init warning:', dpInitErr.message);
+              }
             } catch (err) {
               console.error('[WS] Error during auto document generation on stop:', err);
               sessionManager.broadcast(consultationId, {
