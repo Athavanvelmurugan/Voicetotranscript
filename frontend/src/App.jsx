@@ -44,6 +44,9 @@ export default function App() {
   const handleNavigate = useCallback((page) => {
     setCurrentPage(page);
     try {
+      const storedDoctor = parseInt(localStorage.getItem('activeDoctorId'), 10);
+      if (storedDoctor) setActiveDoctorId(storedDoctor);
+
       const url = new URL(window.location.href);
       if (page === 'directory') {
         url.searchParams.set('page', 'directory');

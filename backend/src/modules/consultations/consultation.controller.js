@@ -80,6 +80,22 @@ class ConsultationController {
     }
   }
 
+  async updateDoctor(req, res, next) {
+    try {
+      const id = this.parseId(req, res);
+      if (!id) return;
+      const { doctorId } = req.body;
+      if (!doctorId || isNaN(parseInt(doctorId, 10))) {
+        return res.status(400).json({ success: false, error: 'A valid integer doctorId is required' });
+      }
+      const actorId = this.getDoctorId(req);
+      const consultation = await consultationService.updateConsultationDoctor(id, parseInt(doctorId, 10), actorId);
+      res.json({ success: true, data: consultation });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async consent(req, res, next) {
     try {
       const id = this.parseId(req, res);

@@ -7,6 +7,7 @@ router.get('/', (req, res, next) => controller.getAll(req, res, next));
 router.get('/meta/pets', (req, res, next) => controller.getPets(req, res, next));
 router.post('/', (req, res, next) => controller.create(req, res, next));
 router.get('/:id', (req, res, next) => controller.getById(req, res, next));
+router.patch('/:id/doctor', (req, res, next) => controller.updateDoctor(req, res, next));
 router.post('/:id/reset', (req, res, next) => controller.reset(req, res, next));
 router.post('/:id/consent', (req, res, next) => controller.consent(req, res, next));
 router.post('/:id/start', (req, res, next) => controller.start(req, res, next));

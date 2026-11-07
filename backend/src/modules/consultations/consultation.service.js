@@ -46,6 +46,25 @@ class ConsultationService {
     return repo.findById(consultation.id);
   }
 
+  async updateConsultationDoctor(id, doctorId, actorId) {
+    const beforeConsultation = await this.getConsultation(id);
+    await repo.updateDoctor(id, doctorId);
+    const updated = await this.getConsultation(id);
+
+    await auditService.log({
+      consultationId: id,
+      actorId: actorId || doctorId,
+      actorType: 'doctor',
+      action: 'consultation_doctor_reassigned',
+      entityType: 'consultation',
+      entityId: id,
+      beforeState: { doctor_id: beforeConsultation.doctor_id, doctor_name: beforeConsultation.doctor_name },
+      afterState: { doctor_id: updated.doctor_id, doctor_name: updated.doctor_name },
+    });
+
+    return updated;
+  }
+
   async getConsultation(id) {
     const consultation = await repo.findById(id);
     if (!consultation) {

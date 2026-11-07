@@ -131,6 +131,12 @@ export function ConsultationWorkspace() {
       const data = await res.json();
       if (data.success) {
         setConsultation(data.data);
+        if (data.data.doctor_id) {
+          setActiveDoctorId(data.data.doctor_id);
+          try {
+            localStorage.setItem('activeDoctorId', String(data.data.doctor_id));
+          } catch (_) {}
+        }
       }
 
       const docsRes = await fetch(`/api/v1/consultations/${id}/documents`);
@@ -172,9 +178,34 @@ export function ConsultationWorkspace() {
   }, [activeDoctorId]);
 
   // ─── Doctor Switcher ────────────────────────────────────────────────────────
-  const handleSelectActiveDoctor = (id) => {
+  const handleSelectActiveDoctor = async (id) => {
     setActiveDoctorId(id);
-    localStorage.setItem('activeDoctorId', String(id));
+    try {
+      localStorage.setItem('activeDoctorId', String(id));
+    } catch (_) {}
+
+    // If an active consultation is open and its assigned doctor differs, reassign in backend
+    if (consultationId && consultation && consultation.doctor_id !== id) {
+      try {
+        const res = await fetch(`/api/v1/consultations/${consultationId}/doctor`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-doctor-id': String(id),
+          },
+          body: JSON.stringify({ doctorId: id }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setConsultation(data.data);
+          loadConsultationsList(consultationId);
+        } else {
+          console.warn('[ConsultationWorkspace] Doctor reassign warning:', data.error);
+        }
+      } catch (err) {
+        console.error('[ConsultationWorkspace] Failed to reassign doctor:', err);
+      }
+    }
   };
 
   // ─── Delete Consultation ───────────────────────────────────────────────────
@@ -246,6 +277,14 @@ export function ConsultationWorkspace() {
     setDocuments([]);
     setConsultationId(id);
     setErrorMessage(null);
+
+    const targetConsultation = consultations.find((c) => c.id === id);
+    if (targetConsultation && targetConsultation.doctor_id) {
+      setActiveDoctorId(targetConsultation.doctor_id);
+      try {
+        localStorage.setItem('activeDoctorId', String(targetConsultation.doctor_id));
+      } catch (_) {}
+    }
   };
 
   const handleCreateNewConsultation = async (e) => {
@@ -271,6 +310,12 @@ export function ConsultationWorkspace() {
 
       const newId = data.data.id;
       setShowNewModal(false);
+
+      // Immediately synchronize active doctor to the chosen doctor
+      setActiveDoctorId(chosenDoctor);
+      try {
+        localStorage.setItem('activeDoctorId', String(chosenDoctor));
+      } catch (_) {}
 
       // Immediately clear state for new consultation
       setSegments([]);

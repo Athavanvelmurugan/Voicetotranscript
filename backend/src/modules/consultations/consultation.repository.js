@@ -67,6 +67,17 @@ class ConsultationRepository {
     return rows[0];
   }
 
+  async updateDoctor(id, doctorId) {
+    const query = `
+      UPDATE consultations
+      SET doctor_id = $2, updated_at = NOW()
+      WHERE id = $1
+      RETURNING *;
+    `;
+    const { rows } = await db.query(query, [id, doctorId]);
+    return rows[0] || null;
+  }
+
   async recordConsent({ consultationId, givenBy, ipAddress = null, userAgent = null }) {
     const client = await db.getClient();
     try {

@@ -205,7 +205,7 @@ export function ConsultationHeader({
                   cursor: 'pointer',
                   outline: 'none',
                 }}
-                value={activeDoctorId || consultation.doctor_id || 1}
+                value={consultation ? (consultation.doctor_id || activeDoctorId || 1) : (activeDoctorId || 1)}
                 onChange={(e) => onSelectActiveDoctor && onSelectActiveDoctor(parseInt(e.target.value, 10))}
                 title="Change active attending doctor"
               >
