@@ -1,32 +1,33 @@
-# 🏥 PetCare AI — Veterinary Clinical Ambient Scribe
+# 🏥 PetCare AI — Enterprise Veterinary Clinical Ambient Scribe & Hospital OS
 
 [![Status](https://img.shields.io/badge/Status-Production--Ready-059669?style=for-the-badge&logo=shield)](https://github.com)
 [![Engine](https://img.shields.io/badge/STT-Whisper--large--v3-d97706?style=for-the-badge&logo=openai)](https://groq.com)
 [![Clinical LLM](https://img.shields.io/badge/LLM-Groq%20gpt--oss--120b%20%7C%20Qwen%20Failover-7c3aed?style=for-the-badge&logo=groq)](https://groq.com)
 [![Audit](https://img.shields.io/badge/Audit-RFC%208785%20SHA--256%20Chained-0284c7?style=for-the-badge&logo=security)](https://github.com)
-[![Architecture](https://img.shields.io/badge/Workflow-Decoupled%20Ingestion%20%26%20Synthesis-10b981?style=for-the-badge&logo=architecture)](https://github.com)
+[![Architecture](https://img.shields.io/badge/Multi--Tenant-4%20Role--Segregated%20Portals-10b981?style=for-the-badge&logo=architecture)](https://github.com)
 
-**PetCare AI** is an ambient clinical intelligence and automated veterinary documentation system. Built for busy veterinary clinics and animal hospitals, it captures spoken doctor-client consultations in real time, isolates vocal audio with acoustic Voice Activity Detection (VAD), transcribes dialogue using **OpenAI Whisper-large-v3**, normalizes veterinary pharmacology, extracts structured medical findings with **Groq LLM (`openai/gpt-oss-120b`)**, and drafts **3 core clinical documents** (**Summary**, **Prescription**, and **Lab Tests**) — all governed by an explicit human-in-the-loop review workflow and a tamper-evident cryptographic audit ledger.
+**PetCare AI** is an enterprise multi-tenant clinical intelligence and hospital operating platform built for veterinary networks, animal hospitals, and pet guardians. The platform captures spoken doctor-client consultations in real time, isolates vocal audio with acoustic Voice Activity Detection (VAD), transcribes dialogue using **OpenAI Whisper-large-v3**, normalizes veterinary pharmacology, extracts structured medical findings with **Groq LLM (`openai/gpt-oss-120b`)**, and drafts **3 core clinical documents** (**Summary**, **Prescription**, and **Lab Tests**) — all governed by an explicit human-in-the-loop review workflow, a tamper-evident cryptographic audit ledger, and four role-isolated portals.
 
 ---
 
 ## 📑 Table of Contents
 
 1. [Executive Summary & Problem Solved](#-executive-summary--problem-solved)
-2. [What's New in the Latest Release](#-whats-new-in-the-latest-release)
-3. [System Architecture](#-system-architecture)
-4. [End-to-End Workflow Explained](#-end-to-end-workflow-explained)
-5. [The Realigned 3-Document Model](#-the-realigned-3-document-model)
-6. [Key Features & Capabilities](#-key-features--capabilities)
-7. [Tech Stack](#-tech-stack)
-8. [Project Directory Layout](#-project-directory-layout)
-9. [Prerequisites & Environment Setup](#-prerequisites--environment-setup)
-10. [Quick Start Guide](#-quick-start-guide)
-11. [Testing & Quality Verification](#-testing--quality-verification)
-12. [Database Schema Reference](#-database-schema-reference)
-13. [REST API & Real-Time WebSocket Reference](#-rest-api--real-time-websocket-reference)
-14. [Clinical Safety & Compliance Guarantees](#-clinical-safety--compliance-guarantees)
-15. [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
+2. [The 4 Unified SaaS Portals](#-the-4-unified-saas-portals)
+3. [Key Features & Recent Platform Enhancements](#-key-features--recent-platform-enhancements)
+4. [System Architecture](#-system-architecture)
+5. [End-to-End Workflow Explained](#-end-to-end-workflow-explained)
+6. [The Realigned 3-Document Model](#-the-realigned-3-document-model)
+7. [Doctor Availability & Patient Booking Synchronization](#-doctor-availability--patient-booking-synchronization)
+8. [Session Isolation & Multi-Tenant Data Security](#-session-isolation--multi-tenant-data-security)
+9. [Tech Stack](#-tech-stack)
+10. [Project Directory Layout](#-project-directory-layout)
+11. [Prerequisites & Environment Setup](#-prerequisites--environment-setup)
+12. [Quick Start Guide](#-quick-start-guide)
+13. [Testing & Quality Verification](#-testing--quality-verification)
+14. [Database Schema Reference](#-database-schema-reference)
+15. [REST API & Real-Time WebSocket Reference](#-rest-api--real-time-websocket-reference)
+16. [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
 
 ---
 
@@ -34,35 +35,110 @@
 
 ### The Veterinary Problem
 Veterinarians spend **2 to 3 hours every day** manually typing consultation records, SOAP notes, and prescription orders after clinical hours. This administrative burden causes:
-- **Clinician Burnout**: High cognitive fatigue and extended uncompensated evening work.
+- **Clinician Burnout**: High cognitive fatigue and extended uncompensated evening documentation.
 - **Documentation Gaps**: Rushed notes often omit subtle symptoms, dosage timings, or owner compliance advice.
-- **Impaired Client Focus**: Looking at a computer screen during a consultation detracts from examining the animal and connecting with the anxious pet owner.
+- **Impaired Client Focus**: Looking at computer screens during consultations detracts from physical examinations and client connection.
+- **Data Fragmentation**: Hospitals struggle with disconnected systems for scheduling, live consultations, pet owner records, and audit compliance.
 
 ### The PetCare AI Solution
-PetCare AI acts as an invisible, silent co-pilot in the exam room:
-1. **Listens Passively**: Captures conversation via browser microphone or uploaded audio recordings.
-2. **Understands Veterinary Nuance**: Distinguishes between doctor instructions and owner reports, correctly recognizing specialized veterinary drug names (e.g., *Clavamox, Apoquel, Cerenia*).
+PetCare AI serves as an ambient co-pilot and comprehensive veterinary operating system:
+1. **Listens Passively**: Captures conversations via browser microphone or pre-recorded consultations.
+2. **Understands Veterinary Nuance**: Distinguishes between doctor instructions and owner reports, normalizing specialized veterinary drug pharmacology (e.g., *Clavamox, Apoquel, Cerenia*).
 3. **Drafts Instant Records**: Automatically constructs formatted Medical Summaries, ready-to-dispense Prescriptions, and Diagnostic Lab requisitions.
-4. **Guarantees Clinician Oversight**: AI drafts remain pending until the attending veterinarian explicitly reviews, edits, and clicks **Approve & Sign All** or **Reject AI Draft**.
-5. **Maintains Medical-Legal Compliance**: Every revision, approval, and rejection is permanently recorded in a SHA-256 cryptographically chained audit ledger.
+4. **Guarantees Clinician Oversight**: AI drafts remain pending until the attending veterinarian reviews, edits, and clicks **Approve & Sign All** or **Reject AI Draft**.
+5. **Maintains Medical-Legal Compliance**: Every revision, approval, and rejection is permanently recorded in a SHA-256 cryptographically chained audit ledger with public QR verification.
+6. **Unifies All Hospital Stakeholders**: Delivers dedicated, role-tailored portals for Network Super Admins, Hospital Admins, Attending Veterinarians, and Pet Guardians.
 
 ---
 
-## 🌟 What's New in the Latest Release
+## 🌐 The 4 Unified SaaS Portals
 
-The latest release brings major production hardening across acoustic ingestion, clinical synthesis, and session isolation:
+PetCare AI provides complete multi-tenant role segregation across four distinct user experiences and an open public verification engine:
 
-| Feature | Category | What It Does & Why It Matters |
+```mermaid
+graph TD
+    A["PetCare AI Ecosystem"] --> B["Super Admin Portal<br>(Network Operations)"]
+    A --> C["Hospital Admin Portal<br>(Clinic Management)"]
+    A --> D["Doctor Portal<br>(Clinical Ambient Scribe)"]
+    A --> E["Pet Owner Portal<br>(Patient Engagement)"]
+    A --> F["Public Verification Gateway<br>(QR & Cryptographic Hash)"]
+
+    B -.->|Provision & Regulate| C
+    C -.->|Onboard & Credential| D
+    D -.->|Schedule & Scribe| E
+    D -.->|Cryptographically Sign| F
+    E -.->|Verify Authentic Meds| F
+```
+
+### 1. 🛡️ Super Admin Portal (`?portal=super-admin`)
+Built for multi-clinic veterinary networks, enterprise franchises, and platform regulators:
+- **Tenant Fleet Management**: Provision new veterinary hospitals, activate/suspend practice branches, and configure clinic licensing.
+- **Network SLA & Scribe Velocity Visualizer**: Real-time 14-day consultation volume telemetry, AI scribe processing latency metrics, and API health monitors.
+- **Multi-Tenant Segregation**: Strict schema-level and tenant-context boundaries preventing cross-hospital data exposure.
+- **Platform-Wide Audit Viewer**: Inspect global security events, administrative logins, and credential provisioning.
+
+### 2. 🏥 Hospital Admin Portal (`?portal=admin`)
+Designed for practice managers, clinic directors, and administrative supervisors:
+- **Veterinarian Onboarding & Credentialing**: Register attending doctors with veterinary license verification (`VET-CA-123`), clinical specialties, and system permissions.
+- **Staff & Clinical Directory**: Manage hospital veterinarians, vet technicians, and front-desk staff with active consultation deletion guards.
+- **Patient & Guardian Registry**: Comprehensive database of enrolled animals, breeds, microchips, and pet owners.
+- **Practice Settings & Operating Hours**: Configure practice hours, consultation fees, and emergency contact channels.
+- **Hospital Audit Log**: Full visibility into booking adjustments, patient registry changes, and administrative actions.
+
+### 3. 🩺 Doctor / Veterinarian Portal (`?portal=doctor`)
+The core clinical engine for attending veterinarians (DVMs):
+- **Practice Dashboard**: Daily appointment agenda, patient queue, and clinical velocity statistics.
+- **Dedicated Appointment Schedule**: 
+  - Dedicated left-sidebar navigation item.
+  - **Today's Patient Queue Cards**: Quick-action cards showing appointment times, patient species/breed, guardian contacts, and clinical visit reasons.
+  - **1-Click Live Consultation Switcher**: Seamlessly transitions the clinician directly to the Live Audio Consultation workspace for that patient.
+  - **Searchable Roster & Server-Side Pagination**: Full-history booking search with status filtering.
+- **Live Consultation & AI Scribe Workspace**:
+  - Ambient audio capture with real-time CSS waveform visualizer and high-precision timer.
+  - Live diarized speech stream with 1-click speaker role toggling (**Doctor** vs. **Owner**).
+  - Decoupled AI synthesis: transcribe first, generate structured medical drafts only when requested.
+  - **3 Core Clinical Documents**: Narrative Medical Summary, Dispensing Prescription, Diagnostic Lab Tests.
+  - **Clinical Insights Modal**: Single-view case review with **Approve & Sign All** (batch signing) and **Reject AI Draft** (with audit reason).
+- **Doctor Calendar & Slot Availability**:
+  - Tokenized `.segmented-tab-bar` switcher for **Available Slots** vs. **Appointment List**.
+  - **Interactive Working Shift Configurator**: 1-click presets for **Morning Shift (10:00 AM – 01:00 PM)**, **Full Day (09:00 AM – 05:00 PM)**, **Afternoon (02:00 PM – 06:00 PM)**, and **Custom Hours**.
+  - Direct persistence to PostgreSQL `doctor_availability` table with audit logging.
+  - Interactive slot cards showing formatted 12-hour times (`10:00 AM`), live booking statuses, and patient details.
+- **Patient Clinical Charts**: Timeline of past consultations, active allergy badges, chronics, and treatment logs.
+- **Patient Registration**: Direct animal enrollment modal.
+- **Doctor Settings**: Manage DVM profile, veterinary license numbers, acoustic Whisper speech preferences, and password security.
+
+### 4. 🐾 Pet Owner / Guardian Portal (`?portal=owner`)
+Empowering pet parents to participate in their animal's care:
+- **Clinical Affiliation**: Connect to accredited veterinary hospitals and select verified attending veterinarians.
+- **Real-Time Appointment Booking**: 
+  - Real-time synchronization with doctor-confirmed availability blocks (e.g., viewing only the open slots between 10:00 AM and 1:00 PM when a doctor is on morning shift).
+  - Select registered pet, specify primary visit reason, and receive instant confirmation.
+- **Digital Recording & Procedure Consent**: Pet parents review and cryptographically sign recording consent before ambient transcription begins.
+- **Medical Records & Prescriptions**: View approved consultation summaries, medication regimens, dosage instructions, and lab requisitions.
+- **Downloadable Sealed PDFs**: One-click PDF export containing SHA-256 cryptographic hashes and verification QR codes.
+- **Pet Health Profiles**: Manage companion vitals, microchip IDs, and emergency contacts.
+
+### 5. 🔍 Public Cryptographic Verification Gateway (`/verify`)
+Publicly accessible portal allowing pharmacies, referral hospitals, and guardians to verify clinical documentation authenticity:
+- Inspect document integrity by scanning the QR code on any exported prescription or summary PDF.
+- Validates the RFC 8785 canonical SHA-256 hash against the tamper-evident ledger, verifying that the document was signed by a licensed veterinarian and has not been altered.
+
+---
+
+## ⚡ Key Features & Recent Platform Enhancements
+
+| Feature | Category | Description & Impact |
 |:---|:---:|:---|
-| **Decoupled Audio & Synthesis** | *Workflow & AI* | Uploading audio now transcribes dialogue immediately without prematurely generating clinical notes. Full medical document synthesis occurs only when the clinician explicitly clicks **Generate AI Drafts**, saving LLM token costs and eliminating unreviewed hallucinated drafts. |
-| **Clinical Insights Modal with Governance** | *Clinician UX* | An executive glassmorphism popup offering a unified clinical overview with **Approve & Sign All** (batch signs and locks all drafts into immutable legal records) and **Reject AI Draft** (rejects draft with mandatory audit reason), plus 1-click clipboard export. |
-| **Resilient Multi-Model LLM Failover** | *Reliability* | Extraction defaults to Groq's flagship **`openai/gpt-oss-120b`**. If Groq experiences rate limits (`429`) or service degradation (`503`), the engine automatically falls back to **`qwen/qwen3.8-27b`** without clinician interruption. |
-| **Consultation Session Isolation** | *Architecture* | Zero transcript ghosting across patient switching. Employs per-consultation WebSocket isolation, browser `AbortController` cancellation, and synchronous state resets to ensure dialogue from pet A never bleeds into pet B. |
-| **Acoustic Voice Activity Detection (VAD)** | *Audio Pipeline* | Analyzes 20ms audio frames with a `-42 dB` RMS energy gate and 300ms hangover padding. Automatically trims dead air and drops silent chunks before Whisper processing, drastically reducing latency and hallucinations. |
-| **Dual-Pass Verification & Boundary Stitcher** | *Transcription* | Runs a secondary verification pass on complete consultation audio, using a fuzzy-matching boundary stitcher to eliminate duplicated or clipped phrases across consecutive 15-second chunk cuts. |
-| **Veterinary Drug Alias Normalization** | *Clinical Safety* | Curated pharmacology dictionary (`drug_aliases.json`) with Levenshtein fuzzy matching that standardizes phonetically misheard animal drugs (e.g., mapping "clavamox 250" or "amox-clav" to normalized active compound and dosage). |
-| **RFC 8785 Cryptographic Audit Ledger** | *Compliance* | Append-only SHA-256 chained block ledger tracking all consultation actions, approvals, and document diffs using RFC 8785 canonical JSON, guaranteeing tamper-evident legal audit trails. |
-| **Dedicated SaaS Directory Portal** | *Navigation* | Added a full-page directory manager (`/directory`) alongside the workspace modal to seamlessly manage veterinary staff and pet registry with active consultation deletion guards. |
+| **Doctor Session Isolation** | *Security & Compliance* | Complete cross-doctor data isolation. Unscoped `localStorage` keys and URL consultation query params are automatically purged on login and logout. Backend document endpoints enforce strict tenant and clinician ownership checks. |
+| **Synchronized Slot Availability** | *Scheduling Engine* | Doctors define practice shifts (e.g., Morning Shift: 10:00 AM – 1:00 PM) in their calendar. The scheduling engine persists hours to PostgreSQL and automatically restricts booking slots in the Pet Owner Portal to match. |
+| **Dedicated Appointment Schedule** | *Clinician UX* | Moved the appointment queue out of the live consultation view to a dedicated sidebar navigation view. Features today's queue cards, roster search, and 1-click consultation launching. |
+| **Decoupled Transcription & Synthesis** | *AI Workflow* | Audio transcription and LLM document synthesis are decoupled. Clinicians can review raw transcripts and sound quality before triggering Groq LLM synthesis, reducing unnecessary API costs. |
+| **Multi-Model LLM Failover** | *Reliability* | Primary extraction uses Groq `openai/gpt-oss-120b`. If rate limits (`429`) or server issues (`503`) occur, the pipeline automatically falls back to `qwen/qwen3.8-27b` without clinician interruption. |
+| **Acoustic VAD Energy Gating** | *Audio Pipeline* | 20ms audio frame energy gating (`-42 dB` RMS threshold) trims silence and non-vocal background noise before reaching Whisper, reducing transcription latency by up to 60%. |
+| **Veterinary Pharmacology Normalization** | *Clinical Safety* | Formulary dictionary (`drug_aliases.json`) with Levenshtein fuzzy matching standardizes phonetically misheard brand names and intercepts feline contraindications (e.g., Acetaminophen toxicity). |
+| **RFC 8785 Cryptographic Audit Ledger** | *Legal Compliance* | Tamper-evident SHA-256 chained block ledger tracking all consultation actions, revisions, approvals, and rejections using RFC 8785 canonical JSON formatting. |
+| **Tokenized SaaS Design System** | *Frontend UI* | Strict CSS variable architecture (`theme.css`) with light and dark themes, universal custom scrollbars, and mobile-first responsiveness (360px, 768px, 1280px). |
 
 ---
 
@@ -70,163 +146,176 @@ The latest release brings major production hardening across acoustic ingestion, 
 
 ```mermaid
 flowchart TD
-    subgraph Client["Client Tier (React 18 + Vite)"]
-        A["Microphone Audio Stream / File Upload"] --> B["15s Audio Chunk / Binary Dispatcher"]
-        B --> C["Audio Controls & Animated Soundwave"]
-        D["2-Tier Patient Header & Doctor Switcher"]
-        E["Clinical Document Workspace: Summary / Rx / Lab"]
-        F["Clinical Insights Modal: Approve & Sign All / Reject"]
+    subgraph Portals["Client Application Layer (React 18 + Vite)"]
+        P1["Super Admin Portal<br>(Multi-Tenant Fleets)"]
+        P2["Hospital Admin Portal<br>(Staff & Registry)"]
+        P3["Doctor Portal<br>(Calendar & Ambient Scribe)"]
+        P4["Pet Owner Portal<br>(Booking & Records)"]
+        P5["Public Verification Gateway<br>(QR Document Validation)"]
     end
 
-    subgraph Ingestion["Acoustic Ingestion & Hardening"]
-        G["Binary Magic Bytes Validation"] --> H["VAD Silence Trimmer RMS Gate"]
-        H --> I["SHA-256 Chunk Hash Deduplication"]
+    subgraph SecurityTier["Security & Session Middleware"]
+        AUTH["JWT / Cookie Authenticator"]
+        TENANT["TenantContext Middleware<br>(PostgreSQL app.clinic_id RLS)"]
+        ROLE["Role Authorizer (RBAC)"]
     end
 
-    subgraph Transcription["Speech-to-Text & Diarization"]
-        J["Groq Whisper-large-v3 Engine"] --> K["Boundary Phrase Stitcher"]
-        K --> L["Veterinary Drug Alias Normalizer"]
-        L --> M["Semantic Speaker Diarizer: Doctor vs Owner"]
+    subgraph AudioEngine["Acoustic Ingestion & Scribing"]
+        VAD["Acoustic VAD (RMS Energy Gate)"]
+        STT["Groq Whisper-large-v3 Engine"]
+        STITCH["Boundary Phrase Stitcher"]
+        DRUG["Veterinary Drug Alias Normalizer"]
+        DIAR["Speaker Diarizer (Doctor vs Owner)"]
     end
 
     subgraph Intelligence["Clinical AI Synthesis Engine"]
-        N["Prompt Builder with Patient Context"] --> O{"Primary Groq LLM: gpt-oss-120b"}
-        O -->|Rate Limit / 429| P["Secondary Groq LLM: qwen3.8-27b"]
-        O -->|Success| Q["Structured Clinical JSON Output"]
-        P -->|Success| Q
-        Q --> R["Zod Clinical Safety Guardrails"]
-        R --> S["Formulary Contraindication Interceptor"]
-        S --> T["3-Document Synthesizer: Summary, Rx, Lab"]
+        EXTR["Clinical Extractor (On-Demand)"]
+        LLM1{"Primary LLM: gpt-oss-120b"}
+        LLM2["Failover LLM: qwen3.8-27b"]
+        ZOD["Zod Clinical Safety Guardrails"]
+        CONTRA["Formulary Contraindication Interceptor"]
+        DOCS["3-Document Synthesizer (Summary, Rx, Lab)"]
+    end
+
+    subgraph SchedulingEngine["Scheduling & Synchronization Tier"]
+        AVAIL["Doctor Availability Manager<br>(Shift Presets: 10 AM - 1 PM)"]
+        SLOTGEN["Slot Generation Engine<br>(Conflict Detection)"]
+        QUEUE["Today's Patient Queue Service"]
     end
 
     subgraph Persistence["Storage & Cryptographic Audit Layer"]
-        U[("PostgreSQL 14+: 12 Relational Tables")]
-        V[("Binary Audio Chunks BYTEA")]
-        W[("RFC 8785 Chained SHA-256 Audit Ledger")]
-        X[("Immutable Version History")]
+        PG[("PostgreSQL 14+<br>(Relational Tables)")]
+        AUDIT[("RFC 8785 SHA-256<br>Chained Audit Ledger")]
+        PDF["PDF Generator with QR Code"]
     end
 
-    A --> G
-    I --> J
-    M -->|Real-Time WebSocket Stream| Client
-    Client -->|Explicit Clinician Generate Action| N
-    T --> U
-    T --> X
-    F -->|Approve & Sign| W
-    W --> U
+    Portals --> SecurityTier
+    SecurityTier --> AudioEngine
+    SecurityTier --> SchedulingEngine
+    SecurityTier --> Intelligence
+
+    AudioEngine --> STT --> STITCH --> DRUG --> DIAR
+    DIAR -->|WebSocket Stream| P3
+    P3 -->|Explicit Clinician Action| EXTR
+
+    EXTR --> LLM1
+    LLM1 -->|Rate Limit / 429| LLM2
+    LLM1 -->|Success| ZOD
+    LLM2 -->|Success| ZOD
+    ZOD --> CONTRA --> DOCS
+
+    SchedulingEngine --> AVAIL --> SLOTGEN --> P4
+    P4 -->|Book Appointment| SLOTGEN --> QUEUE --> P3
+
+    DOCS --> PG
+    DOCS --> PDF
+    P3 -->|Approve & Sign| AUDIT --> PG
+    PDF --> P5
 ```
 
 ---
 
 ## 🔄 End-to-End Workflow Explained
 
-For any third person evaluating or onboarding onto the project, here is the complete journey of a patient visit:
-
 ```
-[1. Check-In & Consent] ──> [2. Audio Capture] ──> [3. Acoustic VAD & Whisper] ──> [4. Real-Time Stream]
-                                                                                            │
-[7. Cryptographic Lock] <── [6. Clinician Review] <── [5. Decoupled AI Synthesis] <─────────┘
+[1. Doctor Shift Setup] ──> [2. Owner Appointment Booking] ──> [3. 1-Click Consultation Launch]
+                                                                          │
+[6. PDF & QR Verification] <── [5. Clinician Review & Sign] <── [4. Ambient Scribe & AI Draft]
 ```
 
-1. **Patient Check-In & Digital Consent**:
-   - The attending veterinarian selects the patient from the header dropdown.
-   - Pet owner digital recording consent is verified and timestamped before recording can be activated.
-2. **Audio Capture (Live Mic or Audio Upload)**:
-   - **Live Mode**: Records in 15-second rolling buffers with real-time waveform animation.
-   - **Upload Mode**: Ingests pre-recorded consultations (`.wav`, `.mp3`, `.webm`, `.ogg`, `.m4a`).
-3. **Acoustic Gating & Whisper Transcription**:
-   - Audio is inspected for valid magic bytes (preventing corrupt payloads).
-   - Voice Activity Detection (VAD) drops empty silence regions.
-   - Audio is transcribed by **Whisper-large-v3** via Groq API (< 1.2s per chunk).
-   - Drug names are normalized against the veterinary formulary dictionary.
-4. **Real-Time Diarized Streaming**:
-   - Spoken segments stream immediately to the UI via WebSockets.
-   - The system classifies speaker roles (**Doctor** vs. **Owner**) with manual 1-click overrides.
-5. **Decoupled AI Synthesis (On-Demand)**:
-   - Audio transcription alone does *not* prematurely generate medical notes.
-   - When the doctor finishes the consultation and clicks **Generate AI Drafts**, the consultation dialogue is processed by Groq `openai/gpt-oss-120b` (with auto-failover to `qwen/qwen3.8-27b`).
-   - Zod schemas validate the clinical extraction and intercept safety contraindications (e.g., toxic feline medications).
-6. **Clinician-in-the-Loop Review**:
-   - The clinician reviews the generated findings in the **Clinical Insights Modal** or directly within the 3 document tabs.
-   - Individual fields can be edited directly in the workspace.
-7. **Approval & Cryptographic Ledger Signing**:
-   - Clicking **Approve & Sign All** freezes the documents as immutable legal records.
-   - An RFC 8785 canonical SHA-256 block is chained into `consultation_audit_ledger`.
-   - Alternatively, clicking **Reject AI Draft** discards the recommendation with an audit-logged clinical reason.
+1. **Doctor Shift Setup**:
+   - The attending veterinarian opens **Calendar & Slots** in the Doctor Portal.
+   - Selects **Morning Shift (10:00 AM – 01:00 PM)** (or custom hours) and clicks **Confirm & Save Availability**.
+   - The scheduling engine stores the block in the `doctor_availability` table.
+2. **Owner Appointment Booking**:
+   - The pet owner opens the **Pet Owner Portal**, chooses their affiliated hospital/doctor, and selects the consultation date.
+   - The system displays only open slots within the doctor's confirmed shift (e.g., 10:00 AM, 10:15 AM, 10:30 AM).
+   - The owner selects their pet, enters the visit reason, and confirms the booking.
+3. **1-Click Consultation Launch**:
+   - The booking appears immediately in the doctor's **Appointment Schedule** under **Today's Patient Queue**.
+   - The clinician clicks **Start Live Consultation**, which automatically loads the patient session and switches to the live workspace.
+4. **Ambient Audio Recording & AI Scribe**:
+   - Audio is captured through the browser microphone with Voice Activity Detection (VAD) dropping silent frames.
+   - Real-time dialogue is transcribed by Whisper-large-v3 and displayed with speaker roles.
+   - When the examination concludes, the doctor clicks **Generate AI Drafts** to invoke Groq LLM clinical extraction.
+5. **Clinician-in-the-Loop Review & Signing**:
+   - The doctor reviews the drafted Summary, Prescription, and Lab Tests in the **Clinical Insights Modal**.
+   - The doctor clicks **Approve & Sign All** to lock the documents as immutable legal records.
+   - The system chains an RFC 8785 SHA-256 block into the audit ledger.
+6. **Digital Distribution & Verification**:
+   - The pet owner instantly receives the approved summary and prescription in their portal.
+   - Any party can scan the QR code on the PDF or enter the document hash at `/verify` to confirm authenticity.
 
 ---
 
 ## 📋 The Realigned 3-Document Model
 
-To avoid documentation overload, PetCare AI organizes clinical documentation into **3 core medical documents**:
-
 | Tab | Document | Contents & Clinical Structure | Primary Purpose |
 |:---:|:---|:---|:---|
-| **1** | **Summary** *(Default)* | • Narrative Clinical Overview<br>• Chief Complaints & Reported Symptoms with Duration<br>• Physical Examination Findings (Vitals, Palpation, Auscultation)<br>• Assessment & Diagnoses (Categorized: *Confirmed* vs. *Suspected*)<br>• Client Home Care, Dietary & Follow-Up Guidance<br>• Missing Information & Safety Checklist | Serves as the complete legal clinical encounter record and the client discharge instructions. |
+| **1** | **Summary** *(Default)* | • Narrative Clinical Overview<br>• Chief Complaints & Symptoms with Duration/Severity<br>• Physical Examination Findings (Vitals, Palpation, Auscultation)<br>• Assessment & Diagnoses (*Confirmed* vs. *Suspected*)<br>• Client Home Care, Dietary & Follow-Up Guidance<br>• Missing Information & Safety Checklist | Complete legal clinical encounter record and client discharge instructions. |
 | **2** | **Prescription** | • Prescribed Medication List with Item Numbers<br>• Formulation, Strength, Dosage, and Administration Route<br>• Frequency, Duration, and Doctor Administration Notes<br>• Verbatim Transcript Quote Evidence verifying doctor instruction | Standalone, pharmacy-ready medication order with full clinical audit provenance. |
-| **3** | **Lab Tests** | • Recommended Diagnostic Investigations (CBC, Chem 17, Urinalysis)<br>• Test Classification (*Discussed with Owner* vs. *Formally Ordered*)<br>• Clinical Justification & Next-Step Decision Criteria | Diagnostic order requisition ready for the hospital reference laboratory. |
+| **3** | **Lab Tests** | • Recommended Diagnostic Investigations (CBC, Chem 17, Urinalysis)<br>• Test Classification (*Discussed with Owner* vs. *Formally Ordered*)<br>• Clinical Justification & Next-Step Decision Criteria | Diagnostic order requisition for in-house or hospital reference laboratories. |
 
 ---
 
-## ⚡ Key Features & Capabilities
+## 🗓️ Doctor Availability & Patient Booking Synchronization
 
-### 🎙️ 1. Ambient Live Recording & File Ingestion
-- Real-time animated CSS soundwave visualizer provides immediate sensory feedback of live audio capture.
-- High-precision tabular figures timer (`00:27 [RECORDING]`) with animated status pulse.
-- Upload support for existing consultation recordings (`WAV`, `MP3`, `WebM`, `OGG`, `M4A`) up to 25 MB.
-- Zero-disk in-memory processing option for high-throughput, secure multi-tenant deployments.
+A core feature of the platform is the synchronization between clinician calendar shifts and pet owner booking capabilities:
 
-### 👥 2. Dual-Speaker Diarization & Role Controls
-- **Automated Semantic Diarizer**: Analyzes clinical linguistics to classify speaker turns (e.g., symptoms described as Pet Owner; exam findings and medication plans as Doctor).
-- **Segmented Control Toolbar**: 1-click override to toggle between **Auto AI**, **Attending Doctor**, and **Pet Owner** roles.
+1. **Shift Presets**:
+   - **Morning Shift**: `10:00 AM – 01:00 PM`
+   - **Full Day**: `09:00 AM – 05:00 PM`
+   - **Afternoon Shift**: `02:00 PM – 06:00 PM`
+   - **Custom Hours**: Custom start and end time pickers with slot duration intervals (15, 30, 45, or 60 minutes).
+2. **Scope Options**:
+   - **Selected Day Only**: Applies the working block to the currently viewed calendar date.
+   - **All Weekdays (Mon – Fri)**: Applies recurring availability across the working week.
+3. **Real-Time Client Enforcement**:
+   - Pet owners visiting the booking portal cannot book slots outside the doctor's confirmed shift window.
+   - Once a slot is booked, it instantly updates to `Booked` in the clinician's calendar with patient details and is removed from the owner booking view.
 
-### 🛡️ 3. Clinical Insights Modal & Governance Dashboard
-- Glassmorphism overlay (`backdrop-filter: blur(12px)`) presenting the entire case at a glance.
-- Visual cards: Clinical Narrative, Chief Complaints, Symptoms with Duration/Severity, Diagnoses, Prescriptions, and Diagnostics.
-- **Approve & Sign All**: Batch approves and locks all 3 documents into immutable legal records.
-- **Reject AI Draft**: Discards AI suggestions with mandatory clinical explanation.
-- **1-Click Copy**: Copies the full clinical text formatted for EHR/PIMS paste in one click.
+---
 
-### 🔒 4. Consultation Isolation & State Resilience
-- WebSocket room isolation guarantees zero cross-talk between open sessions.
-- Browser `AbortController` cleanly terminates active HTTP requests when switching patients.
-- Synchronous state flushing prevents UI ghosting of prior consultation data.
+## 🔒 Session Isolation & Multi-Tenant Data Security
 
-### 💊 5. Veterinary Pharmacology Intelligence
-- Built-in formulary dictionary (`drug_aliases.json`) maps mispronounced or phonetically corrupted brand names to generic equivalents.
-- Safety Intercept Engine flags life-threatening contraindications (such as Acetaminophen/Paracetamol in cats) before documents are drafted.
+PetCare AI implements strict session isolation and tenant security measures:
 
-### 🏥 6. Full SaaS Directory Management
-- Full CRUD interface for hospital veterinarians and patient records.
-- Protects active consultations by preventing deletion of attending veterinarians tied to ongoing records.
-- URL-synchronized navigation (`?page=directory` vs `?page=consultation`).
+1. **Tenant Context Enforcement**:
+   - Every authenticated request includes clinic ID context, setting PostgreSQL session variables (`app.clinic_id`) for row-level segregation.
+2. **Document Authorization Guards**:
+   - Consultation document endpoints (`/api/v1/consultations/:id/documents` and `/api/v1/consultations/:id/generate`) verify doctor and clinic ownership before returning clinical data, preventing cross-doctor document leakage.
+3. **Session Cleansing on Auth Transitions**:
+   - Logging in, switching accounts, or logging out completely purges cached consultation IDs (`activeConsultationId_${userId}`), active doctor IDs, and URL query parameters (`?consultationId`).
+4. **WebSocket Room Isolation**:
+   - Real-time speech streaming is strictly confined to WebSocket rooms keyed by consultation ID. Switching patients aborts pending HTTP requests and severs the prior WebSocket connection.
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: React 18.3 (Strict Mode, Hooks, Functional Architecture)
-- **Tooling**: Vite 6.1 (ESM, Sub-second HMR)
+- **Framework**: React 18.3 (Strict Mode, Custom Hooks, Functional Components)
+- **Tooling**: Vite 6.4 (ESM, Sub-second HMR)
 - **Icons**: Lucide React
-- **Styling**: Custom Vanilla CSS Design System with Slate neutral palette, glassmorphism, and responsive grid
-- **Testing**: Playwright 1.65 (Cross-browser E2E testing with fake audio device stream injection)
+- **Design System**: Tokenized CSS (`theme.css`) with light/dark palettes, mobile-first media queries (`min-width: 600px` and `1024px`), and custom scrollbars
+- **Testing**: Playwright 1.65 (E2E browser automation with virtual microphone injection) & Custom theme token compliance linter
 
 ### Backend
 - **Runtime**: Node.js 18+ (CommonJS)
 - **Framework**: Express.js 4.21
 - **Real-Time Transport**: Native WebSocket Server (`ws` 8.18)
-- **Safety Validation**: Zod 3.24 (Type-safe schema validation)
-- **Audio Storage**: Multer 2.5 with in-memory buffer handling and automatic temp file management
+- **Schema Validation**: Zod 3.24 (Type-safe request and extraction validation)
+- **Audio Processing**: Multer 2.5 with in-memory buffer handling and chunk deduplication
+- **PDF Generation**: PDFKit with embedded QR code generation and cryptographic hash stamping
 - **Testing**: Native Node.js Test Runner (`node --test`)
 
-### Database & Security
+### Database & Cryptography
 - **Database Engine**: PostgreSQL 14+
 - **Driver**: `pg` 8.13 (Connection pooling and transactional rollbacks)
-- **Audit Standard**: RFC 8785 JSON Canonicalization with SHA-256 chained hashing
+- **Audit Standard**: RFC 8785 Canonical JSON with SHA-256 chained hashing
 
 ### AI & Speech Infrastructure
-- **Speech-to-Text (STT)**: OpenAI Whisper-large-v3 via Groq API (< 1.2s latency per 15s chunk)
+- **Speech-to-Text (STT)**: OpenAI Whisper-large-v3 via Groq API (< 1.2s per 15s chunk)
 - **Primary Clinical LLM**: Groq `openai/gpt-oss-120b`
 - **Secondary Failover LLM**: Groq `qwen/qwen3.8-27b`
 
@@ -239,45 +328,53 @@ Voice to transcript/
 ├── backend/
 │   ├── src/
 │   │   ├── config/              # Centralized environment config & drug aliases
-│   │   │   ├── index.js         # Configuration loader & defaults
-│   │   │   └── drug_aliases.json# Curated veterinary formulary dictionary
-│   │   ├── db/                  # PostgreSQL pool, schema, and migrations
-│   │   │   ├── connection.js    # pg Pool singleton
-│   │   │   ├── migrate.js       # Migration runner
-│   │   │   └── schema.sql       # 12 relational tables & constraints
+│   │   ├── db/                  # PostgreSQL connection, schema, and migrations
+│   │   │   ├── migrations/      # Sequential SQL migrations (001 - 008)
+│   │   │   ├── connection.js    # pg Pool singleton with tenant session variable
+│   │   │   └── schema.sql       # Relational table definitions
+│   │   ├── middleware/          # Authenticate, authorize (RBAC), and tenantContext
 │   │   ├── modules/
 │   │   │   ├── audio/           # Audio controller, chunk storage, and validation
-│   │   │   ├── audit/           # Cryptographic SHA-256 audit ledger service
+│   │   │   ├── audit/           # RFC 8785 SHA-256 chained audit ledger
+│   │   │   ├── audit-viewer/    # Multi-tenant audit trail viewer APIs
+│   │   │   ├── auth/            # JWT authentication, clinic registration, and MFA
+│   │   │   ├── clinic-settings/ # Hospital operating hours & practice configurations
 │   │   │   ├── clinical-ai/     # LLM extractor, multi-model failover, and Zod schemas
 │   │   │   ├── consultations/   # Consultation lifecycle management
 │   │   │   ├── directory/       # Veterinarian and patient directory endpoints
-│   │   │   ├── documents/       # Document patching, approvals, and legal locking
+│   │   │   ├── documents/       # Document management, approval, and legal locking
+│   │   │   ├── owner-portal/    # Pet owner auth, affiliations, bookings, and records
+│   │   │   ├── pdf-generator/   # PDF compilation with QR verification stamps
 │   │   │   ├── realtime/        # WebSocket server and consultation room routing
-│   │   │   ├── templates/       # Document builders (Summary, Prescription, Lab Tests)
-│   │   │   └── transcription/   # VAD service, boundary stitcher, and Whisper client
+│   │   │   ├── scheduling/      # Slot generation engine, doctor shifts, and today's queue
+│   │   │   ├── super-admin/     # Platform fleet management and hospital onboarding
+│   │   │   ├── transcription/   # VAD service, boundary stitcher, and Whisper client
+│   │   │   └── verify/          # Public cryptographic document verification
 │   │   └── server.js            # Express bootstrap and combined HTTP/WS listener
-│   ├── tests/
-│   │   ├── integration/         # Consultation lifecycle and directory REST API tests
-│   │   └── unit/                # VAD, dual-pass, audio hash, and safety schema tests
 │   └── package.json
 │
 ├── frontend/
-│   ├── e2e/                     # Playwright E2E test specs (live audio, directory, UI)
+│   ├── e2e/                     # Playwright E2E test specs (audio, responsive, onboarding)
 │   ├── src/
+│   │   ├── api/                 # API clients (apiClient and ownerClient)
+│   │   ├── auth/                # AuthContext, login, MFA, and signup flows
+│   │   ├── components/common/   # Shared SearchFilterBar, PaginationControl, etc.
 │   │   ├── features/
-│   │   │   ├── consultation/    # Main clinical consultation workspace
-│   │   │   │   ├── components/  # Document editor, live recording, and insights modal
-│   │   │   │   └── hooks/       # useMicrophone, useConsultationWebSocket
-│   │   │   └── directory/       # SaaS Directory management page
-│   │   ├── styles/              # Design system CSS tokens and responsive layout
-│   │   ├── App.jsx              # Top-level router and navigation shell
+│   │   │   ├── admin/           # Hospital Admin Portal (Dashboard, Staff, Registry, Settings)
+│   │   │   ├── consultation/    # Live Consultation Workspace & Document Editor
+│   │   │   ├── doctor/          # Doctor Portal (Dashboard, Schedule, Slots, Patients, Charts)
+│   │   │   ├── owner/           # Pet Owner Portal (Booking, Affiliation, Records, Consents)
+│   │   │   ├── super-admin/     # Super Admin Portal (Hospital Fleet, Analytics, Audits)
+│   │   │   └── verify/          # Public Document Verification Page
+│   │   ├── styles/              # Design system tokens (theme.css, admin.css, doctor.css, etc.)
+│   │   ├── App.jsx              # Role-aware portal router and top-level navigation
 │   │   └── main.jsx             # React DOM root
-│   ├── playwright.config.js     # Single-worker Playwright config with virtual microphone
+│   ├── playwright.config.js     # Headless Playwright config with virtual microphone
 │   └── vite.config.js
 │
-├── scripts/                     # Database seed restore and audio test generators
-├── tests/                       # ASR audit suites and verification manifests
-└── package.json                 # Root npm orchestration commands
+├── scripts/                     # Theme linters, responsive checkers, and test seeders
+├── graphify-out/                # AST Codebase Knowledge Graph (graphify)
+└── package.json                 # Monorepo root scripts
 ```
 
 ---
@@ -287,10 +384,10 @@ Voice to transcript/
 ### 1. Prerequisites
 - **Node.js**: v18.0.0 or higher
 - **PostgreSQL**: v14.0 or higher (running on `localhost:5432`)
-- **Groq API Key**: Required for high-throughput Whisper-large-v3 and LLM extraction ([Get Groq Key](https://console.groq.com/keys))
+- **Groq API Key**: Required for high-speed Whisper-large-v3 and clinical LLM extraction ([Get Groq Key](https://console.groq.com/keys))
 
 ### 2. Environment Configuration (`.env`)
-Create a `.env` file in the project root directory:
+Create a `.env` file in the project root:
 
 ```ini
 # Application Port
@@ -299,19 +396,20 @@ NODE_ENV=development
 
 # PostgreSQL Database
 DB_USER=postgres
-DB_PASSWORD=root
+DB_PASSWORD=your_password
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=petcare
+
+# Authentication Secrets
+JWT_SECRET=super_secret_jwt_key_change_in_production
+JWT_EXPIRES_IN=24h
 
 # Groq High-Speed AI Engine
 GROQ_API_KEY=gsk_your_groq_api_key_here
 GROQ_WHISPER_MODEL=whisper-large-v3
 GROQ_LLM_MODEL=openai/gpt-oss-120b
-
-# OpenAI Fallback (Optional)
-OPENAI_API_KEY=sk_your_openai_api_key_here
-OPENAI_MODEL=gpt-4o
+GROQ_FAILOVER_MODEL=qwen/qwen3.8-27b
 
 # Audio Retention Policy (GDPR/Compliance)
 AUDIO_RETENTION_DAYS=30
@@ -321,10 +419,7 @@ AUDIO_RETENTION_DAYS=30
 
 ## 🚀 Quick Start Guide
 
-Follow these simple steps to run the entire application locally:
-
 ### Step 1: Install Dependencies
-From the project root:
 ```bash
 npm install
 cd backend && npm install
@@ -333,17 +428,17 @@ cd ..
 ```
 
 ### Step 2: Initialize Database & Run Migrations
-Make sure your local PostgreSQL service is running, then run:
+Ensure PostgreSQL is running locally, then execute:
 ```bash
 npm run backend:migrate
 ```
-*This automatically creates the `petcare` database, creates all 12 relational tables, applies audit ledger migrations, and seeds initial veterinarians and patients.*
+*This creates the database, applies all 8 schema migrations, sets up relational foreign keys and indexes, and seeds demo hospitals, veterinarians, and patient profiles.*
 
 ### Step 3: Start the Backend Server
 ```bash
 npm run backend:dev
 ```
-- REST API Base: `http://localhost:5000/api/v1`
+- REST API: `http://localhost:5000/api/v1`
 - WebSocket Server: `ws://localhost:5000/ws/v1/consultations/:id`
 
 ### Step 4: Start the Frontend Application
@@ -357,53 +452,65 @@ Open **`http://localhost:3000`** in your browser.
 
 ## 🧪 Testing & Quality Verification
 
-PetCare AI includes extensive automated verification covering the backend audio pipeline, clinical schemas, and frontend user flows.
+PetCare AI maintains strict automated verification standards across all application layers:
 
 ### 1. Backend Automated Test Suite
-Executes unit and integration test suites:
 ```bash
 npm run backend:test
 ```
 Covers:
-- Consultation REST API lifecycle and status transitions
-- Acoustic Voice Activity Detection (VAD) energy gating and silence trimming
-- Binary magic bytes inspection (WAV, MP3, WebM, OGG, M4A)
-- Dual-pass transcription and boundary phrase stitching
-- SHA-256 chunk hashing and upload idempotency
-- Veterinary drug alias normalization
-- RFC 8785 cryptographic audit ledger chain integrity
-- Zod clinical safety schemas and contraindication interception
+- Consultation lifecycle and state transitions.
+- Multi-tenant data segregation across hospitals.
+- Voice Activity Detection (VAD) energy gating and silence trimming.
+- Dual-pass transcription and boundary phrase stitching.
+- RFC 8785 cryptographic audit ledger chain integrity.
+- Zod clinical safety schemas and contraindication interception.
 
 ### 2. Frontend Playwright E2E Suite
-Runs end-to-end browser automation in Google Chrome, injecting real veterinary consultation audio into a virtual microphone:
 ```bash
 cd frontend && npx playwright test
 ```
-Or run the headed live audio test:
+Executes cross-browser end-to-end tests covering:
+- Live ambient audio capture with virtual microphone stream injection.
+- Hospital Admin doctor onboarding flow.
+- Doctor calendar shift scheduling and slot selection.
+- Pet owner booking and clinical document review.
+- Multi-viewport responsive checks (360px mobile, 768px tablet, 1280px desktop).
+
+### 3. Theme Token Compliance Linter
 ```bash
-npm run test:live
+npm --prefix frontend run lint:theme
 ```
+Verifies that all stylesheets adhere to `UI_GUIDELINES.md`, ensuring zero hardcoded color values and strict CSS variable usage from `theme.css`.
+
+### 4. Knowledge Graph Maintenance
+```bash
+graphify update .
+```
+Maintains the codebase knowledge graph (`graphify-out/`), tracking 1,130+ code symbols, dependencies, and architectural communities.
 
 ---
 
 ## 🗄️ Database Schema Reference
 
-All tables use sequential integer primary keys (`id SERIAL PRIMARY KEY: 1, 2, 3...`) for clean routing, predictable foreign key constraints, and standard indexing.
+All tables use sequential integer primary keys (`id SERIAL PRIMARY KEY`) for clean routing, predictable foreign key constraints, and indexing.
 
-| Table Name | Primary Key | Foreign Keys | Key Columns | Clinical Purpose |
+| Table Name | Primary Key | Foreign Keys | Key Columns | Clinical & Operational Purpose |
 |:---|:---|:---|:---|:---|
-| `users` | `id SERIAL` | None | `name`, `email`, `role` | Attending veterinarians and hospital staff. |
-| `pets` | `id SERIAL` | None | `name`, `species`, `breed`, `age_years`, `weight_kg`, `owner_name` | Patient registry and owner demographics. |
-| `appointments` | `id SERIAL` | `pet_id`, `doctor_id` | `scheduled_at`, `status`, `reason` | Scheduled clinical visits. |
-| `consultations` | `id SERIAL` | `pet_id`, `doctor_id`, `appointment_id` | `status`, `language`, `consent_given`, `started_at`, `ended_at` | Active consultation session state. |
-| `transcript_segments` | `id SERIAL` | `consultation_id` | `sequence_number`, `speaker_role`, `text`, `confidence`, `is_final_pass` | Sequential speech transcripts with unique `(consultation_id, sequence_number)`. |
-| `consultation_audio` | `id SERIAL` | `consultation_id (UNIQUE)` | `audio_data (BYTEA)`, `audio_hash`, `mime_type`, `file_name` | Complete raw audio binary for dual-pass verification. |
-| `consultation_audio_chunks` | `id SERIAL` | `consultation_id` | `chunk_index`, `audio_hash`, `audio_data (BYTEA)`, `mime_type` | Uploaded audio chunks with unique idempotency constraint. |
-| `clinical_extractions` | `id SERIAL` | `consultation_id (UNIQUE)` | `pet_info`, `symptoms`, `medications`, `diagnoses`, `raw_llm_response` | Validated clinical JSON extraction object. |
-| `consultation_documents` | `id SERIAL` | `consultation_id` | `doc_type`, `status`, `current_version`, `content (JSONB)` | Generated clinical documents (`summary`, `prescription`, `lab_tests`). |
+| `clinics` | `id SERIAL` | None | `name`, `subdomain`, `is_active` | Multi-tenant veterinary hospital records. |
+| `users` | `id SERIAL` | `clinic_id` | `name`, `email`, `role`, `license_no` | Attending veterinarians, clinic admins, super admins. |
+| `owners` | `id SERIAL` | None | `name`, `email`, `phone`, `password_hash` | Pet owners and animal guardians. |
+| `owner_clinic_affiliations` | `id SERIAL` | `owner_id`, `clinic_id`, `doctor_id` | `is_primary`, `status` | Affiliation links connecting guardians to clinics. |
+| `pets` | `id SERIAL` | `clinic_id`, `owner_id` | `name`, `species`, `breed`, `weight_kg` | Animal patient records, allergies, and vitals. |
+| `doctor_availability` | `id SERIAL` | `clinic_id`, `doctor_id` | `weekday`, `start_time`, `end_time`, `slot_minutes` | Doctor consultation shift hours (e.g. 10 AM - 1 PM). |
+| `appointments` | `id SERIAL` | `clinic_id`, `pet_id`, `doctor_id` | `scheduled_at`, `status`, `reason` | Booked clinical appointments and queue entries. |
+| `consultations` | `id SERIAL` | `clinic_id`, `pet_id`, `doctor_id` | `status`, `language`, `consent_given` | Active consultation session state and metadata. |
+| `transcript_segments` | `id SERIAL` | `consultation_id` | `sequence_number`, `speaker_role`, `text` | Sequential speech transcripts with diarization. |
+| `consultation_audio` | `id SERIAL` | `consultation_id (UNIQUE)` | `audio_data (BYTEA)`, `audio_hash` | Raw audio binary for dual-pass verification. |
+| `consultation_documents` | `id SERIAL` | `consultation_id` | `doc_type`, `status`, `current_version`, `content (JSONB)` | Generated medical documents (`summary`, `prescription`, `lab_tests`). |
 | `document_versions` | `id SERIAL` | `document_id`, `changed_by` | `version_number`, `content (JSONB)`, `doctor_notes` | Complete version history of doctor edits. |
-| `document_approvals` | `id SERIAL` | `document_id`, `doctor_id` | `action ('approved' / 'rejected')`, `reason`, `approved_at` | Legal sign-off ledger; locks document as immutable. |
-| `consultation_audit_ledger` | `id SERIAL` | `consultation_id` | `sequence_number`, `event_type`, `previous_hash`, `current_hash`, `payload_snapshot` | RFC 8785 SHA-256 cryptographically chained audit ledger. |
+| `document_approvals` | `id SERIAL` | `document_id`, `doctor_id` | `action ('approved' / 'rejected')`, `reason` | Legal sign-off ledger; locks document as immutable. |
+| `consultation_audit_ledger` | `id SERIAL` | `consultation_id` | `sequence_number`, `previous_hash`, `current_hash` | RFC 8785 SHA-256 cryptographically chained ledger. |
 | `recording_consents` | `id SERIAL` | `consultation_id (UNIQUE)` | `consent_type`, `given_by`, `consent_text` | Explicit recording consent signed by pet owner. |
 | `audio_retention_policies` | `id SERIAL` | `consultation_id (UNIQUE)` | `retain_until`, `auto_delete_audio` | Automated GDPR/privacy audio deletion policy. |
 
@@ -411,91 +518,67 @@ All tables use sequential integer primary keys (`id SERIAL PRIMARY KEY: 1, 2, 3.
 
 ## 🌐 REST API & Real-Time WebSocket Reference
 
-All mutating requests require the `x-doctor-id: <id>` header for audit trail attribution.
+### Key Endpoint Groups
 
-### Consultation Lifecycle Endpoints
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `POST` | `/api/v1/consultations` | Creates a new consultation session for a patient. |
-| `GET` | `/api/v1/consultations` | Lists all consultations with doctor and patient metadata. |
-| `GET` | `/api/v1/consultations/:id` | Returns full consultation details and current status. |
-| `POST` | `/api/v1/consultations/:id/consent` | Records owner digital recording consent. |
-| `POST` | `/api/v1/consultations/:id/start` | Starts recording (guards against missing consent). |
-| `POST` | `/api/v1/consultations/:id/pause` | Pauses audio capture. |
-| `POST` | `/api/v1/consultations/:id/resume` | Resumes active recording session. |
-| `POST` | `/api/v1/consultations/:id/stop` | Stops recording; marks session ready for clinician review. |
-| `POST` | `/api/v1/consultations/:id/reset` | Resets consultation to clean scheduled state. |
-| `POST` | `/api/v1/consultations/:id/complete` | Formally finalizes and locks the consultation. |
-| `DELETE` | `/api/v1/directory/consultations/:id` | Deletes consultation session and associated documents. |
+#### 1. Authentication & Tenancy
+- `POST /api/v1/auth/login` — User authentication with MFA support.
+- `POST /api/v1/auth/logout` — Session termination and storage cleansing.
+- `POST /api/v1/auth/register-clinic` — Hospital tenant registration.
+- `GET /api/v1/auth/me` — Authenticated session context check.
 
-### Audio & AI Scribe Endpoints
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `POST` | `/api/v1/consultations/:id/audio-chunk` | Multipart upload of 15s audio chunk; transcribes via Whisper API. |
-| `POST` | `/api/v1/consultations/:id/upload-and-scribe` | Single-turn audio upload. Transcribes dialogue into segments with `autoGenerate=false`. |
-| `POST` | `/api/v1/consultations/:id/generate` | Triggers LLM clinical extraction and generates all 3 medical documents. |
-| `GET` | `/api/v1/consultations/:id/transcript` | Eager HTTP hydration of all stored transcript segments. |
-| `GET` | `/api/v1/consultations/:id/documents` | Returns all clinical documents for the consultation. |
+#### 2. Consultations & Clinical Scribe
+- `POST /api/v1/consultations` — Initialize a patient consultation.
+- `GET /api/v1/consultations` — List tenant-scoped consultations.
+- `GET /api/v1/consultations/:id` — Retrieve full consultation details.
+- `POST /api/v1/consultations/:id/consent` — Record owner recording consent.
+- `POST /api/v1/consultations/:id/start` — Start ambient recording session.
+- `POST /api/v1/consultations/:id/stop` — Stop recording session.
+- `POST /api/v1/consultations/:id/audio-chunk` — Stream 15s audio buffer for Whisper transcription.
+- `POST /api/v1/consultations/:id/generate` — Invoke Groq LLM clinical extraction and synthesize all 3 documents.
+- `GET /api/v1/consultations/:id/documents` — Retrieve generated documents (verified for doctor ownership).
 
-### Document Governance & Legal Audit Endpoints
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `GET` | `/api/v1/documents/:id` | Retrieves a single document draft. |
-| `PATCH` | `/api/v1/documents/:id` | Saves doctor draft edits; blocks with `403` if document is approved. |
-| `POST` | `/api/v1/documents/:id/approve` | Veterinarian formally approves document (locks as immutable). |
-| `POST` | `/api/v1/documents/:id/reject` | Rejects document with mandatory clinical justification reason. |
-| `GET` | `/api/v1/documents/:id/versions` | Retrieves complete revision history with doctor diff notes. |
-| `GET` | `/api/v1/consultations/:id/audit` | Retrieves immutable audit trail with before/after snapshots. |
+#### 3. Scheduling & Doctor Availability
+- `GET /api/v1/scheduling/slots?doctorId=:id&date=:date` — Generate slots for a doctor on a given date.
+- `GET /api/v1/scheduling/availability/:doctorId` — Fetch doctor's saved working shift hours.
+- `PUT /api/v1/scheduling/availability/:doctorId` — Update doctor's working shifts (e.g., Morning 10 AM - 1 PM).
+- `GET /api/v1/scheduling/today-queue` — Retrieve today's queued patients for attending clinicians.
+- `POST /api/v1/scheduling` — Create confirmed appointment.
 
-### Real-Time WebSocket Protocol
+#### 4. Pet Owner Portal Endpoints
+- `POST /api/v1/owner-portal/auth/login` — Pet owner authentication.
+- `GET /api/v1/owner-portal/available-slots` — Retrieve open consultation slots matching doctor shifts.
+- `POST /api/v1/owner-portal/appointments` — Book confirmed consultation slot.
+- `GET /api/v1/owner-portal/prescriptions` — Retrieve approved prescriptions with verification hashes.
+- `GET /api/v1/documents/:id/download-pdf` — Download cryptographically sealed PDF with QR code.
+
+#### 5. Public Verification
+- `GET /api/v1/verify/document/:hash` — Public cryptographic verification of document authenticity.
+
+#### 6. Real-Time WebSocket Protocol
 - **Endpoint**: `ws://localhost:5000/ws/v1/consultations/:id`
-- **Client Messages**: `auth`, `audio_chunk`, `pause`, `resume`, `stop`, `reconnect`
-- **Server Broadcasts**:
-  - `connected`: Handshake confirmation.
-  - `transcript_partial`: Streaming live speech chunk before Whisper finalization.
-  - `transcript_final`: Finalized Whisper transcript with sequence number and confidence score.
-  - `status_change`: Synchronizes consultation state across browser tabs.
-  - `extraction_progress`: Broadcasts AI extraction milestones during synthesis.
-  - `documents_ready`: Notifies client that all 3 clinical documents are drafted.
-
----
-
-## 🛡️ Clinical Safety & Compliance Guarantees
-
-1. **Human-in-the-Loop Imperative**:
-   - AI is never permitted to finalize medical records autonomously.
-   - All generated drafts must be explicitly inspected and approved by a licensed attending veterinarian.
-2. **Formulary Safety Intercept Engine**:
-   - The clinical extraction pipeline validates against veterinary contraindication rules.
-   - Example: If Paracetamol/Acetaminophen is mentioned in a feline consultation, the safety validator flags a fatal contraindication alert and prevents unreviewed approval.
-3. **Immutability After Approval**:
-   - Once a document receives formal doctor approval (`status = 'approved'`), the backend rejects subsequent `PATCH` requests with `403 Forbidden`.
-   - Any further amendments require creating a new document version with documented clinical justification.
-4. **Tamper-Evident Audit Ledger**:
-   - Powered by RFC 8785 canonical JSON formatting and SHA-256 block chaining.
-   - Each audit log entry points to the previous entry's cryptographic hash, making retroactive modification detectable.
-5. **GDPR / Audio Retention Policy**:
-   - The database maintains an `audio_retention_policies` table.
-   - Raw audio chunks can be scheduled for automatic purging after 30 days while retaining the legal text record.
+- **Messages**: `auth`, `audio_chunk`, `pause`, `resume`, `stop`, `transcript_partial`, `transcript_final`, `extraction_progress`, `documents_ready`.
 
 ---
 
 ## ❓ Frequently Asked Questions (FAQ)
 
-### Q: Why is audio upload decoupled from document generation?
-**A:** In a clinical setting, veterinarians often record or upload an audio consultation and review the raw transcript first before incurring LLM processing costs or committing to generated notes. Decoupling upload from generation allows doctors to verify transcript completeness, ensure sound quality, and initiate AI synthesis only when ready.
+### Q: How does the system handle doctor schedule shifts like 10:00 AM – 1:00 PM?
+**A:** In the Doctor Portal's **Calendar & Slots** tab, the doctor can click **Update Availability / Shift Hours** and choose the **Morning Shift (10:00 AM – 01:00 PM)** preset (or specify custom hours). When saved, this updates the PostgreSQL `doctor_availability` table. The Pet Owner Portal automatically synchronizes with these hours, displaying only open slots within the 10:00 AM to 1:00 PM window.
 
-### Q: What happens if Groq hits rate limits during a busy clinic hour?
-**A:** The clinical extractor includes multi-model failover. If the primary model (`openai/gpt-oss-120b`) returns an HTTP 429 (Rate Limit) or 503 (Unavailable), the system automatically attempts synthesis with the secondary model (`qwen/qwen3.8-27b`). If both fail, a deterministic fallback parser structures the transcript into safe clinical draft templates so the doctor is never blocked.
+### Q: Why is the patient queue placed in a separate sidebar tab instead of inside the Live Consultation workspace?
+**A:** In clinical practice, live consultations demand full visual focus on the patient, audio levels, real-time Whisper transcripts, and generated medical notes. Moving the queue to the dedicated **Appointment Schedule** sidebar tab declutters the exam room view while providing a full-width roster with quick-action cards and 1-click consultation launching.
 
-### Q: How does the system prevent dialogue from one pet leaking into another?
-**A:** Each consultation operates on an isolated WebSocket room scoped to its consultation ID. When switching consultations in the UI, an `AbortController` cancels pending HTTP requests, the previous WebSocket connection is torn down, and the client state is synchronously reset before fetching the new patient's transcript.
+### Q: How is cross-doctor data leakage prevented when multiple clinicians share a device?
+**A:** The platform employs multi-layered session isolation:
+1. `AuthContext` explicitly purges all cached consultation IDs, doctor IDs, and URL query params on both login and logout.
+2. Local storage keys are scoped per user (`activeConsultationId_${userId}`).
+3. Backend document controllers enforce strict tenant and doctor ownership checks, returning `403 Forbidden` if an unauthorized user attempts to access another doctor's consultation data.
 
-### Q: How does PetCare AI handle background clinic noise (barking, instruments)?
-**A:** The acoustic Voice Activity Detection (VAD) service runs energy RMS calculations on 20ms frames with a `-42 dB` threshold and 300ms hangover padding. Non-vocal frames (such as empty air or background hum) are trimmed before reaching Whisper, reducing API latency and hallucinated phrases.
+### Q: Can AI-generated documents be edited or rejected by veterinarians?
+**A:** Yes. PetCare AI enforces a strict human-in-the-loop policy. Doctors can edit any field within the Summary, Prescription, or Lab Tests tabs. In the **Clinical Insights Modal**, veterinarians can either click **Approve & Sign All** (locking documents into immutable legal records) or **Reject AI Draft** (with an audit-logged clinical explanation).
 
 ---
 
 ## 📄 License & Proprietary Notice
 
-Proprietary & Confidential. Built for Central Valley Animal Hospital and clinical veterinary partners.
+Proprietary & Confidential. Built for Central Valley Animal Hospital, veterinary networks, and clinical healthcare partners.
