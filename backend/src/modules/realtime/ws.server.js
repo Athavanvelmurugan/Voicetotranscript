@@ -1,9 +1,17 @@
 const { WebSocketServer } = require('ws');
+const jwt = require('jsonwebtoken');
+const config = require('../../config');
 const sessionManager = require('./ws.session.manager');
 const transcriptAccumulator = require('../transcription/transcript.accumulator');
 const consultationService = require('../consultations/consultation.service');
 const documentService = require('../documents/document.service');
 const clinicalExtractor = require('../clinical-ai/clinical.extractor');
+
+function parseCookie(cookieHeader, name) {
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
 function setupWebSocketServer(httpServer) {
   const wss = new WebSocketServer({ noServer: true });
@@ -20,14 +28,26 @@ function setupWebSocketServer(httpServer) {
 
     const consultationId = parseInt(match[1], 10);
 
+    // Verify authenticated session (Cookie or query param)
+    const token = parseCookie(request.headers.cookie, 'petcare_at') || url.searchParams.get('token');
+    let user = null;
+
+    if (token) {
+      try {
+        user = jwt.verify(token, config.auth.jwtSecret);
+      } catch (err) {
+        console.warn(`[WS Auth] Token invalid on upgrade: ${err.message}`);
+      }
+    }
+
     wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request, consultationId);
+      wss.emit('connection', ws, request, consultationId, user);
     });
   });
 
-  wss.on('connection', async (ws, request, consultationId) => {
-    console.log(`[WS] Connection established for consultation #${consultationId}`);
-    const doctorId = 1; // default or from auth header
+  wss.on('connection', async (ws, request, consultationId, user) => {
+    console.log(`[WS] Connection established for consultation #${consultationId} (User: ${user?.sub || 'dev-doctor-1'})`);
+    const doctorId = user?.sub || 1;
 
     let session = sessionManager.getSession(consultationId);
     if (!session) {

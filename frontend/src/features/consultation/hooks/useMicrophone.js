@@ -86,7 +86,7 @@ export function useMicrophone({
       setChunkStatus('processing');
       const res = await fetch(`/api/v1/consultations/${consultationId}/audio-chunk`, {
         method: 'POST',
-        headers: { 'x-doctor-id': String(doctorId) },
+        credentials: 'include',
         body: formData,
       });
 

@@ -2,9 +2,9 @@ const consultationService = require('./consultation.service');
 const auditService = require('../audit/audit.service');
 
 class ConsultationController {
-  // Helper to extract doctor ID from auth/header (defaults to primary vet #1)
+  // Helper to extract doctor ID strictly from authenticated session (with fallback for unit test mocks)
   getDoctorId(req) {
-    return parseInt(req.headers['x-doctor-id'], 10) || req.user?.id || 1;
+    return req.user?.id || (req.headers && req.headers['x-doctor-id'] ? parseInt(req.headers['x-doctor-id'], 10) : 1);
   }
 
   // Helper to validate and parse integer consultation ID from URL parameters
@@ -19,7 +19,14 @@ class ConsultationController {
 
   async getAll(req, res, next) {
     try {
-      const consultations = await consultationService.getAllConsultations();
+      const clinicId = req.user?.clinicId;
+      let doctorId = null;
+      if (req.user?.role === 'doctor') {
+        doctorId = req.user.id;
+      } else if (req.query.doctorId) {
+        doctorId = parseInt(req.query.doctorId, 10);
+      }
+      const consultations = await consultationService.getAllConsultations({ clinicId, doctorId });
       res.json({ success: true, data: consultations });
     } catch (err) {
       next(err);
@@ -28,7 +35,8 @@ class ConsultationController {
 
   async getPets(req, res, next) {
     try {
-      const pets = await consultationService.getAllPets();
+      const clinicId = req.user?.clinicId;
+      const pets = await consultationService.getAllPets(clinicId);
       res.json({ success: true, data: pets });
     } catch (err) {
       next(err);
@@ -49,7 +57,9 @@ class ConsultationController {
 
   async create(req, res, next) {
     try {
-      const doctorId = this.getDoctorId(req);
+      const doctorId = req.body?.doctorId && !isNaN(parseInt(req.body.doctorId, 10))
+        ? parseInt(req.body.doctorId, 10)
+        : this.getDoctorId(req);
       const { appointmentId, petId, language, consentGiven } = req.body;
 
       if (!petId) {
@@ -61,6 +71,7 @@ class ConsultationController {
         petId: parseInt(petId, 10),
         language: language || 'en',
         consentGiven: !!consentGiven,
+        clinicId: req.user?.clinicId || 1,
       }, doctorId);
 
       res.status(201).json({ success: true, data: consultation });
@@ -73,7 +84,12 @@ class ConsultationController {
     try {
       const id = this.parseId(req, res);
       if (!id) return;
-      const consultation = await consultationService.getConsultation(id);
+      const tenantContext = req.user ? {
+        clinicId: req.user.clinicId,
+        role: req.user.role,
+        userId: req.user.id,
+      } : null;
+      const consultation = await consultationService.getConsultation(id, tenantContext);
       res.json({ success: true, data: consultation });
     } catch (err) {
       next(err);

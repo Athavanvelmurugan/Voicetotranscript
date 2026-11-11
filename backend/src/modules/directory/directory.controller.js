@@ -4,7 +4,7 @@ class DirectoryController {
   // ─── DOCTORS ────────────────────────────────────────────────────────────────
   async getDoctors(req, res, next) {
     try {
-      const doctors = await directoryRepo.getDoctors();
+      const doctors = await directoryRepo.getDoctors(req.user?.clinicId);
       res.json({ success: true, data: doctors });
     } catch (err) {
       next(err);
@@ -18,7 +18,12 @@ class DirectoryController {
         return res.status(400).json({ success: false, error: 'Name and Email are required to register a doctor.' });
       }
 
-      const doctor = await directoryRepo.createDoctor({ name, email, role });
+      const doctor = await directoryRepo.createDoctor({
+        name,
+        email,
+        role: role || 'doctor',
+        clinicId: req.user?.clinicId || 1,
+      });
       res.status(201).json({ success: true, data: doctor });
     } catch (err) {
       if (err.code === '23505') {
@@ -45,7 +50,7 @@ class DirectoryController {
   // ─── PETS ────────────────────────────────────────────────────────────────────
   async getPets(req, res, next) {
     try {
-      const pets = await directoryRepo.getPets();
+      const pets = await directoryRepo.getPets(req.user?.clinicId);
       res.json({ success: true, data: pets });
     } catch (err) {
       next(err);
@@ -67,6 +72,7 @@ class DirectoryController {
         weight_kg,
         owner_name,
         owner_contact,
+        clinicId: req.user?.clinicId || 1,
       });
       res.status(201).json({ success: true, data: pet });
     } catch (err) {

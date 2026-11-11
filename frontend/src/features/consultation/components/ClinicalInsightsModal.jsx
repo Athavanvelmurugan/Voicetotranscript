@@ -114,15 +114,11 @@ export function ClinicalInsightsModal({
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
       <div
-        className="modal-content"
+        className="modal-content modal-insights-content"
         onClick={(e) => e.stopPropagation()}
         style={{
-          maxWidth: '860px',
-          width: '95%',
-          maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: '16px',
           overflow: 'hidden',
           padding: 0,
         }}

@@ -10,8 +10,15 @@ test.describe('SaaS Directory Management Page — Multi-Page Navigation, KPI Sta
 
     // ─── 1. Load Homepage & Verify SaaS Top Navigation ────────────────────────
     await page.goto('/');
-    await expect(page.locator('.navbar')).toBeVisible();
-    await expect(page.getByText('PetCare AI')).toBeVisible();
+
+    // If on authentication screen, sign in with pre-filled staging credentials
+    const signInBtn = page.getByRole('button', { name: /Sign In to Hospital/i });
+    if (await signInBtn.isVisible({ timeout: 2500 }).catch(() => false)) {
+      await signInBtn.click();
+    }
+
+    await expect(page.locator('.navbar')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.nav-brand')).toContainText('PetPulse');
 
     const liveConsultationNavBtn = page.getByRole('button', { name: /Live Consultation/i });
     const directoryNavBtn = page.getByRole('button', { name: /Directory Management/i });

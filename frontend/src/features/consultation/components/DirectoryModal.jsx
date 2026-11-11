@@ -183,7 +183,7 @@ export function DirectoryModal({
         </div>
 
         {/* Tab Selection */}
-        <div style={{ display: 'flex', gap: '8px', padding: '12px 20px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
+        <div className="modal-tabs-strip" style={{ display: 'flex', gap: '8px', padding: '10px 16px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <button
             type="button"
             className={`btn ${activeTab === 'doctors' ? 'btn-primary' : 'btn-outline'}`}
@@ -309,8 +309,8 @@ export function DirectoryModal({
                 Registered Doctors Directory ({doctors.length})
               </h3>
 
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <div className="table-wrap" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table style={{ width: '100%', minWidth: '550px', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
                   <thead style={{ background: '#f1f5f9', textAlign: 'left', color: '#475569', borderBottom: '1px solid #e2e8f0' }}>
                     <tr>
                       <th style={{ padding: '8px 12px' }}>ID</th>
@@ -508,8 +508,8 @@ export function DirectoryModal({
                 Registered PetCare Patients ({pets.length})
               </h3>
 
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <div className="table-wrap" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table style={{ width: '100%', minWidth: '550px', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
                   <thead style={{ background: '#f1f5f9', textAlign: 'left', color: '#475569', borderBottom: '1px solid #e2e8f0' }}>
                     <tr>
                       <th style={{ padding: '8px 12px' }}>ID</th>

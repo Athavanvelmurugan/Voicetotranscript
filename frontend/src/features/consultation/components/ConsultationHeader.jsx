@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   ShieldCheck, Wifi, WifiOff, Stethoscope, Calendar, Plus,
-  Users, Trash2, User, CheckCircle
+  Trash2, User, CheckCircle
 } from 'lucide-react';
 
 export function ConsultationHeader({
@@ -9,7 +9,6 @@ export function ConsultationHeader({
   consultations = [],
   onSelectConsultation,
   onOpenNewConsultationModal,
-  onOpenDirectoryModal,
   doctors = [],
   activeDoctorId,
   onSelectActiveDoctor,
@@ -25,30 +24,7 @@ export function ConsultationHeader({
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             <div className="badge badge-purple" style={{ padding: '6px 12px', fontSize: '0.82rem' }}>
               <Stethoscope size={15} />
-              {doctors.length > 0 ? (
-                <select
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'inherit',
-                    fontWeight: 700,
-                    fontSize: '0.82rem',
-                    cursor: 'pointer',
-                    outline: 'none',
-                  }}
-                  value={activeDoctorId || (doctors[0] && doctors[0].id) || 1}
-                  onChange={(e) => onSelectActiveDoctor && onSelectActiveDoctor(parseInt(e.target.value, 10))}
-                  title="Switch active attending doctor"
-                >
-                  {doctors.map((d) => (
-                    <option key={d.id} value={d.id} style={{ color: '#0f172a', background: '#fff' }}>
-                      {d.name} (#{d.id})
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span>Attending Doctor: Dr. Mouni, DVM</span>
-              )}
+              <span>Attending: {doctors.find((d) => d.id === activeDoctorId)?.name || 'Dr. Attending DVM'}</span>
             </div>
 
             <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
@@ -62,13 +38,6 @@ export function ConsultationHeader({
               onClick={onOpenNewConsultationModal}
             >
               <Plus size={14} /> New Consultation
-            </button>
-
-            <button
-              className="btn btn-outline"
-              onClick={onOpenDirectoryModal}
-            >
-              <Users size={14} /> Manage Directory
             </button>
           </div>
         </div>
@@ -136,15 +105,6 @@ export function ConsultationHeader({
             <Plus size={14} /> New Consultation
           </button>
 
-          {/* Manage Doctors & Pets Directory Button */}
-          <button
-            className="btn btn-outline"
-            onClick={onOpenDirectoryModal}
-            title="Manage Doctors and PetCare Directory"
-          >
-            <Users size={14} /> Manage Directory
-          </button>
-
           {/* Complete Consultation Button */}
           {consultation.status !== 'completed' && onCompleteConsultation && (
             <button
@@ -191,33 +151,10 @@ export function ConsultationHeader({
         </div>
 
         <div className="header-badges">
-          {/* Attending Doctor Badge with Switcher */}
+          {/* Attending Doctor Badge */}
           <div className="badge badge-purple" title="Attending Veterinarian">
             <Stethoscope size={13} />
-            {doctors.length > 0 ? (
-              <select
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'inherit',
-                  fontWeight: 700,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
-                value={consultation ? (consultation.doctor_id || activeDoctorId || 1) : (activeDoctorId || 1)}
-                onChange={(e) => onSelectActiveDoctor && onSelectActiveDoctor(parseInt(e.target.value, 10))}
-                title="Change active attending doctor"
-              >
-                {doctors.map((d) => (
-                  <option key={d.id} value={d.id} style={{ color: '#0f172a', background: '#fff' }}>
-                    {d.name} (#{d.id})
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <span>{consultation.doctor_name || 'Attending Veterinarian'}</span>
-            )}
+            <span>{consultation?.doctor_name || (doctors.find((d) => d.id === activeDoctorId)?.name) || 'Attending DVM'}</span>
           </div>
 
           {/* Pet Owner Badge */}

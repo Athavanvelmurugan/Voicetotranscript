@@ -1,10 +1,40 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import { AuthPage } from './auth/AuthPage';
+import { LoginPage } from './auth/LoginPage';
+import { SignupClinicPage } from './auth/SignupClinicPage';
+import { AcceptInvitePage } from './auth/AcceptInvitePage';
 import { ConsultationWorkspace } from './features/consultation/ConsultationWorkspace';
-import { DirectoryPage } from './features/directory/DirectoryPage';
-import { Stethoscope, Shield, Users } from 'lucide-react';
+import { DoctorPortal } from './features/doctor/DoctorPortal';
+import { AdminPortal } from './features/admin/AdminPortal';
+import { SuperAdminPortal } from './features/super-admin/SuperAdminPortal';
+import { OwnerPortal } from './features/owner/OwnerPortal';
+import { OwnerAuthModal } from './features/owner/OwnerAuthModal';
+import { PublicVerifyPage } from './features/verify/PublicVerifyPage';
+import { Stethoscope, HeartPulse, Shield, Users, LogOut, Building, User, Building2, Heart } from 'lucide-react';
+import './styles/theme.css';
 import './styles/consultation.css';
+import './styles/auth.css';
+import './styles/admin.css';
+import './styles/doctor.css';
+import './styles/owner.css';
 
-export default function App() {
+function AppContent() {
+  const { user, loading, isAuthenticated, logout } = useAuth();
+
+  // Navigation state
+  const [authView, setAuthView] = useState('login'); // 'login' | 'register'
+  const [inviteToken, setInviteToken] = useState(() => {
+    try {
+      const pathMatch = window.location.pathname.match(/^\/invite\/([a-zA-Z0-9]+)$/);
+      if (pathMatch) return pathMatch[1];
+      const params = new URLSearchParams(window.location.search);
+      return params.get('inviteToken') || null;
+    } catch {
+      return null;
+    }
+  });
+
   const [currentPage, setCurrentPage] = useState(() => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -16,9 +46,37 @@ export default function App() {
 
   const [activeDoctorId, setActiveDoctorId] = useState(() => {
     try {
-      return parseInt(localStorage.getItem('activeDoctorId'), 10) || 1;
+      const stored = localStorage.getItem('activeDoctorId');
+      return stored ? parseInt(stored, 10) : (user?.id || 1);
     } catch {
-      return 1;
+      return user?.id || 1;
+    }
+  });
+
+  const handleSelectActiveDoctor = useCallback((id) => {
+    const docId = parseInt(id, 10);
+    setActiveDoctorId(docId);
+    try {
+      localStorage.setItem('activeDoctorId', String(docId));
+    } catch (_) {}
+  }, []);
+
+  // Explicit Consumer (Pet Guardian) Portal Mode
+  const [isOwnerPortalMode, setIsOwnerPortalMode] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('portal') === 'owner';
+    } catch {
+      return false;
+    }
+  });
+
+  const [ownerSession, setOwnerSession] = useState(() => {
+    try {
+      const stored = localStorage.getItem('petcare_owner_session');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
     }
   });
 
@@ -26,28 +84,30 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       try {
+        const pathMatch = window.location.pathname.match(/^\/invite\/([a-zA-Z0-9]+)$/);
+        if (pathMatch) {
+          setInviteToken(pathMatch[1]);
+          return;
+        }
         const params = new URLSearchParams(window.location.search);
-        setCurrentPage(params.get('page') === 'directory' ? 'directory' : 'consultation');
+        setIsOwnerPortalMode(params.get('portal') === 'owner');
+        if (params.get('page') === 'directory') {
+          setCurrentPage('directory');
+        } else {
+          setCurrentPage('consultation');
+        }
       } catch (_) {}
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const handleSelectActiveDoctor = useCallback((id) => {
-    setActiveDoctorId(id);
-    try {
-      localStorage.setItem('activeDoctorId', String(id));
-    } catch (_) {}
-  }, []);
-
   const handleNavigate = useCallback((page) => {
     setCurrentPage(page);
     try {
-      const storedDoctor = parseInt(localStorage.getItem('activeDoctorId'), 10);
-      if (storedDoctor) setActiveDoctorId(storedDoctor);
-
       const url = new URL(window.location.href);
+      url.searchParams.delete('portal');
+      url.searchParams.delete('tab');
       if (page === 'directory') {
         url.searchParams.set('page', 'directory');
       } else {
@@ -57,59 +117,120 @@ export default function App() {
     } catch (_) {}
   }, []);
 
-  return (
-    <div className="app-container">
-      <header className="navbar">
-        <div className="nav-brand">
-          <Stethoscope size={24} />
-          <span>PetCare AI</span>
-          <span className="nav-brand-badge">Veterinary Clinical Scribe</span>
-        </div>
+  // 0. Public Cryptographic Verification Seal (No auth required)
+  const isVerifyPage = (() => {
+    try {
+      const path = window.location.pathname;
+      if (path.startsWith('/verify')) return true;
+      const params = new URLSearchParams(window.location.search);
+      return params.has('verify') || params.has('ledgerHash');
+    } catch {
+      return false;
+    }
+  })();
 
-        {/* Top-Level SaaS Navigation Bar */}
-        <nav className="nav-links" aria-label="Main Navigation">
-          <button
-            type="button"
-            className={`nav-link ${currentPage === 'consultation' ? 'active' : ''}`}
-            onClick={() => handleNavigate('consultation')}
-            title="Live Clinical Consultation & Scribe"
-          >
-            <Stethoscope size={16} />
-            <span>Live Consultation</span>
-          </button>
-          <button
-            type="button"
-            className={`nav-link ${currentPage === 'directory' ? 'active' : ''}`}
-            onClick={() => handleNavigate('directory')}
-            title="Hospital Directory Management (Doctors & Pets)"
-          >
-            <Users size={16} />
-            <span>Directory Management</span>
-          </button>
-        </nav>
+  if (isVerifyPage) {
+    return (
+      <PublicVerifyPage
+        onBackToApp={() => {
+          window.location.href = '/';
+        }}
+      />
+    );
+  }
 
-        <div className="nav-meta">
-          {/* <span>Central Valley Animal Hospital</span> */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Shield size={14} color="#10b981" />
-            <span>Clinical Safety Guardrails Active</span>
+  // 1. PET OWNER / GUARDIAN PORTAL (Consumer Realm)
+  if (isOwnerPortalMode) {
+    if (ownerSession) {
+      return (
+        <OwnerPortal
+          owner={ownerSession}
+          onLogout={() => {
+            fetch('/api/v1/owner-auth/logout', { method: 'POST' }).catch(() => {});
+            localStorage.removeItem('petcare_owner_session');
+            setOwnerSession(null);
+          }}
+        />
+      );
+    }
+    return (
+      <OwnerAuthModal
+        onLoginSuccess={(owner) => {
+          setOwnerSession(owner);
+        }}
+        onCancel={() => {
+          setIsOwnerPortalMode(false);
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('portal');
+            window.history.pushState({}, '', url.toString());
+          } catch (_) {}
+        }}
+      />
+    );
+  }
+
+  // 2. Session Loading Splash
+  if (loading) {
+    return (
+      <div className="auth-wrapper">
+        <div className="auth-card auth-card-center">
+          <div className="auth-splash-logo-wrap">
+            <img src="/petpulse-logo.png" alt="PetPulse Logo" className="auth-splash-logo" />
           </div>
+          <h2 className="auth-title">PetPulse</h2>
+          <p className="auth-subtitle">Every heartbeat, every record.</p>
         </div>
-      </header>
+      </div>
+    );
+  }
 
-      <main>
-        {currentPage === 'directory' ? (
-          <DirectoryPage
-            activeDoctorId={activeDoctorId}
-            onSelectActiveDoctor={handleSelectActiveDoctor}
-            onNavigateConsultation={() => handleNavigate('consultation')}
-          />
-        ) : (
-          <ConsultationWorkspace />
-        )}
-      </main>
-    </div>
-  );
+  // 3. Invitation Acceptance Page
+  if (inviteToken && !isAuthenticated) {
+    return (
+      <AcceptInvitePage
+        inviteToken={inviteToken}
+        onNavigateLogin={() => {
+          setInviteToken(null);
+          setAuthView('login');
+          window.history.pushState({}, '', '/');
+        }}
+      />
+    );
+  }
+
+  // 4. Unauthenticated Staff Views (Login / Register Clinic)
+  if (!isAuthenticated) {
+    return (
+      <AuthPage
+        initialView={authView}
+        onViewChange={(view) => setAuthView(view)}
+      />
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // STRICT ROLE-BASED PORTAL ROUTING (Zero cross-portal switching)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // PORTAL 1: SUPER ADMIN CONTROL PLANE
+  if (user?.role === 'super_admin') {
+    return <SuperAdminPortal />;
+  }
+
+  // PORTAL 2: CLINIC / HOSPITAL ADMIN PORTAL
+  if (user?.role === 'clinic_admin') {
+    return <AdminPortal />;
+  }
+
+  // PORTAL 3: DOCTOR / CLINICAL PRACTITIONER PORTAL
+  return <DoctorPortal />;
 }
 
-
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}

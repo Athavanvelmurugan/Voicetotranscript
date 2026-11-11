@@ -1,0 +1,268 @@
+/* ============================================================
+   PETCARE AI — THEME FILE (Single Source of Truth)
+   All design tokens for colors, fonts, spacing, radius, and shadows.
+   Never hardcode colors, sizes or fonts in component files.
+   ============================================================ */
+
+:root {
+  /* ---------- Brand Palettes ---------- */
+  --color-primary:        #0284c7;
+  --color-primary-hover:  #0369a1;
+  --color-primary-soft:   #f0f9ff;
+  --color-primary-border: #bae6fd;
+  --color-primary-ring:   rgba(2, 132, 199, 0.2);
+
+  --color-secondary:      #7c3aed;
+  --color-secondary-soft: #f5f3ff;
+  --color-secondary-border: #ddd6fe;
+
+  --color-accent:         #d97706;
+
+  /* ---------- Status Palettes ---------- */
+  --color-success:        #059669;
+  --color-success-hover:  #047857;
+  --color-success-soft:   #ecfdf5;
+  --color-success-border: #a7f3d0;
+
+  --color-warning:        #d97706;
+  --color-warning-soft:   #fffbeb;
+  --color-warning-border: #fde68a;
+
+  --color-danger:         #e11d48;
+  --color-danger-hover:   #be123c;
+  --color-danger-soft:    #fff1f2;
+  --color-danger-border:  #fecdd3;
+
+  --color-info:           #0284c7;
+  --color-info-soft:      #f0f9ff;
+  --color-info-border:    #bae6fd;
+
+  /* ---------- Slate Neutrals System ---------- */
+  --slate-50:  #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+
+  /* ---------- Semantic Surfaces & Text ---------- */
+  --color-bg:             #f1f5f9;
+  --color-surface:        #ffffff;
+  --color-surface-alt:    #f8fafc;
+  --color-surface-card:   #ffffff;
+  --color-border:         #e2e8f0;
+  --color-border-focus:   #0284c7;
+  --color-text:           #0f172a;
+  --color-text-muted:     #64748b;
+  --color-text-on-primary:#ffffff;
+
+  /* Backward compatibility aliases for existing consultation stylesheets */
+  --primary:        var(--color-primary);
+  --primary-hover:  var(--color-primary-hover);
+  --primary-light:  var(--color-primary-soft);
+  --primary-border: var(--color-primary-border);
+  --primary-ring:   var(--color-primary-ring);
+
+  --surface:        var(--color-surface);
+  --surface-alt:    var(--color-surface-alt);
+  --surface-card:   var(--color-surface-card);
+  --border:         var(--color-border);
+  --border-focus:   var(--color-border-focus);
+  --text-main:      var(--color-text);
+  --text-muted:     var(--color-text-muted);
+
+  --success:        var(--color-success);
+  --success-hover:  var(--color-success-hover);
+  --success-light:  var(--color-success-soft);
+  --success-border: var(--color-success-border);
+
+  --warning:        var(--color-warning);
+  --warning-light:  var(--color-warning-soft);
+  --warning-border: var(--color-warning-border);
+
+  --danger:         var(--color-danger);
+  --danger-hover:   var(--color-danger-hover);
+  --danger-light:   var(--color-danger-soft);
+  --danger-border:  var(--color-danger-border);
+
+  --purple:         var(--color-secondary);
+  --purple-light:   var(--color-secondary-soft);
+  --purple-border:  var(--color-secondary-border);
+
+  /* ---------- Typography Scale ---------- */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold: 600;
+  --weight-bold:    700;
+  --weight-extrabold: 800;
+  --line-height:    1.5;
+
+  /* ---------- Spacing Scale ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 56px;
+  --space-9: 64px;
+
+  /* ---------- Shape & Depth ---------- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 18px;
+  --radius-full: 9999px;
+
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+  --shadow-modal: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+
+  /* ---------- Layout Dimensions ---------- */
+  --header-height: 56px;
+  --sidebar-width: 240px;
+  --container-max: 1400px;
+  --touch-target:  44px; /* Minimum mobile touch target */
+
+  /* ---------- Transitions ---------- */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-base: 0.2s ease-in-out;
+}
+
+/* ---------- Petgards Clinical Mint / Teal Theme (Replaces Legacy Dark Theme) ---------- */
+[data-theme='dark'],
+[data-theme='petgards'] {
+  /* Brand: Petgards Teal & Mint */
+  --color-primary:        #3aa396;
+  --color-primary-hover:  #2b8f82;
+  --color-primary-soft:   #eaf7f5;
+  --color-primary-border: #c5ece7;
+  --color-primary-ring:   rgba(58, 163, 150, 0.25);
+
+  --color-secondary:      #1a5048;
+  --color-secondary-soft: #e6f8f6;
+  --color-secondary-border: #c2ede8;
+
+  --color-accent:         #2ab5a0;
+
+  /* Status Palettes */
+  --color-success:        #2e9e6e;
+  --color-success-hover:  #248259;
+  --color-success-soft:   #eaf7f1;
+  --color-success-border: #b2e5d0;
+
+  --color-warning:        #fcb900;
+  --color-warning-soft:   #fffbe6;
+  --color-warning-border: #ffe58f;
+
+  --color-danger:         #e05050;
+  --color-danger-hover:   #c83e3e;
+  --color-danger-soft:    #fff0f0;
+  --color-danger-border:  #f5c0c0;
+
+  --color-info:           #0074db;
+  --color-info-soft:      #e6f7ff;
+  --color-info-border:    #91d5ff;
+
+  /* Surfaces & Backgrounds: Fresh Petgards Mint Tint */
+  --color-bg:             #f0faf9;
+  --color-surface:        #ffffff;
+  --color-surface-alt:    #eef2f5;
+  --color-surface-card:   #ffffff;
+  --color-border:         #dce8ed;
+  --color-border-focus:   #3aa396;
+  --color-text:           #0d1b22;
+  --color-text-muted:     #5a7385;
+  --color-text-on-primary:#ffffff;
+
+  /* Slate Scale tuned to Petgards Slate-Teal */
+  --slate-50:  #f0faf9;
+  --slate-100: #eaf7f5;
+  --slate-200: #dce8ed;
+  --slate-300: #c5ece7;
+  --slate-400: #93adb9;
+  --slate-500: #5a7385;
+  --slate-600: #3aa396;
+  --slate-700: #2b8f82;
+  --slate-800: #1c2b33;
+  --slate-900: #0d1b22;
+
+  /* Petgards Card Shadows & Glow */
+  --shadow-xs: 0 1px 3px 0 rgba(13, 27, 34, 0.05);
+  --shadow-sm: 0 2px 8px 0 rgba(13, 27, 34, 0.07);
+  --shadow-md: 0 4px 16px -1px rgba(13, 27, 34, 0.09);
+  --shadow-lg: 0 10px 24px -3px rgba(13, 27, 34, 0.12);
+  --shadow-xl: 0 20px 32px -5px rgba(13, 27, 34, 0.14);
+  --shadow-modal: 0 25px 50px -12px rgba(13, 27, 34, 0.25);
+}
+
+/* ---------- Global SaaS Typography Base ---------- */
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- Universal SaaS Custom Scrollbars ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--slate-300) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--slate-300);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-400);
+}
+
+[data-theme='dark'] *,
+[data-theme='petgards'] * {
+  scrollbar-color: var(--slate-400) transparent;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb,
+[data-theme='petgards'] ::-webkit-scrollbar-thumb {
+  background: var(--slate-400);
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover,
+[data-theme='petgards'] ::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-500);
+}
+
+

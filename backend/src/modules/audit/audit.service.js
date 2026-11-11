@@ -31,12 +31,22 @@ class AuditService {
    */
   async logChainedEvent({
     consultationId,
+    clinicId = null,
     eventType,
     actorId = null,
     actorType = 'doctor',
     payloadSnapshot = {},
     customTimestamp = null,
   }) {
+    let effectiveClinicId = clinicId;
+    if (!effectiveClinicId && consultationId) {
+      const cRes = await db.query('SELECT clinic_id FROM consultations WHERE id = $1;', [consultationId]);
+      if (cRes.rows.length > 0) {
+        effectiveClinicId = cRes.rows[0].clinic_id;
+      }
+    }
+    if (!effectiveClinicId) effectiveClinicId = 1;
+
     // 1. Fetch latest block for this consultation to establish hash chain linkage
     const lastRowRes = await db.query(
       `SELECT sequence_number, current_hash 
@@ -64,13 +74,14 @@ class AuditService {
 
     const insertQuery = `
       INSERT INTO consultation_audit_ledger
-        (consultation_id, sequence_number, event_type, actor_id, actor_type, payload_snapshot, previous_hash, current_hash, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        (consultation_id, clinic_id, sequence_number, event_type, actor_id, actor_type, payload_snapshot, previous_hash, current_hash, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *;
     `;
 
     const values = [
       consultationId,
+      effectiveClinicId,
       sequenceNumber,
       eventType,
       actorId,
@@ -157,6 +168,7 @@ class AuditService {
    */
   async log({
     consultationId,
+    clinicId = null,
     actorId = null,
     actorType = 'doctor',
     action,
@@ -167,14 +179,24 @@ class AuditService {
     metadata = {},
     ipAddress = null,
   }) {
+    let effectiveClinicId = clinicId;
+    if (!effectiveClinicId && consultationId) {
+      const cRes = await db.query('SELECT clinic_id FROM consultations WHERE id = $1;', [consultationId]);
+      if (cRes.rows.length > 0) {
+        effectiveClinicId = cRes.rows[0].clinic_id;
+      }
+    }
+    if (!effectiveClinicId) effectiveClinicId = 1;
+
     const query = `
       INSERT INTO consultation_audit_logs 
-        (consultation_id, actor_id, actor_type, action, entity_type, entity_id, before_state, after_state, metadata, ip_address)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        (consultation_id, clinic_id, actor_id, actor_type, action, entity_type, entity_id, before_state, after_state, metadata, ip_address)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *;
     `;
     const values = [
       consultationId,
+      effectiveClinicId,
       actorId,
       actorType,
       action,

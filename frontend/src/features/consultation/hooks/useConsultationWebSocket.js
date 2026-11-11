@@ -11,17 +11,65 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
   const seenSequencesRef = useRef(new Set());
   const activeConsultationIdRef = useRef(consultationId);
 
+  // Store latest callbacks in a mutable ref to decouple connection lifecycle from parent callback re-creation
+  const callbacksRef = useRef({ onDocumentsReady, onStatusChange });
+  useEffect(() => {
+    callbacksRef.current = { onDocumentsReady, onStatusChange };
+  }, [onDocumentsReady, onStatusChange]);
+
   // Keep activeConsultationIdRef in sync with the current consultationId
   useEffect(() => {
     activeConsultationIdRef.current = consultationId;
   }, [consultationId]);
 
+  // Safe socket closure helper: ensures connecting sockets aren't aborted prematurely
+  const safeClose = useCallback((socket) => {
+    if (!socket) return;
+    socket._isExplicitClose = true;
+    if (socket.readyState === WebSocket.CONNECTING) {
+      // Mute error handlers so handshake abort does not trigger console errors
+      socket.onerror = () => {};
+      socket.onopen = () => {
+        try {
+          socket.close(1000, 'Session changed');
+        } catch (_) {}
+      };
+      // Fallback: close after 150ms if open never fires
+      setTimeout(() => {
+        try {
+          if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+            socket.close(1000, 'Session cleanup');
+          }
+        } catch (_) {}
+      }, 150);
+    } else if (socket.readyState === WebSocket.OPEN) {
+      try {
+        socket.close(1000, 'Session ended');
+      } catch (_) {}
+    }
+  }, []);
+
   const connect = useCallback(() => {
     if (!consultationId) return;
 
-    // Use current host or proxy ws url
+    // Guard: If already connecting or open for the same consultation, do not duplicate
+    if (
+      wsRef.current &&
+      wsRef.current._consultationId === consultationId &&
+      (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)
+    ) {
+      return;
+    }
+
+    // Close any previous socket for a different consultation
+    if (wsRef.current) {
+      safeClose(wsRef.current);
+      wsRef.current = null;
+    }
+
+    // Use current host to route through Vite proxy (/ws) or production reverse proxy
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.hostname === 'localhost' ? 'localhost:5000' : window.location.host;
+    const host = window.location.host;
     const wsUrl = `${protocol}//${host}/ws/v1/consultations/${consultationId}`;
 
     setConnectionStatus('connecting');
@@ -32,9 +80,8 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
 
     ws.onopen = () => {
       // If active consultation changed while connecting, abort and close
-      if (ws._consultationId !== activeConsultationIdRef.current) {
-        ws._isExplicitClose = true;
-        ws.close();
+      if (ws._consultationId !== activeConsultationIdRef.current || ws._isExplicitClose) {
+        safeClose(ws);
         return;
       }
       setConnectionStatus('connected');
@@ -46,8 +93,8 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
     };
 
     ws.onmessage = (event) => {
-      // Discard any message received from a socket of an inactive consultation
-      if (ws._consultationId !== activeConsultationIdRef.current) {
+      // Discard any message received from a socket of an inactive consultation or explicit close
+      if (ws._consultationId !== activeConsultationIdRef.current || ws._isExplicitClose) {
         return;
       }
       try {
@@ -89,7 +136,9 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
           }
 
           case 'status_change':
-            if (onStatusChange) onStatusChange(msg.status);
+            if (callbacksRef.current.onStatusChange) {
+              callbacksRef.current.onStatusChange(msg.status);
+            }
             break;
 
           case 'extraction_progress':
@@ -98,7 +147,9 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
 
           case 'documents_ready':
             setExtractionProgress(null);
-            if (onDocumentsReady) onDocumentsReady(msg.documents);
+            if (callbacksRef.current.onDocumentsReady) {
+              callbacksRef.current.onDocumentsReady(msg.documents);
+            }
             break;
 
           default:
@@ -110,25 +161,26 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
     };
 
     ws.onerror = (err) => {
-      if (ws._consultationId === activeConsultationIdRef.current) {
-        console.error('[WS Hook] WebSocket error:', err);
-        setConnectionStatus('error');
+      // Ignore errors on sockets that are superseded or intentionally closed during teardown
+      if (ws._isExplicitClose || ws._consultationId !== activeConsultationIdRef.current) {
+        return;
       }
+      console.error('[WS Hook] WebSocket error:', err);
+      setConnectionStatus('error');
     };
 
     ws.onclose = () => {
-      if (ws._consultationId === activeConsultationIdRef.current) {
+      if (ws._consultationId === activeConsultationIdRef.current && !ws._isExplicitClose) {
         setConnectionStatus('disconnected');
-      }
-      // Reconnect only if this socket belongs to the currently active consultation and wasn't explicitly closed
-      if (!ws._isExplicitClose && ws._consultationId === activeConsultationIdRef.current) {
         if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
+          if (activeConsultationIdRef.current === consultationId) {
+            connect();
+          }
         }, 3000);
       }
     };
-  }, [consultationId, onDocumentsReady, onStatusChange]);
+  }, [consultationId, safeClose]);
 
   // ─── Initial HTTP fetch of saved transcript segments ─────────────────────────
   useEffect(() => {
@@ -173,15 +225,19 @@ export function useConsultationWebSocket(consultationId, onDocumentsReady, onSta
   }, [consultationId]);
 
   useEffect(() => {
+    if (!consultationId) {
+      setConnectionStatus('disconnected');
+      return;
+    }
     connect();
     return () => {
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
       if (wsRef.current) {
-        wsRef.current._isExplicitClose = true;
-        wsRef.current.close();
+        safeClose(wsRef.current);
+        wsRef.current = null;
       }
     };
-  }, [connect]);
+  }, [consultationId, connect, safeClose]);
 
   const reloadTranscript = useCallback(async () => {
     if (!consultationId) {

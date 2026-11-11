@@ -51,7 +51,7 @@ export function DocumentsPanel({
     try {
       const res = await fetch(`/api/v1/documents/${activeDoc.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-doctor-id': String(activeDoctorId) },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content: formData,
           doctorNotes: 'Doctor updated document draft via clinical editor',
@@ -76,7 +76,6 @@ export function DocumentsPanel({
     try {
       const res = await fetch(`/api/v1/documents/${activeDoc.id}/approve`, {
         method: 'POST',
-        headers: { 'x-doctor-id': String(activeDoctorId) },
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -96,7 +95,7 @@ export function DocumentsPanel({
     try {
       const res = await fetch(`/api/v1/documents/${activeDoc.id}/reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-doctor-id': String(activeDoctorId) },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: rejectReason }),
       });
       const data = await res.json();

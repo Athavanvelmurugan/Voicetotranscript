@@ -2,12 +2,12 @@ const repo = require('./consultation.repository');
 const auditService = require('../audit/audit.service');
 
 class ConsultationService {
-  async getAllConsultations() {
-    return repo.findAll();
+  async getAllConsultations(options = null) {
+    return repo.findAll(options);
   }
 
-  async getAllPets() {
-    return repo.getPets();
+  async getAllPets(clinicId = null) {
+    return repo.getPets(clinicId);
   }
 
   async resetConsultation(id, doctorId) {
@@ -65,12 +65,24 @@ class ConsultationService {
     return updated;
   }
 
-  async getConsultation(id) {
+  async getConsultation(id, tenantContext = null) {
     const consultation = await repo.findById(id);
     if (!consultation) {
       const error = new Error(`Consultation #${id} not found`);
       error.statusCode = 404;
       throw error;
+    }
+    if (tenantContext) {
+      if (tenantContext.clinicId && consultation.clinic_id && consultation.clinic_id !== tenantContext.clinicId) {
+        const error = new Error('Access denied: consultation belongs to another clinic');
+        error.statusCode = 403;
+        throw error;
+      }
+      if (tenantContext.role === 'doctor' && consultation.doctor_id && consultation.doctor_id !== tenantContext.userId) {
+        const error = new Error('Access denied: consultation is assigned to another doctor');
+        error.statusCode = 403;
+        throw error;
+      }
     }
     return consultation;
   }

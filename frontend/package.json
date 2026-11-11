@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint:theme": "node ../scripts/lint_theme.cjs",
+    "test:doctor": "playwright test e2e/doctor_portal.spec.js",
+    "test:responsive": "playwright test e2e/responsive.spec.js",
     "test:headed": "playwright test e2e/live-audio-consultation.spec.js --headed",
     "test:debug": "playwright test e2e/live-audio-consultation.spec.js --headed --debug"
   },

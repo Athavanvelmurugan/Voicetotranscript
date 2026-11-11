@@ -48,6 +48,18 @@ async function runMigrations() {
     const seedSql = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf-8');
     await pool.query(seedSql);
     console.log('[DB] ✅ Initial seed data applied (Doctors, Pets, Appointments with integer IDs 1, 2, 3).');
+
+    // Run incremental migrations from migrations/ directory
+    const migrationsDir = path.join(__dirname, 'migrations');
+    if (fs.existsSync(migrationsDir)) {
+      const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
+      for (const file of files) {
+        console.log(`[DB] 🔄 Running migration: ${file}...`);
+        const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf-8');
+        await pool.query(sql);
+        console.log(`[DB] ✅ Migration applied: ${file}`);
+      }
+    }
   } catch (err) {
     console.error('[DB] Migration error:', err.message);
     process.exit(1);

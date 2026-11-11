@@ -19,6 +19,26 @@ pool.on('error', (err) => {
 module.exports = {
   query: (text, params) => pool.query(text, params),
   getClient: () => pool.connect(),
+  withTenantContext: async (clinicId, isSuperAdmin = false, callback) => {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      if (isSuperAdmin) {
+        await client.query("SET LOCAL app.is_super_admin = 'true';");
+      } else {
+        await client.query("SET LOCAL app.clinic_id = $1;", [String(clinicId || '')]);
+        await client.query("SET LOCAL app.is_super_admin = 'false';");
+      }
+      const result = await callback(client);
+      await client.query('COMMIT');
+      return result;
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  },
   pool,
 };
 

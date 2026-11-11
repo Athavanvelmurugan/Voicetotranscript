@@ -24,6 +24,14 @@ const config = {
     realtimeModel: process.env.OPENAI_REALTIME_MODEL || 'gpt-4o-realtime-preview',
   },
   audioRetentionDays: parseInt(process.env.AUDIO_RETENTION_DAYS, 10) || 30,
+  auth: {
+    jwtSecret: process.env.JWT_SECRET || 'petcare_dev_jwt_secret_super_secure_key_2026',
+    cookieSecret: process.env.COOKIE_SECRET || 'petcare_dev_cookie_secret_super_secure_key_2026',
+    accessTokenExpiry: '15m',
+    refreshTokenDays: 14,
+    stagingHardcodedOtp: '123456',
+  },
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
 };
 
 module.exports = config;

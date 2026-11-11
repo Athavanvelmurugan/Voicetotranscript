@@ -1,16 +1,17 @@
 const db = require('../../db/connection');
 
 class ConsultationRepository {
-  async create({ appointmentId, petId, doctorId, language = 'en', consentGiven = false }) {
+  async create({ appointmentId, petId, doctorId, clinicId = 1, language = 'en', consentGiven = false }) {
     const query = `
-      INSERT INTO consultations (appointment_id, pet_id, doctor_id, language, consent_given, consent_at, status)
-      VALUES ($1, $2, $3, $4, $5, $6, 'scheduled')
+      INSERT INTO consultations (appointment_id, pet_id, doctor_id, clinic_id, language, consent_given, consent_at, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'scheduled')
       RETURNING *;
     `;
     const values = [
       appointmentId || null,
       petId,
       doctorId,
+      clinicId,
       language,
       consentGiven,
       consentGiven ? new Date() : null,
@@ -28,6 +29,9 @@ class ConsultationRepository {
         p.breed AS pet_breed,
         p.age_years AS pet_age,
         p.weight_kg AS pet_weight,
+        p.allergies AS pet_allergies,
+        p.chronic_conditions AS pet_chronic_conditions,
+        p.microchip_no AS pet_microchip_no,
         p.owner_name,
         p.owner_contact,
         u.name AS doctor_name,
@@ -172,7 +176,36 @@ class ConsultationRepository {
     return rows[0];
   }
 
-  async findAll() {
+  async findAll(options = {}) {
+    let clinicId = null;
+    let doctorId = null;
+
+    if (typeof options === 'number' || typeof options === 'string') {
+      clinicId = parseInt(options, 10);
+    } else if (options && typeof options === 'object') {
+      clinicId = options.clinicId ? parseInt(options.clinicId, 10) : null;
+      doctorId = options.doctorId ? parseInt(options.doctorId, 10) : null;
+    }
+
+    let whereClause = '';
+    const conditions = [];
+    const params = [];
+    let idx = 1;
+
+    if (clinicId) {
+      conditions.push(`c.clinic_id = $${idx++}`);
+      params.push(clinicId);
+    }
+
+    if (doctorId) {
+      conditions.push(`c.doctor_id = $${idx++}`);
+      params.push(doctorId);
+    }
+
+    if (conditions.length > 0) {
+      whereClause = 'WHERE ' + conditions.join(' AND ');
+    }
+
     const query = `
       SELECT 
         c.*,
@@ -181,6 +214,9 @@ class ConsultationRepository {
         p.breed AS pet_breed,
         p.age_years AS pet_age,
         p.weight_kg AS pet_weight,
+        p.allergies AS pet_allergies,
+        p.chronic_conditions AS pet_chronic_conditions,
+        p.microchip_no AS pet_microchip_no,
         p.owner_name,
         p.owner_contact,
         u.name AS doctor_name,
@@ -191,15 +227,22 @@ class ConsultationRepository {
       JOIN pets p ON c.pet_id = p.id
       JOIN users u ON c.doctor_id = u.id
       LEFT JOIN appointments a ON c.appointment_id = a.id
+      ${whereClause}
       ORDER BY c.id DESC;
     `;
-    const { rows } = await db.query(query);
+    const { rows } = await db.query(query, params);
     return rows;
   }
 
-  async getPets() {
-    const query = `SELECT * FROM pets ORDER BY id ASC;`;
-    const { rows } = await db.query(query);
+  async getPets(clinicId = null) {
+    let whereClause = '';
+    const params = [];
+    if (clinicId) {
+      whereClause = 'WHERE clinic_id = $1';
+      params.push(clinicId);
+    }
+    const query = `SELECT * FROM pets ${whereClause} ORDER BY id ASC;`;
+    const { rows } = await db.query(query, params);
     return rows;
   }
 

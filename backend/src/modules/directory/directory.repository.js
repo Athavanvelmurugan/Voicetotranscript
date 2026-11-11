@@ -2,21 +2,29 @@ const db = require('../../db/connection');
 
 class DirectoryRepository {
   // ─── DOCTORS (USERS) ────────────────────────────────────────────────────────
-  async getDoctors() {
+  async getDoctors(clinicId = null) {
+    let whereClause = '';
+    const params = [];
+    if (clinicId) {
+      whereClause = 'WHERE u.clinic_id = $1';
+      params.push(clinicId);
+    }
     const query = `
       SELECT 
         u.id, 
         u.name, 
         u.email, 
         u.role, 
+        u.clinic_id,
         u.created_at,
         COUNT(c.id)::int AS consultation_count
       FROM users u
       LEFT JOIN consultations c ON c.doctor_id = u.id
+      ${whereClause}
       GROUP BY u.id
       ORDER BY u.id ASC;
     `;
-    const { rows } = await db.query(query);
+    const { rows } = await db.query(query, params);
     return rows;
   }
 
@@ -25,13 +33,13 @@ class DirectoryRepository {
     return rows[0] || null;
   }
 
-  async createDoctor({ name, email, role = 'veterinarian' }) {
+  async createDoctor({ name, email, role = 'doctor', clinicId = 1 }) {
     const query = `
-      INSERT INTO users (name, email, role)
-      VALUES ($1, $2, $3)
+      INSERT INTO users (name, email, role, clinic_id, status, email_verified_at)
+      VALUES ($1, $2, $3, $4, 'active', NOW())
       RETURNING *;
     `;
-    const { rows } = await db.query(query, [name.trim(), email.trim().toLowerCase(), role.trim()]);
+    const { rows } = await db.query(query, [name.trim(), email.trim().toLowerCase(), role.trim(), clinicId]);
     return rows[0];
   }
 
@@ -56,17 +64,24 @@ class DirectoryRepository {
   }
 
   // ─── PETS (PATIENTS) ────────────────────────────────────────────────────────
-  async getPets() {
+  async getPets(clinicId = null) {
+    let whereClause = '';
+    const params = [];
+    if (clinicId) {
+      whereClause = 'WHERE p.clinic_id = $1';
+      params.push(clinicId);
+    }
     const query = `
       SELECT 
         p.*,
         COUNT(c.id)::int AS consultation_count
       FROM pets p
       LEFT JOIN consultations c ON c.pet_id = p.id
+      ${whereClause}
       GROUP BY p.id
       ORDER BY p.id ASC;
     `;
-    const { rows } = await db.query(query);
+    const { rows } = await db.query(query, params);
     return rows;
   }
 
@@ -75,10 +90,10 @@ class DirectoryRepository {
     return rows[0] || null;
   }
 
-  async createPet({ name, species, breed = '', age_years = null, weight_kg = null, owner_name, owner_contact = '' }) {
+  async createPet({ name, species, breed = '', age_years = null, weight_kg = null, owner_name, owner_contact = '', clinicId = 1 }) {
     const query = `
-      INSERT INTO pets (name, species, breed, age_years, weight_kg, owner_name, owner_contact)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO pets (name, species, breed, age_years, weight_kg, owner_name, owner_contact, clinic_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;
     `;
     const values = [
@@ -89,6 +104,7 @@ class DirectoryRepository {
       weight_kg !== null && weight_kg !== '' ? parseFloat(weight_kg) : null,
       owner_name ? owner_name.trim() : 'Pet Owner',
       owner_contact ? owner_contact.trim() : null,
+      clinicId,
     ];
     const { rows } = await db.query(query, values);
     return rows[0];

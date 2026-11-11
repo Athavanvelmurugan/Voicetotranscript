@@ -1,23 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../../auth/AuthContext';
 import { ConsultationHeader } from './components/ConsultationHeader';
 import { RecordingPanel } from './components/LiveRecording/RecordingPanel';
 import { DocumentsPanel } from './components/ClinicalDocuments/DocumentsPanel';
-import { DirectoryModal } from './components/DirectoryModal';
 import { ClinicalInsightsModal } from './components/ClinicalInsightsModal';
+import { PatientSafetyBanner } from './components/PatientSafetyBanner';
 import { useConsultationWebSocket } from './hooks/useConsultationWebSocket';
 import { useMicrophone } from './hooks/useMicrophone';
-import { Sparkles, Plus, X, Stethoscope, AlertCircle, Users } from 'lucide-react';
+import { apiClient } from '../../api/client';
+import { Sparkles, Plus, X, Stethoscope, AlertCircle } from 'lucide-react';
 
-export function ConsultationWorkspace() {
+export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelectedPet = null }) {
+  const { user } = useAuth();
   const [consultations, setConsultations]   = useState([]);
 
-  // Persistent active consultation ID (from URL param or localStorage)
+  // Persistent active consultation ID (from URL param or user-scoped localStorage)
   const [consultationId, setConsultationId] = useState(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const paramId = parseInt(urlParams.get('consultationId'), 10);
       if (paramId) return paramId;
-      const cachedId = parseInt(localStorage.getItem('activeConsultationId'), 10);
+      const userStorageKey = user?.id ? `activeConsultationId_${user.id}` : 'activeConsultationId';
+      const cachedId = parseInt(localStorage.getItem(userStorageKey), 10);
       return cachedId || null;
     } catch {
       return null;
@@ -32,12 +36,9 @@ export function ConsultationWorkspace() {
 
   // Dynamic Active Doctor State (Persisted in localStorage)
   const [activeDoctorId, setActiveDoctorId] = useState(() => {
-    return parseInt(localStorage.getItem('activeDoctorId'), 10) || 1;
+    return user?.id || parseInt(localStorage.getItem('activeDoctorId'), 10) || 1;
   });
   const [doctors, setDoctors] = useState([]);
-
-  // Directory Modal state
-  const [showDirectoryModal, setShowDirectoryModal] = useState(false);
 
   // Clinical Insights & Generated Templates Modal state
   const [showInsightsModal, setShowInsightsModal]   = useState(false);
@@ -46,34 +47,35 @@ export function ConsultationWorkspace() {
   // New consultation modal state
   const [showNewModal, setShowNewModal]     = useState(false);
   const [pets, setPets]                     = useState([]);
-  const [newDoctorId, setNewDoctorId]       = useState(activeDoctorId);
+  const [newDoctorId, setNewDoctorId]       = useState(() => user?.id || activeDoctorId);
   const [newPetId, setNewPetId]             = useState('');
   const [newLanguage, setNewLanguage]       = useState('en');
   const [newConsent, setNewConsent]         = useState(true);
   const [isCreating, setIsCreating]         = useState(false);
 
-  // Dynamic auth headers helper
-  const getAuthHeaders = useCallback((extra = {}) => ({
-    'x-doctor-id': String(activeDoctorId),
-    ...extra,
-  }), [activeDoctorId]);
-
-  // ─── Fetch Doctors & Pets Lists ─────────────────────────────────────────────
+  // ─── Fetch Doctors & Pets Lists (Strictly Scoped) ─────────────────────────
   const loadDirectoryMeta = useCallback(async () => {
     try {
       const [docsRes, petsRes] = await Promise.all([
-        fetch('/api/v1/directory/doctors'),
-        fetch('/api/v1/directory/pets'),
+        apiClient('/api/v1/directory/doctors'),
+        apiClient('/api/v1/pets'),
       ]);
       const docsData = await docsRes.json();
       const petsData = await petsRes.json();
 
       if (docsData.success) {
         setDoctors(docsData.data);
-        if (!docsData.data.some((d) => d.id === activeDoctorId) && docsData.data.length > 0) {
-          setActiveDoctorId(docsData.data[0].id);
-          localStorage.setItem('activeDoctorId', String(docsData.data[0].id));
-        }
+        setActiveDoctorId((currentActiveId) => {
+          if (user?.id) return user.id;
+          if (!docsData.data.some((d) => d.id === currentActiveId) && docsData.data.length > 0) {
+            const fallbackId = docsData.data[0].id;
+            try {
+              localStorage.setItem('activeDoctorId', String(fallbackId));
+            } catch (_) {}
+            return fallbackId;
+          }
+          return currentActiveId;
+        });
       }
 
       if (petsData.success && petsData.data.length > 0) {
@@ -83,71 +85,101 @@ export function ConsultationWorkspace() {
     } catch (err) {
       console.error('[ConsultationWorkspace] Directory meta load error:', err);
     }
-  }, [activeDoctorId]);
+  }, [user]); // Stable callback
 
-  // ─── Load all consultations list ───────────────────────────────────────────
+  // ─── Load all consultations list (Multi-tenant scoped) ─────────────────────
   const loadConsultationsList = useCallback(async (targetId = null) => {
     try {
-      const res = await fetch('/api/v1/consultations', {
-        headers: getAuthHeaders(),
-      });
+      const res = await apiClient('/api/v1/consultations');
       const data = await res.json();
       if (data.success) {
-        setConsultations(data.data);
-        if (data.data.length > 0) {
+        const list = Array.isArray(data.data) ? data.data : [];
+        setConsultations(list);
+        const userStorageKey = user?.id ? `activeConsultationId_${user.id}` : 'activeConsultationId';
+
+        if (list.length > 0) {
           setConsultationId((prev) => {
-            if (targetId && data.data.some((c) => c.id === targetId)) {
+            if (targetId && list.some((c) => c.id === targetId)) {
               return targetId;
             }
             const urlParams = new URLSearchParams(window.location.search);
             const paramId = parseInt(urlParams.get('consultationId'), 10);
-            const cachedId = parseInt(localStorage.getItem('activeConsultationId'), 10);
+            const cachedId = parseInt(localStorage.getItem(userStorageKey), 10);
             const candidate = paramId || prev || cachedId;
 
-            // Prioritize current candidate if it exists in the list, else fallback to first
-            if (candidate && data.data.some((c) => c.id === candidate)) {
+            // Prioritize current candidate ONLY if it exists in the doctor's verified list
+            if (candidate && list.some((c) => c.id === candidate)) {
               return candidate;
             }
-            return data.data[0].id;
+            return list[0].id;
           });
         } else {
+          // Doctor has 0 consultations: clean slate
           setConsultationId(null);
           setConsultation(null);
           setDocuments([]);
+          setSegments([]);
+          try {
+            localStorage.removeItem(userStorageKey);
+            localStorage.removeItem('activeConsultationId');
+            const currentUrl = new URL(window.location.href);
+            if (currentUrl.searchParams.has('consultationId')) {
+              currentUrl.searchParams.delete('consultationId');
+              window.history.replaceState(null, '', currentUrl.toString());
+            }
+          } catch (_) {}
         }
       }
     } catch (err) {
       console.error('[ConsultationWorkspace] Error listing consultations:', err);
     }
-  }, [getAuthHeaders]);
+  }, [user]);
 
   // ─── Fetch single consultation + documents ──────────────────────────────────
   const loadConsultationData = useCallback(async (id) => {
     if (!id) return;
     try {
-      const res = await fetch(`/api/v1/consultations/${id}`, {
-        headers: getAuthHeaders(),
-      });
+      const res = await apiClient(`/api/v1/consultations/${id}`);
       const data = await res.json();
-      if (data.success) {
-        setConsultation(data.data);
-        if (data.data.doctor_id) {
-          setActiveDoctorId(data.data.doctor_id);
-          try {
-            localStorage.setItem('activeDoctorId', String(data.data.doctor_id));
-          } catch (_) {}
-        }
+      if (!res.ok || !data.success) {
+        // Forbidden or Not Found: immediately purge consultation state!
+        setConsultation(null);
+        setDocuments([]);
+        setSegments([]);
+        setConsultationId(null);
+        try {
+          const userStorageKey = user?.id ? `activeConsultationId_${user.id}` : 'activeConsultationId';
+          localStorage.removeItem(userStorageKey);
+          localStorage.removeItem('activeConsultationId');
+          const currentUrl = new URL(window.location.href);
+          if (currentUrl.searchParams.has('consultationId')) {
+            currentUrl.searchParams.delete('consultationId');
+            window.history.replaceState(null, '', currentUrl.toString());
+          }
+        } catch (_) {}
+        return;
       }
 
-      const docsRes = await fetch(`/api/v1/consultations/${id}/documents`);
+      setConsultation(data.data);
+      if (data.data.doctor_id) {
+        setActiveDoctorId(data.data.doctor_id);
+        try {
+          localStorage.setItem('activeDoctorId', String(data.data.doctor_id));
+        } catch (_) {}
+      }
+
+      const docsRes = await apiClient(`/api/v1/consultations/${id}/documents`);
       const docsData = await docsRes.json();
-      if (docsData.success) {
-        setDocuments(docsData.data);
+      if (docsRes.ok && docsData.success) {
+        setDocuments(docsData.data || []);
+      } else {
+        setDocuments([]);
       }
     } catch (err) {
       console.error('[ConsultationWorkspace] Load error:', err);
+      setDocuments([]);
     }
-  }, [getAuthHeaders]);
+  }, [user]);
 
   // Initial load
   useEffect(() => {
@@ -157,11 +189,12 @@ export function ConsultationWorkspace() {
 
   // Load active consultation when id changes and sync with localStorage & URL
   useEffect(() => {
+    const userStorageKey = user?.id ? `activeConsultationId_${user.id}` : 'activeConsultationId';
     if (consultationId) {
       loadConsultationData(consultationId);
       try {
-        localStorage.setItem('activeConsultationId', String(consultationId));
-        const currentUrl = new URL(window.location);
+        localStorage.setItem(userStorageKey, String(consultationId));
+        const currentUrl = new URL(window.location.href);
         if (currentUrl.searchParams.get('consultationId') !== String(consultationId)) {
           currentUrl.searchParams.set('consultationId', String(consultationId));
           window.history.replaceState(null, '', currentUrl.toString());
@@ -169,8 +202,35 @@ export function ConsultationWorkspace() {
       } catch (e) {
         console.warn('[ConsultationWorkspace] Storage/URL sync warning:', e);
       }
+    } else {
+      try {
+        localStorage.removeItem(userStorageKey);
+        localStorage.removeItem('activeConsultationId');
+        const currentUrl = new URL(window.location.href);
+        if (currentUrl.searchParams.has('consultationId')) {
+          currentUrl.searchParams.delete('consultationId');
+          window.history.replaceState(null, '', currentUrl.toString());
+        }
+      } catch (_) {}
     }
-  }, [consultationId, loadConsultationData]);
+  }, [consultationId, loadConsultationData, user]);
+
+  // Handle browser popstate navigation (Back / Forward buttons & URL change)
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramId = parseInt(urlParams.get('consultationId'), 10);
+        if (paramId && paramId !== consultationId) {
+          setSegments([]);
+          setDocuments([]);
+          setConsultationId(paramId);
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [consultationId]);
 
   // Sync newDoctorId default when activeDoctorId changes
   useEffect(() => {
@@ -179,21 +239,32 @@ export function ConsultationWorkspace() {
 
   // ─── Doctor Switcher ────────────────────────────────────────────────────────
   const handleSelectActiveDoctor = async (id) => {
-    setActiveDoctorId(id);
+    const doctorNum = parseInt(id, 10);
+    setActiveDoctorId(doctorNum);
     try {
-      localStorage.setItem('activeDoctorId', String(id));
+      localStorage.setItem('activeDoctorId', String(doctorNum));
     } catch (_) {}
 
+    const chosenDoc = doctors.find((d) => d.id === doctorNum);
+
     // If an active consultation is open and its assigned doctor differs, reassign in backend
-    if (consultationId && consultation && consultation.doctor_id !== id) {
+    if (consultationId && consultation && consultation.doctor_id !== doctorNum) {
+      // 1. Optimistic update so the dropdown does not flicker or bounce back
+      setConsultation((prev) =>
+        prev
+          ? {
+              ...prev,
+              doctor_id: doctorNum,
+              doctor_name: chosenDoc?.name || prev.doctor_name,
+              doctor_email: chosenDoc?.email || prev.doctor_email,
+            }
+          : prev
+      );
+
       try {
-        const res = await fetch(`/api/v1/consultations/${consultationId}/doctor`, {
+        const res = await apiClient(`/api/v1/consultations/${consultationId}/doctor`, {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-doctor-id': String(id),
-          },
-          body: JSON.stringify({ doctorId: id }),
+          body: JSON.stringify({ doctorId: doctorNum }),
         });
         const data = await res.json();
         if (data.success) {
@@ -212,7 +283,7 @@ export function ConsultationWorkspace() {
   const handleDeleteConsultation = async (id) => {
     if (!window.confirm(`Delete Consultation #${id}? This will remove its transcript and documents.`)) return;
     try {
-      const res = await fetch(`/api/v1/directory/consultations/${id}`, {
+      const res = await apiClient(`/api/v1/directory/consultations/${id}`, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -285,7 +356,32 @@ export function ConsultationWorkspace() {
         localStorage.setItem('activeDoctorId', String(targetConsultation.doctor_id));
       } catch (_) {}
     }
+
+    try {
+      const currentUrl = new URL(window.location);
+      currentUrl.searchParams.delete('portal');
+      currentUrl.searchParams.delete('tab');
+      currentUrl.searchParams.set('consultationId', String(id));
+      window.history.pushState({}, '', currentUrl.toString());
+    } catch (_) {}
   };
+
+  // External launcher for specific pet consultation (from Patient List or Clinical Chart)
+  useEffect(() => {
+    if (!preSelectedPetId) return;
+
+    const matching = consultations.find((c) => c.pet_id === preSelectedPetId);
+    if (matching) {
+      handleSelectConsultation(matching.id);
+    } else {
+      setNewPetId(String(preSelectedPetId));
+      setShowNewModal(true);
+    }
+
+    if (onClearPreSelectedPet) {
+      onClearPreSelectedPet();
+    }
+  }, [preSelectedPetId, consultations, onClearPreSelectedPet]);
 
   const handleCreateNewConsultation = async (e) => {
     e.preventDefault();
@@ -294,12 +390,12 @@ export function ConsultationWorkspace() {
     setIsCreating(true);
     setErrorMessage(null);
     try {
-      const chosenDoctor = newDoctorId || activeDoctorId;
-      const res = await fetch('/api/v1/consultations', {
+      const chosenDoctor = parseInt(newDoctorId || activeDoctorId || 1, 10);
+      const res = await apiClient('/api/v1/consultations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-doctor-id': String(chosenDoctor) },
         body: JSON.stringify({
           petId: parseInt(newPetId, 10),
+          doctorId: chosenDoctor,
           language: newLanguage,
           consentGiven: newConsent,
         }),
@@ -325,6 +421,8 @@ export function ConsultationWorkspace() {
       try {
         localStorage.setItem('activeConsultationId', String(newId));
         const currentUrl = new URL(window.location);
+        currentUrl.searchParams.delete('portal');
+        currentUrl.searchParams.delete('tab');
         currentUrl.searchParams.set('consultationId', String(newId));
         window.history.replaceState(null, '', currentUrl.toString());
       } catch (e) {
@@ -343,9 +441,8 @@ export function ConsultationWorkspace() {
   const handleResetConsultation = async () => {
     if (!consultationId) return;
     try {
-      const res = await fetch(`/api/v1/consultations/${consultationId}/reset`, {
+      const res = await apiClient(`/api/v1/consultations/${consultationId}/reset`, {
         method: 'POST',
-        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (data.success) {
@@ -367,9 +464,8 @@ export function ConsultationWorkspace() {
     try {
       // Dynamic pet owner name derived from consultation or selected pet (NO hardcoded fallback)
       const dynamicOwner = consultation?.owner_name || 'Pet Owner (Digital Consent)';
-      const res = await fetch(`/api/v1/consultations/${consultationId}/consent`, {
+      const res = await apiClient(`/api/v1/consultations/${consultationId}/consent`, {
         method: 'POST',
-        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ givenBy: dynamicOwner }),
       });
       const data = await res.json();
@@ -391,9 +487,8 @@ export function ConsultationWorkspace() {
     }
     setErrorMessage(null);
     try {
-      const res = await fetch(`/api/v1/consultations/${consultationId}/start`, {
+      const res = await apiClient(`/api/v1/consultations/${consultationId}/start`, {
         method: 'POST',
-        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -410,9 +505,8 @@ export function ConsultationWorkspace() {
     try {
       sendPause();
       pauseCapture();
-      const res = await fetch(`/api/v1/consultations/${consultationId}/pause`, {
+      const res = await apiClient(`/api/v1/consultations/${consultationId}/pause`, {
         method: 'POST',
-        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (data.success) setConsultation(data.data);
@@ -426,9 +520,8 @@ export function ConsultationWorkspace() {
     try {
       sendResume();
       await resumeCapture();
-      const res = await fetch(`/api/v1/consultations/${consultationId}/resume`, {
+      const res = await apiClient(`/api/v1/consultations/${consultationId}/resume`, {
         method: 'POST',
-        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (data.success) setConsultation(data.data);
@@ -442,9 +535,8 @@ export function ConsultationWorkspace() {
     try {
       stopCapture();
       sendStop(durationSeconds);
-      const res = await fetch(`/api/v1/consultations/${consultationId}/stop`, {
+      const res = await apiClient(`/api/v1/consultations/${consultationId}/stop`, {
         method: 'POST',
-        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ audioDurationSeconds: durationSeconds }),
       });
       const data = await res.json();
@@ -459,9 +551,8 @@ export function ConsultationWorkspace() {
     setIsGenerating(true);
     setErrorMessage(null);
     try {
-      const res = await fetch(`/api/v1/consultations/${consultationId}/generate`, {
+      const res = await apiClient(`/api/v1/consultations/${consultationId}/generate`, {
         method: 'POST',
-        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -495,9 +586,8 @@ export function ConsultationWorkspace() {
         ? `/api/v1/consultations/${consultationId}/upload-and-scribe`
         : '/api/v1/consultations/upload-and-scribe';
 
-      const res = await fetch(targetUrl, {
+      const res = await apiClient(targetUrl, {
         method: 'POST',
-        headers: getAuthHeaders(),
         body: formData,
       });
 
@@ -537,9 +627,8 @@ export function ConsultationWorkspace() {
     const targetId = idToComplete || consultationId;
     if (!targetId) return;
     try {
-      const res = await fetch(`/api/v1/consultations/${targetId}/complete`, {
+      const res = await apiClient(`/api/v1/consultations/${targetId}/complete`, {
         method: 'POST',
-        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -568,9 +657,8 @@ export function ConsultationWorkspace() {
     try {
       for (const doc of documents) {
         if (doc.status !== 'approved') {
-          await fetch(`/api/v1/documents/${doc.id}/approve`, {
+          await apiClient(`/api/v1/documents/${doc.id}/approve`, {
             method: 'POST',
-            headers: { 'x-doctor-id': String(activeDoctorId) },
           });
         }
       }
@@ -590,9 +678,8 @@ export function ConsultationWorkspace() {
     try {
       for (const doc of documents) {
         if (doc.status !== 'rejected') {
-          await fetch(`/api/v1/documents/${doc.id}/reject`, {
+          await apiClient(`/api/v1/documents/${doc.id}/reject`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-doctor-id': String(activeDoctorId) },
             body: JSON.stringify({ reason }),
           });
         }
@@ -609,7 +696,7 @@ export function ConsultationWorkspace() {
   return (
     <div className="consultation-workspace">
       {errorMessage && (
-        <div style={{ background: '#fee2e2', border: '1px solid #f87171', color: '#991b1b', padding: '12px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="alert-inline-error">
           <AlertCircle size={16} />
           <span>{errorMessage}</span>
         </div>
@@ -617,7 +704,7 @@ export function ConsultationWorkspace() {
 
       {/* Progress banner during AI extraction */}
       {extractionProgress && (
-        <div style={{ background: '#f0fdf4', border: '1px solid #86efac', padding: '12px 18px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', color: '#166534' }}>
+        <div className="alert-inline-progress">
           <Sparkles size={20} className="spin" />
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>
@@ -635,7 +722,6 @@ export function ConsultationWorkspace() {
         consultations={consultations}
         onSelectConsultation={handleSelectConsultation}
         onOpenNewConsultationModal={() => setShowNewModal(true)}
-        onOpenDirectoryModal={() => setShowDirectoryModal(true)}
         doctors={doctors}
         activeDoctorId={activeDoctorId}
         onSelectActiveDoctor={handleSelectActiveDoctor}
@@ -643,6 +729,20 @@ export function ConsultationWorkspace() {
         onCompleteConsultation={handleCompleteConsultation}
         connectionStatus={connectionStatus}
       />
+
+      {/* Patient Clinical Safety Banner */}
+      {consultation && (
+        <PatientSafetyBanner
+          petName={consultation.pet_name}
+          species={consultation.pet_species}
+          breed={consultation.pet_breed}
+          allergies={consultation.pet_allergies}
+          chronicConditions={consultation.pet_chronic_conditions}
+          microchipNo={consultation.pet_microchip_no}
+          weightKg={consultation.pet_weight}
+          ageYears={consultation.pet_age}
+        />
+      )}
 
       <div className="split-workspace">
         <RecordingPanel
@@ -683,19 +783,6 @@ export function ConsultationWorkspace() {
         />
       </div>
 
-      {/* ─── Directory Management Modal (Doctors & Pets) ─── */}
-      <DirectoryModal
-        isOpen={showDirectoryModal}
-        onClose={() => setShowDirectoryModal(false)}
-        activeDoctorId={activeDoctorId}
-        onSelectActiveDoctor={handleSelectActiveDoctor}
-        onRefreshData={() => {
-          loadDirectoryMeta();
-          loadConsultationsList();
-          if (consultationId) loadConsultationData(consultationId);
-        }}
-      />
-
       {/* ─── Clinical Insights & Generated Templates Modal (Summary, Meds, Tests, Follow-ups) ─── */}
       <ClinicalInsightsModal
         isOpen={showInsightsModal}
@@ -726,48 +813,22 @@ export function ConsultationWorkspace() {
 
             <form onSubmit={handleCreateNewConsultation}>
               <div className="modal-body">
-                {/* Doctor Selection */}
+                {/* Attending Veterinarian Locked to Authenticated Doctor */}
                 <div className="form-group" style={{ marginBottom: '14px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>
-                      Attending Veterinarian
-                    </label>
-                    <button
-                      type="button"
-                      style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: '0.74rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-                      onClick={() => { setShowNewModal(false); setShowDirectoryModal(true); }}
-                    >
-                      <Users size={12} /> Manage Doctors
-                    </button>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '6px', display: 'block' }}>
+                    Attending Clinician
+                  </label>
+                  <div className="doctor-locked-badge">
+                    <Stethoscope size={16} />
+                    <span>{user?.name ? (user.name.startsWith('Dr.') ? user.name : `Dr. ${user.name}`) : 'Attending DVM'} (You)</span>
                   </div>
-                  <select
-                    className="form-control"
-                    value={newDoctorId}
-                    onChange={(e) => setNewDoctorId(parseInt(e.target.value, 10))}
-                    required
-                  >
-                    {doctors.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name} ({d.role}) — #{d.id}
-                      </option>
-                    ))}
-                  </select>
                 </div>
 
                 {/* Patient / Pet Selection */}
                 <div className="form-group" style={{ marginBottom: '14px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>
-                      Select Patient (Pet)
-                    </label>
-                    <button
-                      type="button"
-                      style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: '0.74rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-                      onClick={() => { setShowNewModal(false); setShowDirectoryModal(true); }}
-                    >
-                      <Plus size={12} /> Add New Pet
-                    </button>
-                  </div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px', display: 'block' }}>
+                    Select Patient (Pet)
+                  </label>
                   <select
                     className="form-control"
                     value={newPetId}
@@ -824,6 +885,7 @@ export function ConsultationWorkspace() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS consultation_audit_logs (
   id SERIAL PRIMARY KEY,
   consultation_id INTEGER NOT NULL REFERENCES consultations(id) ON DELETE CASCADE,
   actor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  actor_type VARCHAR(20) NOT NULL CHECK (actor_type IN ('doctor', 'system', 'ai')),
+  actor_type VARCHAR(20) NOT NULL CHECK (actor_type IN ('doctor', 'system', 'ai', 'admin')),
   action VARCHAR(100) NOT NULL,
   entity_type VARCHAR(50),
   entity_id INTEGER,

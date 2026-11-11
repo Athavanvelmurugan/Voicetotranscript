@@ -65,7 +65,7 @@ class AudioController {
       const speakerRole = req.body.speakerRole || 'unknown';
       const chunkIndex = parseInt(req.body.chunkIndex, 10) || 0;
       const language = req.body.language || 'en';
-      const doctorId = parseInt(req.headers['x-doctor-id'], 10) || 1;
+      const doctorId = req.user?.id || 1;
 
       // 4. Fast-path check: Idempotency receipt (Bug 7: network retry of same chunk)
       const receiptRes = await db.query(
@@ -323,7 +323,7 @@ class AudioController {
       const fileName = req.file.originalname || 'consultation_audio.wav';
       const mimeType = req.file.mimetype || 'audio/wav';
       const language = req.body?.language || 'en';
-      const doctorId = parseInt(req.headers['x-doctor-id'], 10) || parseInt(req.body?.doctorId, 10) || 1;
+      const doctorId = req.user?.id || parseInt(req.body?.doctorId, 10) || 1;
       const consultationId = parseInt(req.params?.id, 10) || parseInt(req.body?.consultationId, 10) || null;
       const shouldAutoGenerate = req.body?.autoGenerate === 'true' || req.body?.autoGenerate === true || (!req.params?.id && req.body?.autoGenerate !== 'false');
 
