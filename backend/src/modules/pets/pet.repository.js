@@ -2,7 +2,9 @@ const db = require('../../db/connection');
 
 class PetRepository {
   async getPets(clinicId, { page = 1, limit = 10, offset = 0, ownerId = null, search = '', species = '' } = {}) {
-    let whereClause = 'WHERE p.clinic_id = $1';
+    let whereClause = `WHERE (p.clinic_id = $1 OR EXISTS (
+      SELECT 1 FROM pet_practice_links ppl WHERE ppl.pet_id = p.id AND ppl.clinic_id = $1 AND ppl.status = 'ACTIVE'
+    ))`;
     const params = [clinicId];
     let idx = 2;
 
@@ -71,7 +73,9 @@ class PetRepository {
       LEFT JOIN pet_owners po ON po.pet_id = p.id AND po.is_primary = true
       LEFT JOIN owners o ON o.id = po.owner_id
       LEFT JOIN consultations c ON c.pet_id = p.id
-      WHERE p.clinic_id = $1 AND p.id = $2
+      WHERE (p.clinic_id = $1 OR EXISTS (
+        SELECT 1 FROM pet_practice_links ppl WHERE ppl.pet_id = p.id AND ppl.clinic_id = $1 AND ppl.status = 'ACTIVE'
+      )) AND p.id = $2
       GROUP BY p.id, o.id;
     `;
     const { rows } = await db.query(query, [clinicId, id]);
@@ -127,11 +131,18 @@ class PetRepository {
 
       let linkedOwnerId = owner_id;
       if (!linkedOwnerId && owner_name && owner_name.trim()) {
+        // owners.phone is VARCHAR(20) NOT NULL; never store long emails in phone
+        const rawPhone = (owner_phone && owner_phone.trim())
+          || (owner_contact && !owner_contact.includes('@') ? owner_contact.trim() : '');
+        const resolvedPhone = rawPhone ? rawPhone.slice(0, 20) : 'Unspecified';
+        const resolvedEmail = (owner_email && owner_email.trim())
+          || (owner_contact && owner_contact.includes('@') ? owner_contact.trim() : null);
+
         const ownerRes = await client.query(
           `INSERT INTO owners (clinic_id, name, phone, email)
            VALUES ($1, $2, $3, $4)
            RETURNING id;`,
-          [clinicId, owner_name.trim(), owner_phone ? owner_phone.trim() : (contactVal ? contactVal.trim() : null), owner_email ? owner_email.trim() : null]
+          [clinicId, owner_name.trim(), resolvedPhone, resolvedEmail]
         );
         if (ownerRes.rows.length > 0) {
           linkedOwnerId = ownerRes.rows[0].id;
@@ -147,6 +158,15 @@ class PetRepository {
           [pet.id, linkedOwnerId]
         );
       }
+
+      // Link pet to practice via pet_practice_links
+      await client.query(
+        `INSERT INTO pet_practice_links (pet_id, practice_id, clinic_id, status)
+         SELECT $1, pr.id, pr.clinic_id, 'ACTIVE'
+         FROM practices pr WHERE pr.clinic_id = $2
+         ON CONFLICT (pet_id, practice_id) DO UPDATE SET status = 'ACTIVE';`,
+        [pet.id, clinicId]
+      );
 
       await client.query('COMMIT');
       return this.findById(clinicId, pet.id);
@@ -180,7 +200,9 @@ class PetRepository {
     const query = `
       UPDATE pets
       SET ${sets.join(', ')}
-      WHERE clinic_id = $1 AND id = $2
+      WHERE (clinic_id = $1 OR EXISTS (
+        SELECT 1 FROM pet_practice_links ppl WHERE ppl.pet_id = pets.id AND ppl.clinic_id = $1 AND ppl.status = 'ACTIVE'
+      )) AND id = $2
       RETURNING *;
     `;
     await db.query(query, values);

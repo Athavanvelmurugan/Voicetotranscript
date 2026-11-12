@@ -29,7 +29,7 @@ export function SuperAdminAuditLogTab() {
       });
       const res = await apiClient(`/api/v1/super-admin/audit-logs?${query}`);
       const json = await res.json();
-      if (json.success) {
+      if (res.ok && json.success) {
         setLogs(json.data || []);
         setTotalCount(json.pagination?.total || 0);
       } else {
@@ -92,88 +92,88 @@ export function SuperAdminAuditLogTab() {
       )}
 
       {/* Audit Log Table */}
-      <div className="dashboard-panel" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-xs)', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ background: 'var(--color-surface-alt)', borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
-                <th style={{ padding: 'var(--space-3)' }}>Timestamp</th>
-                <th style={{ padding: 'var(--space-3)' }}>Hospital Tenant</th>
-                <th style={{ padding: 'var(--space-3)' }}>Actor & Role</th>
-                <th style={{ padding: 'var(--space-3)' }}>Action Triggered</th>
-                <th style={{ padding: 'var(--space-3)' }}>Target Entity</th>
-                <th style={{ padding: 'var(--space-3)' }}>IP Address</th>
-                <th style={{ padding: 'var(--space-3)', textAlign: 'right' }}>Integrity</th>
+      <div className="table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Hospital Tenant</th>
+              <th>Actor &amp; Role</th>
+              <th>Action Triggered</th>
+              <th>Target Entity</th>
+              <th>IP Address</th>
+              <th>Integrity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && (
+              <tr>
+                <td colSpan={7} className="table-empty-message">
+                  Verifying and loading cryptographic audit logs...
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading && (
-                <tr>
-                  <td colSpan={7} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                    Verifying and loading cryptographic audit logs...
-                  </td>
-                </tr>
-              )}
-              {!loading && logs.length === 0 && (
-                <tr>
-                  <td colSpan={7} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                    No audit records found matching criteria.
-                  </td>
-                </tr>
-              )}
-              {!loading && logs.map((log) => {
-                const dateStr = log.created_at
-                  ? new Date(log.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'medium' })
-                  : 'N/A';
+            )}
+            {!loading && logs.length === 0 && (
+              <tr>
+                <td colSpan={7} className="table-empty-message">
+                  No audit records found matching criteria.
+                </td>
+              </tr>
+            )}
+            {!loading && logs.map((log) => {
+              const dateStr = log.created_at
+                ? new Date(log.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'medium' })
+                : 'N/A';
 
-                return (
-                  <tr key={log.id} style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text)' }}>
-                    <td style={{ padding: 'var(--space-3)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
-                      {dateStr}
-                    </td>
-                    <td style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-semibold)' }}>
-                      {log.clinic_name || `Hospital #${log.clinic_id || 'System'}`}
-                    </td>
-                    <td style={{ padding: 'var(--space-3)' }}>
-                      <div style={{ fontWeight: 'var(--weight-bold)' }}>{log.actor_name || 'System Actor'}</div>
-                      <span className="badge badge-info" style={{ marginTop: '2px' }}>
-                        {log.actor_type || 'system'}
-                      </span>
-                    </td>
-                    <td style={{ padding: 'var(--space-3)' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 'var(--weight-medium)', color: 'var(--color-primary)' }}>
-                        {log.action}
-                      </span>
-                    </td>
-                    <td style={{ padding: 'var(--space-3)', color: 'var(--color-text-muted)' }}>
-                      {log.entity_type ? `${log.entity_type} #${log.entity_id || ''}` : `Consultation #${log.consultation_id || 'N/A'}`}
-                    </td>
-                    <td style={{ padding: 'var(--space-3)', color: 'var(--color-text-muted)' }}>
+              return (
+                <tr key={log.id}>
+                  <td>
+                    <span className="admin-meta-sub">{dateStr}</span>
+                  </td>
+                  <td>
+                    <strong>{log.clinic_name || `System${log.clinic_id ? ` #${log.clinic_id}` : ''}`}</strong>
+                  </td>
+                  <td>
+                    <strong>{log.actor_name || 'System Actor'}</strong>
+                    <div className="admin-meta-sub">{log.actor_type || 'system'}</div>
+                  </td>
+                  <td>
+                    <span className="admin-badge badge-active admin-font-mono">{log.action}</span>
+                  </td>
+                  <td>
+                    <span className="admin-meta-sub">
+                      {log.entity_type
+                        ? `${log.entity_type} #${log.entity_id || '—'}`
+                        : `Consultation #${log.consultation_id || 'N/A'}`}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="admin-font-mono admin-meta-sub">
                       {log.ip_address || 'Internal RPC'}
-                    </td>
-                    <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>
-                      <span className="badge badge-success" title="SHA-256 Hash Chained & Verified">
-                        <CheckCircle2 size={11} style={{ marginRight: '3px' }} aria-hidden="true" />
-                        Verified
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <PaginationControl
-          currentPage={page}
-          totalPages={totalPages}
-          totalItems={totalCount}
-          pageSize={pageSize}
-          onPageChange={(p) => setPage(p)}
-          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
-          pageSizeOptions={[15, 30, 50]}
-        />
+                    </span>
+                  </td>
+                  <td>
+                    <span className="admin-badge badge-active" title="SHA-256 Hash Chained & Verified">
+                      <CheckCircle2 size={12} aria-hidden="true" />
+                      <span>Verified</span>
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
+
+      <PaginationControl
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={totalCount}
+        pageSize={pageSize}
+        onPageChange={(p) => setPage(p)}
+        onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+        pageSizeOptions={[15, 30, 50]}
+      />
     </div>
   );
 }

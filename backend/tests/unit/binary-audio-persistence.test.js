@@ -40,8 +40,8 @@ describe('Binary Audio PostgreSQL Persistence (BYTEA) Unit Tests', () => {
 
     // Insert BYTEA
     const insertRes = await db.query(`
-      INSERT INTO consultation_audio (consultation_id, audio_data, mime_type, file_name, file_size_bytes)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO consultation_audio (consultation_id, clinic_id, audio_data, mime_type, file_name, file_size_bytes)
+      VALUES ($1, 1, $2, $3, $4, $5)
       RETURNING id, consultation_id, mime_type, file_name, file_size_bytes, created_at
     `, [testConsultationId, dummyAudioBuffer, mimeType, fileName, dummyAudioBuffer.length]);
 
@@ -64,22 +64,39 @@ describe('Binary Audio PostgreSQL Persistence (BYTEA) Unit Tests', () => {
   });
 
   it('2. should support in-memory Buffer directly in whisperClient.transcribe without reading from disk', async () => {
-    // Test whisperClient with an in-memory buffer
-    const mockAudioHeader = Buffer.from('RIFF$\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00D\xac\x00\x00\x88X\x01\x00\x02\x00\x10\x00data\x00\x00\x00\x00');
-    
-    // Transcribe with Buffer parameter
-    const result = await whisperClient.transcribe({
-      buffer: mockAudioHeader,
-      fileName: 'virtual_buffer.wav',
-      language: 'en',
-      speakerRole: 'doctor',
-      chunkIndex: 0,
-      baseSequence: 0,
-    });
+    // Load real WAV audio directly into an in-memory Buffer (no filePath passed to whisperClient)
+    const wavPath = path.resolve(__dirname, '../../../frontend/test-assets/test audio.wav');
+    const inMemoryWav = fs.readFileSync(wavPath);
 
-    assert.ok(result, 'Whisper transcription result must be defined');
-    assert.ok(typeof result.fullText === 'string', 'fullText must be a string');
-    assert.ok(Array.isArray(result.segments), 'segments must be an array');
+    // Stub live transport locally so test verifies in-memory Buffer handling deterministically
+    const origClient = whisperClient.client;
+    whisperClient.client = {
+      audio: {
+        transcriptions: {
+          create: async () => ({
+            text: 'Patient Milo is doing better after treatment.',
+            language: 'en',
+            segments: [{ id: 0, text: 'Patient Milo is doing better after treatment.', start: 0, end: 2.0, avg_logprob: -0.2, no_speech_prob: 0.01 }],
+          }),
+        },
+      },
+    };
+    try {
+      const result = await whisperClient.transcribe({
+        buffer: inMemoryWav,
+        fileName: 'virtual_buffer.wav',
+        language: 'en',
+        speakerRole: 'doctor',
+        chunkIndex: 0,
+        baseSequence: 0,
+      });
+
+      assert.ok(result, 'Whisper transcription result must be defined');
+      assert.ok(typeof result.fullText === 'string' && result.fullText.length > 0, 'fullText must be populated');
+      assert.ok(Array.isArray(result.segments) && result.segments.length >= 1, 'segments must be populated');
+    } finally {
+      whisperClient.client = origClient;
+    }
   });
 });
 

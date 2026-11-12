@@ -64,8 +64,8 @@ test('Part B.2 Chunk Idempotency, Concurrency & Advisory Lock Tests', async (t) 
   t.before(async () => {
     // Create consultation in recording state
     const res = await db.query(
-      `INSERT INTO consultations (doctor_id, pet_id, status, language, consent_given)
-       VALUES (1, 1, 'recording', 'en', true)
+      `INSERT INTO consultations (clinic_id, doctor_id, pet_id, status, language, consent_given)
+       VALUES (1, 1, 1, 'recording', 'en', true)
        RETURNING id`
     );
     testConsultId = res.rows[0].id;

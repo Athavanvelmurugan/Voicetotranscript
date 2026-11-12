@@ -24,16 +24,26 @@ import {
   generateSlug,
 } from './validation';
 import { MfaModal } from './MfaModal';
+import { RegisterRoleSelector } from './RegisterRoleSelector';
+import { HospitalSignupForm } from './HospitalSignupForm';
+import { DoctorSignupForm } from './DoctorSignupForm';
+import { PetOwnerSignupForm } from './PetOwnerSignupForm';
+import { VerificationStep } from './VerificationStep';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 import '../styles/auth.css';
 
 export function AuthPage({ initialView = 'login', onViewChange }) {
   const [activeTab, setActiveTab] = useState(initialView); // 'login' | 'register'
+  const [registerRole, setRegisterRole] = useState(null); // null | 'hospital' | 'doctor' | 'pet_owner'
+  const [pendingVerification, setPendingVerification] = useState(null);
+  const [forgotOpen, setForgotOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login, verifyMfa, registerClinic } = useAuth();
+  const { login, verifyMfa } = useAuth();
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    setRegisterRole(null);
+    setPendingVerification(null);
     if (onViewChange) {
       onViewChange(tab);
     }
@@ -92,120 +102,6 @@ export function AuthPage({ initialView = 'login', onViewChange }) {
     setMfaChallenge({ active: false, tempToken: '' });
   };
 
-  // ─────────────────────────────────────────────────────────────
-  // 2. REGISTER STATE & HANDLERS
-  // ─────────────────────────────────────────────────────────────
-  const [regData, setRegData] = useState({
-    clinicName: '',
-    clinicSlug: '',
-    adminName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-  });
-
-  const [regErrors, setRegErrors] = useState({});
-  const [regTouched, setRegTouched] = useState({});
-  const [regSubmitting, setRegSubmitting] = useState(false);
-  const [regApiError, setRegApiError] = useState('');
-
-  const validateRegField = (field, value, allData = regData) => {
-    let result = { isValid: true, error: '' };
-
-    switch (field) {
-      case 'clinicName':
-        result = validateClinicName(value);
-        break;
-      case 'clinicSlug':
-        result = validateClinicSlug(value);
-        break;
-      case 'adminName':
-        if (!value || value.trim().length < 3) {
-          result = { isValid: false, error: 'Administrator full name is required (min 3 chars).' };
-        }
-        break;
-      case 'email':
-        result = validateEmail(value);
-        break;
-      case 'phone':
-        result = validatePhone(value);
-        break;
-      case 'password':
-        result = validatePassword(value);
-        break;
-      case 'confirmPassword':
-        result = validateConfirmPassword(allData.password, value);
-        break;
-      default:
-        break;
-    }
-
-    setRegErrors((prev) => ({
-      ...prev,
-      [field]: result.isValid ? '' : result.error,
-    }));
-
-    return result.isValid;
-  };
-
-  const handleRegChange = (field, value) => {
-    const updated = { ...regData, [field]: value };
-
-    if (field === 'clinicName' && !regTouched.clinicSlug) {
-      updated.clinicSlug = generateSlug(value);
-      validateRegField('clinicSlug', updated.clinicSlug, updated);
-    }
-
-    setRegData(updated);
-
-    if (regTouched[field]) {
-      validateRegField(field, value, updated);
-    }
-  };
-
-  const handleRegBlur = (field) => {
-    setRegTouched((prev) => ({ ...prev, [field]: true }));
-    validateRegField(field, regData[field]);
-  };
-
-  const handleRegSubmit = async (e) => {
-    e.preventDefault();
-
-    const fields = ['clinicName', 'clinicSlug', 'adminName', 'email', 'phone', 'password', 'confirmPassword'];
-    let allValid = true;
-
-    fields.forEach((f) => {
-      const isValid = validateRegField(f, regData[f], regData);
-      if (!isValid) allValid = false;
-    });
-
-    setRegTouched(fields.reduce((acc, f) => ({ ...acc, [f]: true }), {}));
-
-    if (!allValid) {
-      setRegApiError('Please fix the validation errors below before submitting.');
-      return;
-    }
-
-    setRegSubmitting(true);
-    setRegApiError('');
-
-    try {
-      await registerClinic({
-        clinicName: regData.clinicName,
-        clinicSlug: regData.clinicSlug,
-        adminName: regData.adminName,
-        email: regData.email,
-        password: regData.password,
-        phone: regData.phone,
-      });
-    } catch (err) {
-      setRegApiError(err.message || 'Registration failed. Please check form inputs.');
-    } finally {
-      setRegSubmitting(false);
-    }
-  };
-
   return (
     <div className="auth-split-wrapper">
       {/* ─────────────────────────────────────────────────────────────
@@ -246,7 +142,7 @@ export function AuthPage({ initialView = 'login', onViewChange }) {
           ───────────────────────────────────────────────────────────── */}
       <section className="auth-form-pane" aria-label="Authentication Form Area">
         {/* Centered Form Wrapper */}
-        <div className="auth-form-inner-wrapper">
+        <div className={`auth-form-inner-wrapper ${activeTab === 'register' && registerRole ? 'auth-form-inner-wrapper--wide' : ''}`}>
           {/* Form Brand Header (Logo + PetPulse + Motto) */}
           <div className="auth-form-brand-header">
             <div className="auth-form-brand-badge-wrap">
@@ -268,12 +164,26 @@ export function AuthPage({ initialView = 'login', onViewChange }) {
           {/* Form Title & Subtitle */}
           <div className="auth-form-titles">
             <h2 className="auth-main-title">
-              {activeTab === 'login' ? 'Welcome Back' : 'Register Clinic'}
+              {activeTab === 'login'
+                ? 'Welcome Back'
+                : pendingVerification
+                  ? 'Verify Your Account'
+                  : registerRole === 'hospital'
+                    ? 'Hospital Self-Registration'
+                    : registerRole === 'doctor'
+                      ? 'Doctor Self-Registration'
+                      : registerRole === 'pet_owner'
+                        ? 'Pet Owner Registration'
+                        : 'Create Your Account'}
             </h2>
             <p className="auth-main-subtitle">
               {activeTab === 'login'
-                ? 'Sign in to your account to continue'
-                : 'Set up your practice workspace to continue'}
+                ? 'Sign in to your PetCare AI workspace or guardian portal'
+                : pendingVerification
+                  ? 'Confirm your email or mobile number with the 6-digit OTP'
+                  : registerRole
+                    ? 'Complete your independent registration details below'
+                    : 'Choose your account type to get started independently'}
             </p>
           </div>
 
@@ -358,6 +268,17 @@ export function AuthPage({ initialView = 'login', onViewChange }) {
                 </div>
               </div>
 
+              {/* Forgot Password Link */}
+              <div className="auth-inline-actions">
+                <button
+                  type="button"
+                  className="auth-link-btn"
+                  onClick={() => setForgotOpen(true)}
+                >
+                  Forgot password?
+                </button>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"
@@ -370,22 +291,23 @@ export function AuthPage({ initialView = 'login', onViewChange }) {
 
               {/* Bottom switch link */}
               <div className="auth-bottom-switch">
-                <span>Need to register a new clinic? </span>
+                <span>New to PetCare AI? </span>
                 <button
                   type="button"
                   className="auth-link-btn"
                   onClick={() => handleTabChange('register')}
+                  data-testid="open-register-selector"
                 >
-                  Register Clinic
+                  Create Account (Hospital, Doctor or Pet Owner)
                 </button>
               </div>
 
               {/* Pet Guardian link */}
               <div className="auth-bottom-switch auth-guardian-link-row">
-                <span>Looking for your pet's records? </span>
+                <span>Quick OTP lookup for your pet's records? </span>
                 <button
                   type="button"
-                  className="auth-link-btn font-bold text-primary"
+                  className="auth-link-btn"
                   onClick={() => {
                     const url = new URL(window.location.href);
                     url.searchParams.set('portal', 'owner');
@@ -398,243 +320,46 @@ export function AuthPage({ initialView = 'login', onViewChange }) {
             </form>
           )}
 
-          {/* ══════════════ TAB 2: REGISTER CLINIC FORM ══════════════ */}
+          {/* ══════════════ TAB 2: INDEPENDENT MULTI-ROLE SELF-REGISTRATION ══════════════ */}
           {activeTab === 'register' && (
-            <form onSubmit={handleRegSubmit} className="auth-clean-form" noValidate>
-              {regApiError && (
-                <div className="form-alert-banner" role="alert">
-                  <AlertCircle size={16} />
-                  <span>{regApiError}</span>
-                </div>
-              )}
-
-              {/* Clinic Name & Slug Row */}
-              <div className="auth-fields-row">
-                <div className="auth-field-group">
-                  <label htmlFor="reg-clinicName" className="auth-field-label">
-                    Clinic / Hospital Name *
-                  </label>
-                  <div className="auth-input-wrapper">
-                    <Building2 size={18} className="auth-input-lead-icon" />
-                    <input
-                      id="reg-clinicName"
-                      type="text"
-                      className="auth-clean-input"
-                      value={regData.clinicName}
-                      onChange={(e) => handleRegChange('clinicName', e.target.value)}
-                      onBlur={() => handleRegBlur('clinicName')}
-                      placeholder="Central Valley Animal Hospital"
-                      required
-                    />
-                  </div>
-                  {regErrors.clinicName && (
-                    <span className="auth-field-error">
-                      <AlertCircle size={13} />
-                      {regErrors.clinicName}
-                    </span>
-                  )}
-                </div>
-
-                <div className="auth-field-group">
-                  <label htmlFor="reg-clinicSlug" className="auth-field-label">
-                    Workspace URL Slug *
-                  </label>
-                  <div className="auth-input-wrapper">
-                    <Globe size={18} className="auth-input-lead-icon" />
-                    <input
-                      id="reg-clinicSlug"
-                      type="text"
-                      className="auth-clean-input"
-                      value={regData.clinicSlug}
-                      onChange={(e) => handleRegChange('clinicSlug', e.target.value)}
-                      onBlur={() => handleRegBlur('clinicSlug')}
-                      placeholder="central-valley"
-                      required
-                    />
-                  </div>
-                  {regErrors.clinicSlug && (
-                    <span className="auth-field-error">
-                      <AlertCircle size={13} />
-                      {regErrors.clinicSlug}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Admin Name & Phone Row */}
-              <div className="auth-fields-row">
-                <div className="auth-field-group">
-                  <label htmlFor="reg-adminName" className="auth-field-label">
-                    Administrator Name *
-                  </label>
-                  <div className="auth-input-wrapper">
-                    <User size={18} className="auth-input-lead-icon" />
-                    <input
-                      id="reg-adminName"
-                      type="text"
-                      className="auth-clean-input"
-                      value={regData.adminName}
-                      onChange={(e) => handleRegChange('adminName', e.target.value)}
-                      onBlur={() => handleRegBlur('adminName')}
-                      placeholder="Dr. Maya Patel"
-                      required
-                    />
-                  </div>
-                  {regErrors.adminName && (
-                    <span className="auth-field-error">
-                      <AlertCircle size={13} />
-                      {regErrors.adminName}
-                    </span>
-                  )}
-                </div>
-
-                <div className="auth-field-group">
-                  <label htmlFor="reg-phone" className="auth-field-label">
-                    Mobile Phone *
-                  </label>
-                  <div className="auth-input-wrapper">
-                    <Phone size={18} className="auth-input-lead-icon" />
-                    <input
-                      id="reg-phone"
-                      type="tel"
-                      className="auth-clean-input"
-                      value={regData.phone}
-                      onChange={(e) => handleRegChange('phone', e.target.value)}
-                      onBlur={() => handleRegBlur('phone')}
-                      placeholder="9876543210"
-                      required
-                    />
-                  </div>
-                  {regErrors.phone && (
-                    <span className="auth-field-error">
-                      <AlertCircle size={13} />
-                      {regErrors.phone}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Admin Email */}
-              <div className="auth-field-group">
-                <label htmlFor="reg-email" className="auth-field-label">
-                  Hospital Admin Email *
-                </label>
-                <div className="auth-input-wrapper">
-                  <Mail size={18} className="auth-input-lead-icon" />
-                  <input
-                    id="reg-email"
-                    type="email"
-                    className="auth-clean-input"
-                    value={regData.email}
-                    onChange={(e) => handleRegChange('email', e.target.value)}
-                    onBlur={() => handleRegBlur('email')}
-                    placeholder="admin@centralvalleyvet.com"
-                    required
-                  />
-                </div>
-                {regErrors.email && (
-                  <span className="auth-field-error">
-                    <AlertCircle size={13} />
-                    {regErrors.email}
-                  </span>
-                )}
-              </div>
-
-              {/* Password & Confirm Password Row */}
-              <div className="auth-fields-row">
-                <div className="auth-field-group">
-                  <label htmlFor="reg-password" className="auth-field-label">
-                    Password *
-                  </label>
-                  <div className="auth-input-wrapper">
-                    <Lock size={18} className="auth-input-lead-icon" />
-                    <input
-                      id="reg-password"
-                      type={showPassword ? 'text' : 'password'}
-                      className="auth-clean-input"
-                      value={regData.password}
-                      onChange={(e) => handleRegChange('password', e.target.value)}
-                      onBlur={() => handleRegBlur('password')}
-                      placeholder="Enter password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="auth-password-toggle-btn"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                  {regErrors.password && (
-                    <span className="auth-field-error">
-                      <AlertCircle size={13} />
-                      {regErrors.password}
-                    </span>
-                  )}
-                </div>
-
-                <div className="auth-field-group">
-                  <label htmlFor="reg-confirmPassword" className="auth-field-label">
-                    Confirm Password *
-                  </label>
-                  <div className="auth-input-wrapper">
-                    <Lock size={18} className="auth-input-lead-icon" />
-                    <input
-                      id="reg-confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      className="auth-clean-input"
-                      value={regData.confirmPassword}
-                      onChange={(e) => handleRegChange('confirmPassword', e.target.value)}
-                      onBlur={() => handleRegBlur('confirmPassword')}
-                      placeholder="Confirm password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="auth-password-toggle-btn"
-                      onClick={() => setShowConfirmPassword((prev) => !prev)}
-                      aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-                    >
-                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                  {regErrors.confirmPassword && (
-                    <span className="auth-field-error">
-                      <AlertCircle size={13} />
-                      {regErrors.confirmPassword}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="auth-submit-btn"
-                disabled={regSubmitting}
-                style={{ marginTop: 'var(--space-2)' }}
-              >
-                <span>{regSubmitting ? 'Creating Clinic Workspace...' : 'Create Clinic Workspace'}</span>
-                <ArrowRight size={16} />
-              </button>
-
-              {/* Bottom switch link */}
-              <div className="auth-bottom-switch">
-                <span>Already registered your clinic? </span>
-                <button
-                  type="button"
-                  className="auth-link-btn"
-                  onClick={() => handleTabChange('login')}
-                >
-                  Sign In Here
-                </button>
-              </div>
-            </form>
+            pendingVerification ? (
+              <VerificationStep
+                pendingContext={pendingVerification}
+                onBack={() => setPendingVerification(null)}
+                onVerified={() => setPendingVerification(null)}
+              />
+            ) : !registerRole ? (
+              <RegisterRoleSelector
+                onSelectRole={(role) => setRegisterRole(role)}
+                onSwitchToLogin={() => handleTabChange('login')}
+              />
+            ) : registerRole === 'hospital' ? (
+              <HospitalSignupForm
+                onBack={() => setRegisterRole(null)}
+                onRegistered={(ctx) => setPendingVerification(ctx)}
+                onSwitchToLogin={() => handleTabChange('login')}
+              />
+            ) : registerRole === 'doctor' ? (
+              <DoctorSignupForm
+                onBack={() => setRegisterRole(null)}
+                onRegistered={(ctx) => setPendingVerification(ctx)}
+                onSwitchToLogin={() => handleTabChange('login')}
+              />
+            ) : (
+              <PetOwnerSignupForm
+                onBack={() => setRegisterRole(null)}
+                onRegistered={(ctx) => setPendingVerification(ctx)}
+                onSwitchToLogin={() => handleTabChange('login')}
+              />
+            )
           )}
         </div>
       </section>
+
+      <ForgotPasswordModal
+        isOpen={forgotOpen}
+        onClose={() => setForgotOpen(false)}
+      />
 
       {/* MFA Modal */}
       <MfaModal

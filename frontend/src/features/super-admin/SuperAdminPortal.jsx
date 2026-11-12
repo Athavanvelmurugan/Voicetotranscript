@@ -9,12 +9,13 @@ import { useAuth } from '../../auth/AuthContext';
 import { apiClient } from '../../api/client';
 import { SuperAdminDashboardTab } from './SuperAdminDashboardTab';
 import { SuperAdminHospitalListTab } from './SuperAdminHospitalListTab';
+import { SuperAdminPendingHospitalsTab } from './SuperAdminPendingHospitalsTab';
 import { SuperAdminHospitalAddTab } from './SuperAdminHospitalAddTab';
 import { SuperAdminAuditLogTab } from './SuperAdminAuditLogTab';
 
 export function SuperAdminPortal() {
   const { user, logout } = useAuth();
-  const validTabs = ['dashboard', 'hospitals', 'add-hospital', 'audit'];
+  const validTabs = ['dashboard', 'pending-hospitals', 'hospitals', 'add-hospital', 'audit'];
 
   const [activeTab, setActiveTab] = useState(() => {
     try {
@@ -111,6 +112,12 @@ export function SuperAdminPortal() {
       description: 'System-wide trends, KPIs & platform telemetry'
     },
     {
+      key: 'pending-hospitals',
+      label: 'Pending Approvals',
+      icon: CheckCircle2,
+      description: 'Review self-registered hospital applications awaiting approval'
+    },
+    {
       key: 'hospitals',
       label: 'Hospital List',
       icon: Building2,
@@ -134,6 +141,10 @@ export function SuperAdminPortal() {
     dashboard: {
       title: 'Platform Control Plane & Telemetry',
       subtitle: 'Real-time multi-tenant health, global consultation volume, and microservice status.',
+    },
+    'pending-hospitals': {
+      title: 'Hospital Application Approvals',
+      subtitle: 'Verify hospital registration licenses and activate approved veterinary workspaces.',
     },
     hospitals: {
       title: 'Hospital Directory & Tenant Governance',
@@ -298,6 +309,12 @@ export function SuperAdminPortal() {
               onRefresh={loadTrends}
               loading={loading}
               onNavigateTab={handleTabSelect}
+            />
+          )}
+
+          {activeTab === 'pending-hospitals' && (
+            <SuperAdminPendingHospitalsTab
+              onHospitalReviewed={loadTrends}
             />
           )}
 

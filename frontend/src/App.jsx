@@ -4,6 +4,8 @@ import { AuthPage } from './auth/AuthPage';
 import { LoginPage } from './auth/LoginPage';
 import { SignupClinicPage } from './auth/SignupClinicPage';
 import { AcceptInvitePage } from './auth/AcceptInvitePage';
+import { AccountStatusGate } from './auth/AccountStatusGate';
+import { ResetPasswordPage } from './auth/ResetPasswordPage';
 import { ConsultationWorkspace } from './features/consultation/ConsultationWorkspace';
 import { DoctorPortal } from './features/doctor/DoctorPortal';
 import { AdminPortal } from './features/admin/AdminPortal';
@@ -24,6 +26,12 @@ function AppContent() {
 
   // Navigation state
   const [authView, setAuthView] = useState('login'); // 'login' | 'register'
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setAuthView('login');
+    }
+  }, [isAuthenticated]);
   const [inviteToken, setInviteToken] = useState(() => {
     try {
       const pathMatch = window.location.pathname.match(/^\/invite\/([a-zA-Z0-9]+)$/);
@@ -139,7 +147,35 @@ function AppContent() {
     );
   }
 
-  // 1. PET OWNER / GUARDIAN PORTAL (Consumer Realm)
+  // 0b. Public Password Reset Page
+  const resetToken = (() => {
+    try {
+      const pathMatch = window.location.pathname.match(/^\/reset-password\/([a-zA-Z0-9]+)$/);
+      if (pathMatch) return pathMatch[1];
+      const params = new URLSearchParams(window.location.search);
+      if (window.location.pathname === '/reset-password' || params.has('resetToken')) {
+        return params.get('resetToken') || params.get('token') || '';
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  })();
+
+  if (resetToken !== null && !isAuthenticated) {
+    return (
+      <ResetPasswordPage
+        initialToken={resetToken}
+        onDone={() => {
+          window.history.pushState({}, '', '/');
+          setAuthView('login');
+          window.location.href = '/';
+        }}
+      />
+    );
+  }
+
+  // 1. PET OWNER / GUARDIAN PORTAL (Consumer Realm via OTP or Portal URL)
   if (isOwnerPortalMode) {
     if (ownerSession) {
       return (
@@ -210,7 +246,34 @@ function AppContent() {
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // STRICT ROLE-BASED PORTAL ROUTING (Zero cross-portal switching)
+  // ACCOUNT ACTIVATION, VERIFICATION & APPROVAL GATING
+  // ════════════════════════════════════════════════════════════════════════════
+  const normalizedStatus = String(user?.status || 'ACTIVE').toUpperCase();
+  const isDoctorUser =
+    user?.role === 'doctor' ||
+    user?.role === 'veterinarian' ||
+    (Array.isArray(user?.roles) && user.roles.includes('DOCTOR'));
+
+  const activePracticeMemberships = Array.isArray(user?.memberships)
+    ? user.memberships.filter((m) => String(m.status || '').toUpperCase() === 'ACTIVE')
+    : null;
+
+  if (normalizedStatus !== 'ACTIVE') {
+    return <AccountStatusGate />;
+  }
+
+  if (
+    isDoctorUser &&
+    activePracticeMemberships !== null &&
+    activePracticeMemberships.length === 0 &&
+    !user?.practiceId &&
+    !user?.clinicId
+  ) {
+    return <AccountStatusGate />;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // STRICT ROLE-BASED PORTAL ROUTING
   // ════════════════════════════════════════════════════════════════════════════
 
   // PORTAL 1: SUPER ADMIN CONTROL PLANE
@@ -218,13 +281,28 @@ function AppContent() {
     return <SuperAdminPortal />;
   }
 
-  // PORTAL 2: CLINIC / HOSPITAL ADMIN PORTAL
-  if (user?.role === 'clinic_admin') {
-    return <AdminPortal />;
+  // PORTAL 2: PET OWNER / GUARDIAN PORTAL (Password Authenticated)
+  if (user?.role === 'pet_owner') {
+    return (
+      <OwnerPortal
+        owner={{
+          id: user.ownerId || user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        }}
+        onLogout={logout}
+      />
+    );
   }
 
-  // PORTAL 3: DOCTOR / CLINICAL PRACTITIONER PORTAL
-  return <DoctorPortal />;
+  // PORTAL 3: CLINIC / HOSPITAL ADMIN PORTAL
+  if (user?.role === 'clinic_admin') {
+    return <AdminPortal key={`admin-${user?.practiceId || user?.clinicId || 'default'}`} />;
+  }
+
+  // PORTAL 4: DOCTOR / CLINICAL PRACTITIONER PORTAL
+  return <DoctorPortal key={`doc-${user?.practiceId || user?.clinicId || 'default'}`} />;
 }
 
 export default function App() {

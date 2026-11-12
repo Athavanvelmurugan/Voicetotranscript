@@ -12,8 +12,8 @@ test('Part B.1 Dual Pass Gap Tests', async (t) => {
 
   t.before(async () => {
     const res = await db.query(
-      `INSERT INTO consultations (doctor_id, pet_id, status, language, consent_given)
-       VALUES (1, 1, 'recording', 'en', true)
+      `INSERT INTO consultations (clinic_id, doctor_id, pet_id, status, language, consent_given)
+       VALUES (1, 1, 1, 'recording', 'en', true)
        RETURNING id`
     );
     consultId = res.rows[0].id;
@@ -60,8 +60,8 @@ test('Part B.1 Dual Pass Gap Tests', async (t) => {
 
       // Ensure diff will be 0% by pre-inserting identical live segment
       await db.query(`
-        INSERT INTO transcript_segments (consultation_id, sequence_number, text, pass_number, is_final_pass)
-        VALUES ($1, 100, 'Bella is coughing.', 1, true)
+        INSERT INTO transcript_segments (consultation_id, clinic_id, sequence_number, text, pass_number, is_final_pass)
+        VALUES ($1, 1, 100, 'Bella is coughing.', 1, true)
         ON CONFLICT (consultation_id, pass_number, sequence_number, is_partial) DO UPDATE SET text = EXCLUDED.text;
       `, [consultId]);
 

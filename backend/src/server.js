@@ -20,6 +20,8 @@ const verifyRoutes = require('./modules/verify/verify.routes');
 const ownerAuthRoutes = require('./modules/owner-portal/owner.auth.routes');
 const ownerPortalRoutes = require('./modules/owner-portal/owner.portal.routes');
 const superAdminRoutes = require('./modules/super-admin/super.admin.routes');
+const adminHospitalsRoutes = require('./modules/super-admin/admin.hospitals.routes');
+const practiceRoutes = require('./modules/practices/practice.routes');
 const { authenticate } = require('./middleware/authenticate');
 const { authorize } = require('./middleware/authorize');
 const { tenantContext } = require('./middleware/tenantContext');
@@ -69,8 +71,12 @@ app.use('/api/v1/verify', verifyRoutes);
 app.use('/api/v1/owner-auth', ownerAuthRoutes);
 app.use('/api/v1/owner-portal', ownerPortalRoutes);
 
-// Super Admin Platform Control Plane
+// Super Admin Platform Control Plane & Hospital Approvals
 app.use('/api/v1/super-admin', authenticate, tenantContext, authorize(['super_admin']), superAdminRoutes);
+app.use('/api/v1/admin/hospitals', authenticate, authorize(['super_admin']), adminHospitalsRoutes);
+
+// Multi-Practice Discovery, Independent Practice Launch, Invitations & Join Requests
+app.use('/api/v1/practices', practiceRoutes);
 
 // Protected Core Tenant APIs
 app.use('/api/v1/consultations', authenticate, tenantContext, consultationRoutes);

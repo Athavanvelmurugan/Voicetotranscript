@@ -7,12 +7,27 @@ test.describe('Headed Chromium Live Audio & Whisper Transcription E2E', () => {
     const context = page.context();
     await context.grantPermissions(['microphone']);
 
-    // 2. Open consultation app
+    // 2. Login as doctor and open Live Consultation workspace
     await page.goto('/');
-    await expect(page.locator('.consultation-header')).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    const signInBtn = page.locator('button:has-text("Sign In")');
+    if (await signInBtn.isVisible({ timeout: 2500 }).catch(() => false)) {
+      await page.fill('input[type="email"]', 'alex.morgan@petcare.vet');
+      await page.fill('input[type="password"]', 'Password123!');
+      await signInBtn.click();
+      await page.waitForLoadState('networkidle');
+    }
+    await page.locator('aside.admin-vertical-sidebar button:has-text("Live Consultation")').click();
+    await expect(page.locator('.consultation-header')).toBeVisible({ timeout: 10000 });
 
-    // 3. Find and click Start Recording (or Record More Audio)
-    const recordBtn = page.getByRole('button', { name: /Start Recording|Record More Audio/i });
+    // Create a clean consented consultation session before recording
+    const newConsultBtn = page.getByRole('button', { name: /New Consultation/i });
+    await newConsultBtn.click();
+    await page.click('button:has-text("Start New Consultation")');
+    await expect(page.locator('.modal-overlay')).not.toBeVisible({ timeout: 5000 });
+
+    // 3. Find and click Start Recording (or Record More)
+    const recordBtn = page.getByRole('button', { name: /Start Recording|Record More/i });
     await expect(recordBtn).toBeVisible();
     await expect(recordBtn).toBeEnabled();
     await recordBtn.click();
@@ -21,18 +36,18 @@ test.describe('Headed Chromium Live Audio & Whisper Transcription E2E', () => {
     await expect(page.locator('.timer-box')).toContainText(/RECORDING/i);
     await expect(page.locator('.recording-pulse')).toBeVisible();
 
-    console.log('🎤 Headed Google Chrome is capturing YouTube counselling audio via virtual microphone...');
+    console.log('🎤 Headed Google Chrome is capturing counselling audio via fake microphone...');
 
     // 5. Test speaker toggle while audio is actively playing into the mic
     await page.waitForTimeout(3000);
-    const ownerBtn = page.getByRole('button', { name: /Pet Owner|Owner/i });
+    const ownerBtn = page.locator('button[title="Force current speaker tag to Pet Owner"]');
     if (await ownerBtn.isVisible()) {
       await ownerBtn.click();
       console.log('🔄 Toggled speaker to Pet Owner');
     }
 
     await page.waitForTimeout(3000);
-    const vetBtn = page.getByRole('button', { name: /Veterinarian|Dr\./i });
+    const vetBtn = page.locator('button[title="Force current speaker tag to Attending Veterinarian"]');
     if (await vetBtn.isVisible()) {
       await vetBtn.click();
       console.log('🔄 Toggled speaker back to Veterinarian');

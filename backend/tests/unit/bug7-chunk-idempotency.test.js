@@ -29,24 +29,28 @@ function createWavBuffer(durationSeconds = 1.0, sampleRate = 16000) {
 }
 
 test('BUG 7 Regression Test: Chunk Retransmission Idempotency', async (t) => {
+  const cRes = await db.query(
+    `INSERT INTO consultations (clinic_id, doctor_id, pet_id, status, language, consent_given)
+     VALUES (1, 1, 1, 'recording', 'en', true)
+     RETURNING id`
+  );
+  const consultId = cRes.rows[0].id;
+
   t.after(async () => {
-    // Clean up receipts and test segments
-    await db.query('DELETE FROM consultation_chunk_receipts WHERE consultation_id = 1');
-    await db.query('DELETE FROM transcript_segments WHERE consultation_id = 1 AND source = \'idempotency_test\'');
+    await db.query('DELETE FROM consultation_chunk_receipts WHERE consultation_id = $1', [consultId]).catch(() => {});
+    await db.query('DELETE FROM consultation_audio_chunks WHERE consultation_id = $1', [consultId]).catch(() => {});
+    await db.query('DELETE FROM transcript_segments WHERE consultation_id = $1', [consultId]).catch(() => {});
+    await db.query('DELETE FROM consultations WHERE id = $1', [consultId]).catch(() => {});
     await db.pool.end();
   });
 
   const testWav = createWavBuffer(1.0);
-  const tempPath = audioStorage.getTempPath(1, 0);
+  const tempPath = audioStorage.getTempPath(consultId, 0);
   fs.writeFileSync(tempPath, testWav);
-
-  // Clean initial state for chunk 0 on consultation 1
-  await db.query('DELETE FROM consultation_chunk_receipts WHERE consultation_id = 1 AND chunk_index = 0');
-  await db.query('UPDATE consultations SET status = \'recording\' WHERE id = 1');
 
   await t.test('1. First transmission of chunk 0 processes and records receipt', async () => {
     const req1 = {
-      params: { id: 1 },
+      params: { id: consultId },
       body: { chunkIndex: '0', speakerRole: 'doctor', language: 'en' },
       file: { path: tempPath, mimetype: 'audio/wav', originalname: 'chunk_0.wav' },
       headers: { 'x-doctor-id': '1' },
@@ -65,11 +69,12 @@ test('BUG 7 Regression Test: Chunk Retransmission Idempotency', async (t) => {
 
     assert.strictEqual(res1Status, 200);
     assert.strictEqual(res1Data.success, true);
-    assert.strictEqual(res1Data.chunkIndex, 0);
+    assert.strictEqual(res1Data.data?.chunkIndex ?? res1Data.chunkIndex, 0);
 
     // Count segments created
     const countRes = await db.query(
-      'SELECT COUNT(*) as count FROM transcript_segments WHERE consultation_id = 1'
+      'SELECT COUNT(*) as count FROM transcript_segments WHERE consultation_id = $1',
+      [consultId]
     );
     const countAfterFirst = parseInt(countRes.rows[0].count, 10);
 
@@ -86,11 +91,12 @@ test('BUG 7 Regression Test: Chunk Retransmission Idempotency', async (t) => {
 
     assert.strictEqual(res2Status, 200, 'Retransmitted chunk must return 200 OK');
     assert.strictEqual(res2Data.success, true);
-    assert.strictEqual(res2Data.chunkIndex, 0);
+    assert.strictEqual(res2Data.data?.chunkIndex ?? res2Data.chunkIndex, 0);
 
     // Segment count in DB must NOT double!
     const countRes2 = await db.query(
-      'SELECT COUNT(*) as count FROM transcript_segments WHERE consultation_id = 1'
+      'SELECT COUNT(*) as count FROM transcript_segments WHERE consultation_id = $1',
+      [consultId]
     );
     const countAfterSecond = parseInt(countRes2.rows[0].count, 10);
 

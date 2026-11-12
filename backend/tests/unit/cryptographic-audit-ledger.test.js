@@ -15,9 +15,9 @@ test('Cryptographic Audit Ledger & Formulary Safety Intercept Unit Tests', async
 
     // Insert dummy consultation for foreign key
     await db.query(`
-      INSERT INTO consultations (id, appointment_id, doctor_id, pet_id, status, language)
-      VALUES ($1, NULL, 1, 1, 'recording', 'en')
-      ON CONFLICT (id) DO UPDATE SET status = 'recording';
+      INSERT INTO consultations (id, clinic_id, appointment_id, doctor_id, pet_id, status, language)
+      VALUES ($1, 1, NULL, 1, 1, 'recording', 'en')
+      ON CONFLICT (id) DO UPDATE SET status = 'recording', clinic_id = 1;
     `, [testConsultationId]);
   });
 

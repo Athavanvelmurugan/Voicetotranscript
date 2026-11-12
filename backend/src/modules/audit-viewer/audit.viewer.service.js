@@ -2,10 +2,10 @@ const db = require('../../db/connection');
 const auditService = require('../audit/audit.service');
 
 class AuditViewerService {
-  async getEvents(clinicId, { limit = 50, offset = 0, action = null, actorId = null, targetType = null, search = '' } = {}) {
-    let whereClause = 'WHERE uq.clinic_id = $1';
-    const params = [clinicId];
-    let idx = 2;
+  async getEvents(clinicId, { practiceId = null, doctorScopeUserId = null, limit = 50, offset = 0, action = null, actorId = null, targetType = null, search = '' } = {}) {
+    let whereClause = 'WHERE 1=1';
+    const params = [clinicId, practiceId || null, doctorScopeUserId || null];
+    let idx = 4;
 
     if (action) {
       whereClause += ` AND uq.action = $${idx++}`;
@@ -33,6 +33,7 @@ class AuditViewerService {
         SELECT 
           ae.id::text AS id,
           ae.clinic_id,
+          ae.practice_id,
           ae.actor_user_id,
           ae.action,
           ae.target_type,
@@ -46,13 +47,25 @@ class AuditViewerService {
           u.role AS actor_role
         FROM audit_events ae
         LEFT JOIN users u ON u.id = ae.actor_user_id
-        WHERE ae.clinic_id = $1
+        WHERE (ae.clinic_id = $1 OR ($2::int IS NOT NULL AND ae.practice_id = $2::int))
+          AND (
+            $3::int IS NULL
+            OR ae.actor_user_id = $3::int
+            OR (
+              ae.target_type = 'consultation'
+              AND EXISTS (
+                SELECT 1 FROM consultations cs
+                WHERE cs.id::text = ae.target_id AND cs.doctor_id = $3::int
+              )
+            )
+          )
 
         UNION ALL
 
         SELECT 
           ('cal_' || cal.id::text) AS id,
           cal.clinic_id,
+          NULL::int AS practice_id,
           cal.actor_id AS actor_user_id,
           cal.action,
           COALESCE(cal.entity_type, 'consultation') AS target_type,
@@ -66,7 +79,9 @@ class AuditViewerService {
           COALESCE(u.role, cal.actor_type) AS actor_role
         FROM consultation_audit_logs cal
         LEFT JOIN users u ON u.id = cal.actor_id
+        LEFT JOIN consultations c_scope ON c_scope.id = cal.consultation_id
         WHERE cal.clinic_id = $1
+          AND ($3::int IS NULL OR cal.actor_id = $3::int OR c_scope.doctor_id = $3::int)
       )
     `;
 
@@ -79,6 +94,7 @@ class AuditViewerService {
       SELECT 
         uq.id,
         uq.clinic_id,
+        uq.practice_id,
         uq.actor_user_id,
         uq.action,
         uq.target_type,
@@ -106,25 +122,29 @@ class AuditViewerService {
     };
   }
 
-  async verifyConsultationChain(clinicId, consultationId) {
-    // Check consultation belongs to this clinic
-    const cRes = await db.query('SELECT clinic_id FROM consultations WHERE id = $1;', [consultationId]);
+  async _assertConsultationAccess(clinicId, consultationId, doctorScopeUserId = null) {
+    const cRes = await db.query('SELECT clinic_id, doctor_id FROM consultations WHERE id = $1;', [consultationId]);
     if (cRes.rows.length === 0 || cRes.rows[0].clinic_id !== clinicId) {
       const err = new Error(`Consultation #${consultationId} not found.`);
       err.statusCode = 404;
+      err.code = 'NOT_FOUND';
       throw err;
     }
+    if (doctorScopeUserId && cRes.rows[0].doctor_id !== doctorScopeUserId) {
+      const err = new Error('Access forbidden: You may only inspect audit ledgers for your assigned consultations.');
+      err.statusCode = 403;
+      err.code = 'FORBIDDEN';
+      throw err;
+    }
+  }
 
+  async verifyConsultationChain(clinicId, consultationId, { doctorScopeUserId = null } = {}) {
+    await this._assertConsultationAccess(clinicId, consultationId, doctorScopeUserId);
     return auditService.verifyChain(consultationId);
   }
 
-  async getConsultationLedger(clinicId, consultationId) {
-    const cRes = await db.query('SELECT clinic_id FROM consultations WHERE id = $1;', [consultationId]);
-    if (cRes.rows.length === 0 || cRes.rows[0].clinic_id !== clinicId) {
-      const err = new Error(`Consultation #${consultationId} not found.`);
-      err.statusCode = 404;
-      throw err;
-    }
+  async getConsultationLedger(clinicId, consultationId, { doctorScopeUserId = null } = {}) {
+    await this._assertConsultationAccess(clinicId, consultationId, doctorScopeUserId);
 
     const { rows } = await db.query(
       `SELECT * FROM consultation_audit_ledger WHERE consultation_id = $1 ORDER BY sequence_number ASC;`,
@@ -133,7 +153,7 @@ class AuditViewerService {
     return rows;
   }
 
-  async generateExportCsv(clinicId) {
+  async generateExportCsv(clinicId, practiceId = null) {
     const { rows } = await db.query(
       `WITH unified_events AS (
         SELECT 
@@ -149,7 +169,7 @@ class AuditViewerService {
           ae.metadata::text AS metadata
         FROM audit_events ae
         LEFT JOIN users u ON u.id = ae.actor_user_id
-        WHERE ae.clinic_id = $1
+        WHERE (ae.clinic_id = $1 OR ($2::int IS NOT NULL AND ae.practice_id = $2::int))
 
         UNION ALL
 
@@ -179,10 +199,9 @@ class AuditViewerService {
         ip,
         metadata
       FROM unified_events
-      WHERE clinic_id = $1
       ORDER BY created_at DESC
       LIMIT 1000;`,
-      [clinicId]
+      [clinicId, practiceId || null]
     );
 
     const headers = ['Timestamp', 'Action', 'Target Type', 'Target ID', 'Actor Name', 'Actor Email', 'IP Address', 'Metadata'];

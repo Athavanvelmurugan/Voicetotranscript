@@ -1,21 +1,18 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const db = require('../db/connection');
+const { loadUserContext } = require('../modules/auth/userContext.helper');
 
 /**
  * Extracts and verifies JWT access token from httpOnly cookie or Authorization header.
- * Populates req.user and establishes tenant context.
+ * Populates req.user with multi-role and verified active practice context.
  */
 async function authenticate(req, res, next) {
   try {
     let token = null;
 
-    // 1. Check httpOnly cookie first (primary security standard)
     if (req.cookies && req.cookies.petcare_at) {
       token = req.cookies.petcare_at;
-    } 
-    // 2. Fallback to Authorization: Bearer header (for API/test clients)
-    else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
       token = req.headers.authorization.slice(7).trim();
     }
 
@@ -27,7 +24,6 @@ async function authenticate(req, res, next) {
       });
     }
 
-    // Verify token
     let decoded;
     try {
       decoded = jwt.verify(token, config.auth.jwtSecret);
@@ -54,17 +50,15 @@ async function authenticate(req, res, next) {
       });
     }
 
-    // Fetch user from DB to verify status and current clinic
-    const userRes = await db.query(
-      `SELECT u.id, u.name, u.email, u.role, u.clinic_id, u.status, u.license_number,
-              c.name AS clinic_name, c.slug AS clinic_slug, c.status AS clinic_status
-       FROM users u
-       LEFT JOIN clinics c ON c.id = u.clinic_id
-       WHERE u.id = $1;`,
-      [decoded.sub]
-    );
+    const headerPracticeId = req.headers['x-practice-id'];
+    const requestedPracticeId = headerPracticeId || req.cookies?.petcare_practice_id || decoded.activePracticeId || null;
 
-    if (userRes.rows.length === 0) {
+    const userContext = await loadUserContext(decoded.sub, {
+      requestedPracticeId,
+      strictPracticeCheck: Boolean(headerPracticeId),
+    });
+
+    if (!userContext) {
       return res.status(401).json({
         success: false,
         error: 'User account not found.',
@@ -72,17 +66,31 @@ async function authenticate(req, res, next) {
       });
     }
 
-    const user = userRes.rows[0];
-
-    if (user.status === 'suspended' || user.status === 'deactivated') {
+    if (userContext.unauthorizedPracticeAccess) {
       return res.status(403).json({
         success: false,
-        error: `Account is ${user.status}. Please contact administrator.`,
+        error: 'Access denied: you do not belong to or lack active membership in the requested practice.',
+        code: 'UNAUTHORIZED_PRACTICE_ACCESS',
+      });
+    }
+
+    const upperStatus = String(userContext.status || '').toUpperCase();
+    if (['SUSPENDED', 'DEACTIVATED', 'INACTIVE'].includes(upperStatus)) {
+      return res.status(403).json({
+        success: false,
+        error: `Account is ${userContext.status}. Please contact administrator.`,
         code: 'ACCOUNT_SUSPENDED',
       });
     }
 
-    if (user.clinic_status === 'suspended') {
+    // Reject if user only belongs to suspended practices
+    const isSuperAdmin = userContext.role === 'super_admin' || userContext.roles.includes('SUPER_ADMIN');
+    if (
+      !isSuperAdmin &&
+      !userContext.clinicId &&
+      userContext.memberships.length > 0 &&
+      userContext.memberships.every((m) => String(m.practice_status).toUpperCase() === 'SUSPENDED')
+    ) {
       return res.status(403).json({
         success: false,
         error: 'Clinic subscription or access is currently suspended.',
@@ -90,19 +98,9 @@ async function authenticate(req, res, next) {
       });
     }
 
-    // Attach user identity to request
-    req.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      clinicId: user.clinic_id,
-      clinicName: user.clinic_name,
-      clinicSlug: user.clinic_slug,
-      licenseNumber: user.license_number,
-    };
-
-    req.clinicId = user.clinic_id;
+    req.user = userContext;
+    req.clinicId = userContext.clinicId;
+    req.practiceId = userContext.practiceId;
 
     next();
   } catch (err) {
@@ -122,19 +120,13 @@ async function optionalAuthenticate(req, res, next) {
     if (!token) return next();
 
     const decoded = jwt.verify(token, config.auth.jwtSecret);
-    const userRes = await db.query(
-      `SELECT u.id, u.name, u.email, u.role, u.clinic_id, u.status FROM users u WHERE u.id = $1;`,
-      [decoded.sub]
-    );
-    if (userRes.rows.length > 0 && userRes.rows[0].status === 'active') {
-      req.user = {
-        id: userRes.rows[0].id,
-        name: userRes.rows[0].name,
-        email: userRes.rows[0].email,
-        role: userRes.rows[0].role,
-        clinicId: userRes.rows[0].clinic_id,
-      };
-      req.clinicId = req.user.clinicId;
+    const userContext = await loadUserContext(decoded.sub, {
+      requestedPracticeId: req.headers['x-practice-id'] || decoded.activePracticeId || null,
+    });
+    if (userContext && !userContext.unauthorizedPracticeAccess && String(userContext.status).toUpperCase() === 'ACTIVE') {
+      req.user = userContext;
+      req.clinicId = userContext.clinicId;
+      req.practiceId = userContext.practiceId;
     }
     next();
   } catch (_) {

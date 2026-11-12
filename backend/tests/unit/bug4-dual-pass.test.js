@@ -27,28 +27,33 @@ function createWavBuffer(durationSeconds = 1.0, sampleRate = 16000) {
 }
 
 test('BUG 4 Regression Test: Dual-Pass Final Pass & Superseded Segments', async (t) => {
+  const cRes = await db.query(
+    `INSERT INTO consultations (clinic_id, doctor_id, pet_id, status, language, consent_given)
+     VALUES (1, 1, 1, 'recording', 'en', true)
+     RETURNING id`
+  );
+  const consultId = cRes.rows[0].id;
+
   t.after(async () => {
-    // Clean up test data on consultation 1
-    await db.query('DELETE FROM consultation_audio_chunks WHERE consultation_id = 1');
-    await db.query('DELETE FROM transcript_segments WHERE consultation_id = 1 AND pass_number = 2');
+    await db.query('DELETE FROM consultation_audio_chunks WHERE consultation_id = $1', [consultId]).catch(() => {});
+    await db.query('DELETE FROM transcript_segments WHERE consultation_id = $1', [consultId]).catch(() => {});
+    await db.query('DELETE FROM consultations WHERE id = $1', [consultId]).catch(() => {});
     await db.pool.end();
   });
-
-  const consultId = 1;
 
   // Insert 3 mock live chunks into consultation_audio_chunks
   const wavChunk = createWavBuffer(1.0);
   await db.query('DELETE FROM consultation_audio_chunks WHERE consultation_id = $1', [consultId]);
   await db.query(
-    'INSERT INTO consultation_audio_chunks (consultation_id, chunk_index, audio_data, mime_type) VALUES ($1, $2, $3, $4)',
+    'INSERT INTO consultation_audio_chunks (consultation_id, clinic_id, chunk_index, audio_data, mime_type) VALUES ($1, 1, $2, $3, $4)',
     [consultId, 0, wavChunk, 'audio/wav']
   );
   await db.query(
-    'INSERT INTO consultation_audio_chunks (consultation_id, chunk_index, audio_data, mime_type) VALUES ($1, $2, $3, $4)',
+    'INSERT INTO consultation_audio_chunks (consultation_id, clinic_id, chunk_index, audio_data, mime_type) VALUES ($1, 1, $2, $3, $4)',
     [consultId, 1, wavChunk, 'audio/wav']
   );
   await db.query(
-    'INSERT INTO consultation_audio_chunks (consultation_id, chunk_index, audio_data, mime_type) VALUES ($1, $2, $3, $4)',
+    'INSERT INTO consultation_audio_chunks (consultation_id, clinic_id, chunk_index, audio_data, mime_type) VALUES ($1, 1, $2, $3, $4)',
     [consultId, 2, wavChunk, 'audio/wav']
   );
 
@@ -56,10 +61,10 @@ test('BUG 4 Regression Test: Dual-Pass Final Pass & Superseded Segments', async 
   await db.query('DELETE FROM transcript_segments WHERE consultation_id = $1', [consultId]);
   await db.query(
     `INSERT INTO transcript_segments 
-      (consultation_id, sequence_number, text, pass_number, is_final_pass)
+      (consultation_id, clinic_id, sequence_number, text, pass_number, is_final_pass)
      VALUES 
-      ($1, 1, 'Patient Bella vomiting twice', 1, true),
-      ($1, 2, 'Administered Cerenia injection', 1, true)`,
+      ($1, 1, 1, 'Patient Bella vomiting twice', 1, true),
+      ($1, 1, 2, 'Administered Cerenia injection', 1, true)`,
     [consultId]
   );
 

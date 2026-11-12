@@ -5,12 +5,12 @@
    ============================================================ */
 
 :root {
-  /* ---------- Brand Palettes ---------- */
-  --color-primary:        #0284c7;
-  --color-primary-hover:  #0369a1;
-  --color-primary-soft:   #f0f9ff;
-  --color-primary-border: #bae6fd;
-  --color-primary-ring:   rgba(2, 132, 199, 0.2);
+  /* ---------- Brand Palettes (PetCare AI Teal Green & White) ---------- */
+  --color-primary:        #0d9488;
+  --color-primary-hover:  #0f766e;
+  --color-primary-soft:   #f0fdfa;
+  --color-primary-border: #99f6e4;
+  --color-primary-ring:   rgba(13, 148, 136, 0.2);
 
   --color-secondary:      #7c3aed;
   --color-secondary-soft: #f5f3ff;
@@ -39,20 +39,20 @@
 
   --color-success-ink:    #065f46;
 
-  --color-info:           #0284c7;
-  --color-info-soft:      #f0f9ff;
-  --color-info-tint:      #e0f2fe;
-  --color-info-border:    #bae6fd;
-  --color-info-ink:       #0369a1;
-  --color-info-card-bg:     #eff6ff;
-  --color-info-card-border: #bfdbfe;
-  --color-info-card-title:  #1e40af;
-  --color-info-card-text:   #1e3a8a;
+  --color-info:           #0d9488;
+  --color-info-soft:      #f0fdfa;
+  --color-info-tint:      #ccfbf1;
+  --color-info-border:    #99f6e4;
+  --color-info-ink:       #0f766e;
+  --color-info-card-bg:     #f0fdfa;
+  --color-info-card-border: #99f6e4;
+  --color-info-card-title:  #115e59;
+  --color-info-card-text:   #134e4a;
 
   /* ---------- Gradients ---------- */
   --color-gradient-primary:      linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   --color-gradient-primary-soft: linear-gradient(135deg, var(--color-primary-soft) 0%, var(--color-info-tint) 100%);
-  --color-gradient-insights:     linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+  --color-gradient-insights:     linear-gradient(135deg, #134e4a 0%, #0f766e 100%);
 
   /* ---------- Slate Neutrals System ---------- */
   --slate-50:  #f8fafc;

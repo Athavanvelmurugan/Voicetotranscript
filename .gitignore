@@ -22,6 +22,10 @@ tmp/
 *.m4a
 !frontend/test-assets/*.wav
 
+# ─── Generated Clinical PDFs & Patient Uploads ───
+backend/uploads/
+*prescription*.pdf
+
 # ─── Build Artifacts ───
 dist/
 build/

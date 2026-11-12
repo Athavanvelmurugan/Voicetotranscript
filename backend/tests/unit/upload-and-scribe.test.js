@@ -102,7 +102,7 @@ describe('Unified Audio Upload & Clinical Scribe Pipeline Unit Tests', { timeout
     assert.match(fullText, /vomit/i, 'Transcript must capture vomiting symptom');
     assert.match(fullText, /letharg/i, 'Transcript must capture lethargy');
     assert.match(fullText, /sock/i, 'Transcript must capture swallowed sock');
-    assert.match(fullText, /(cerenia|serenia)/i, 'Transcript must capture Cerenia medication');
+    assert.match(fullText, /(cerenia|serenia|maropitant)/i, 'Transcript must capture Cerenia medication');
     assert.match(fullText, /(x[-‑]ray|radiograph)/i, 'Transcript must capture X-ray imaging');
 
     // ─── B. Verify Clinical Summary Document ───
@@ -124,7 +124,7 @@ describe('Unified Audio Upload & Clinical Scribe Pipeline Unit Tests', { timeout
     assert.strictEqual(prescriptionDoc.patient.name, 'Milo');
     assert.ok(prescriptionDoc.items.length >= 1, 'Prescription items must be generated');
     assert.ok(
-      prescriptionDoc.items.some(item => /cerenia|serenia|fluids/i.test(item.medicine_name)),
+      prescriptionDoc.items.some(item => /cerenia|serenia|maropitant|fluids/i.test(item.medicine_name)),
       'Prescription must include Cerenia or supportive fluids'
     );
 

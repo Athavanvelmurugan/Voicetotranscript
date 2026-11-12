@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FileText, Download, ShieldCheck, AlertTriangle, CheckCircle, RefreshCw, XCircle } from 'lucide-react';
 import { SearchFilterBar } from '../../components/common/SearchFilterBar';
 import { PaginationControl } from '../../components/common/PaginationControl';
+import { apiClient } from '../../api/client';
 
 export function AuditLogsTab() {
   const [events, setEvents] = useState([]);
@@ -39,9 +40,9 @@ export function AuditLogsTab() {
       if (search.trim()) params.set('search', search.trim());
       if (actionFilter) params.set('action', actionFilter);
 
-      const res = await fetch(`/api/v1/audit-viewer?${params.toString()}`);
+      const res = await apiClient(`/api/v1/audit-viewer?${params.toString()}`);
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success) {
         setEvents(data.data || []);
         if (data.pagination) {
           setPaginationMeta(data.pagination);
@@ -69,8 +70,26 @@ export function AuditLogsTab() {
     fetchEvents();
   }, [fetchEvents]);
 
-  const handleExportCsv = () => {
-    window.location.href = '/api/v1/audit-viewer/export';
+  const handleExportCsv = async () => {
+    try {
+      const res = await apiClient('/api/v1/audit-viewer/export');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error || 'Failed to export audit logs');
+        return;
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message || 'Failed to export audit logs');
+    }
   };
 
   const handleVerifyChain = async (e) => {
@@ -81,12 +100,12 @@ export function AuditLogsTab() {
     setVerifyResult(null);
 
     try {
-      const res = await fetch(`/api/v1/audit-viewer/verify-chain/${verifyConsultationId}`);
+      const res = await apiClient(`/api/v1/audit-viewer/verify-chain/${verifyConsultationId}`);
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success) {
         setVerifyResult(data.data);
       } else {
-        setVerifyResult({ valid: false, reason: data.error });
+        setVerifyResult({ valid: false, reason: data.error || 'Verification request failed.' });
       }
     } catch (err) {
       setVerifyResult({ valid: false, reason: err.message });
@@ -95,13 +114,20 @@ export function AuditLogsTab() {
     }
   };
 
-  const actionFilterOptions = [
-    { value: '', label: 'All Actions' },
-    { value: 'LOGIN', label: 'Logins' },
-    { value: 'CREATE_CONSULTATION', label: 'Consultations' },
-    { value: 'APPROVE_DOCUMENT', label: 'Approvals' },
-    { value: 'CREATE_PET', label: 'Patient Registrations' },
-    { value: 'BOOK_APPOINTMENT', label: 'Appointments' },
+  const filterConfigs = [
+    {
+      id: 'action',
+      label: 'Action',
+      value: actionFilter,
+      options: [
+        { key: '', label: 'All Actions' },
+        { key: 'login_success', label: 'Logins' },
+        { key: 'CREATE_CONSULTATION', label: 'Consultations' },
+        { key: 'APPROVE_DOCUMENT', label: 'Approvals' },
+        { key: 'CREATE_PET', label: 'Patient Registrations' },
+        { key: 'appointment_scheduled', label: 'Appointments' },
+      ],
+    },
   ];
 
   return (
@@ -143,19 +169,17 @@ export function AuditLogsTab() {
 
       {/* Universal Search & Action Filter Bar */}
       <SearchFilterBar
-        searchPlaceholder="Search audit events by action, actor, target ID, or email..."
-        searchValue={search}
+        placeholder="Search audit events by action, actor, target ID, or email..."
+        searchTerm={search}
         onSearchChange={(val) => {
           setSearch(val);
           setPage(1);
         }}
-        filterOptions={actionFilterOptions}
-        filterValue={actionFilter}
-        onFilterChange={(val) => {
+        filters={filterConfigs}
+        onFilterChange={(_, val) => {
           setActionFilter(val);
           setPage(1);
         }}
-        filterLabel="Action"
         onRefresh={fetchEvents}
         isLoading={loading}
         totalResults={paginationMeta.total}
@@ -275,7 +299,15 @@ export function AuditLogsTab() {
                         <CheckCircle size={18} />
                         <div>
                           <strong>Integrity Verified!</strong>
-                          <div>{verifyResult.message || `All blocks verified with zero tampering.`}</div>
+                          <div>{verifyResult.message || `All ${verifyResult.count || 0} blocks verified with zero tampering.`}</div>
+                        </div>
+                      </div>
+                    ) : verifyResult.isEmpty ? (
+                      <div className="admin-badge badge-pending admin-alert-banner">
+                        <AlertTriangle size={18} />
+                        <div>
+                          <strong>Empty Audit Ledger</strong>
+                          <div>{verifyResult.reason || 'No ledger blocks recorded for this consultation yet.'}</div>
                         </div>
                       </div>
                     ) : (

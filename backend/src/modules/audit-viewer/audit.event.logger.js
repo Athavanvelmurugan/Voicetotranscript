@@ -1,7 +1,8 @@
 const db = require('../../db/connection');
 
 async function logAuditEvent({
-  clinicId,
+  clinicId = null,
+  practiceId = null,
   actorUserId = null,
   action,
   targetType = null,
@@ -13,12 +14,13 @@ async function logAuditEvent({
   try {
     const query = `
       INSERT INTO audit_events 
-        (clinic_id, actor_user_id, action, target_type, target_id, metadata, ip, user_agent)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (clinic_id, practice_id, actor_user_id, action, target_type, target_id, metadata, ip, user_agent)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *;
     `;
     const values = [
-      clinicId,
+      clinicId || null,
+      practiceId || null,
       actorUserId,
       action,
       targetType,

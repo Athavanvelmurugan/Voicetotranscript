@@ -34,8 +34,8 @@ describe('Multi-Format Audio PostgreSQL Persistence Unit Tests (MP3, M4A, WebM, 
     const mimeType = 'audio/mpeg';
 
     const insertRes = await db.query(`
-      INSERT INTO consultation_audio (consultation_id, audio_data, mime_type, file_name, file_size_bytes)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO consultation_audio (consultation_id, clinic_id, audio_data, mime_type, file_name, file_size_bytes)
+      VALUES ($1, 1, $2, $3, $4, $5)
       RETURNING id, file_name, mime_type, file_size_bytes
     `, [testConsultationId, mp3Header, mimeType, fileName, mp3Header.length]);
 
@@ -58,8 +58,8 @@ describe('Multi-Format Audio PostgreSQL Persistence Unit Tests (MP3, M4A, WebM, 
     const mimeType = 'audio/mp4';
 
     const insertRes = await db.query(`
-      INSERT INTO consultation_audio (consultation_id, audio_data, mime_type, file_name, file_size_bytes)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO consultation_audio (consultation_id, clinic_id, audio_data, mime_type, file_name, file_size_bytes)
+      VALUES ($1, 1, $2, $3, $4, $5)
       RETURNING id, file_name, mime_type
     `, [testConsultationId, m4aHeader, mimeType, fileName, m4aHeader.length]);
 
@@ -73,8 +73,8 @@ describe('Multi-Format Audio PostgreSQL Persistence Unit Tests (MP3, M4A, WebM, 
     const mimeType = 'audio/webm';
 
     const insertRes = await db.query(`
-      INSERT INTO consultation_audio (consultation_id, audio_data, mime_type, file_name, file_size_bytes)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO consultation_audio (consultation_id, clinic_id, audio_data, mime_type, file_name, file_size_bytes)
+      VALUES ($1, 1, $2, $3, $4, $5)
       RETURNING id, file_name, mime_type
     `, [testConsultationId, webmHeader, mimeType, fileName, webmHeader.length]);
 

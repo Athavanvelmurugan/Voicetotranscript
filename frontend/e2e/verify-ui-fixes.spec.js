@@ -1,8 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 test('Verify Reset button visibility and Clinical Insights generation', async ({ page }) => {
-  // Navigate to consultation 27
-  await page.goto('http://localhost:3000/?consultationId=27');
+  // Sign in as doctor owning consultation 27 (mouni@gmail.com) and navigate to consultation 27
+  await page.goto('http://localhost:3000/');
+  await page.waitForLoadState('networkidle');
+
+  const signInBtn = page.locator('button:has-text("Sign In")');
+  if (await signInBtn.isVisible({ timeout: 2500 }).catch(() => false)) {
+    await page.fill('input[type="email"]', 'mouni@gmail.com');
+    await page.fill('input[type="password"]', 'Password123!');
+    await signInBtn.click();
+    await expect(page.locator('aside.admin-vertical-sidebar')).toBeVisible({ timeout: 10000 });
+  }
+
+  await page.goto('http://localhost:3000/?portal=doctor&tab=consultation&consultationId=27');
   await page.waitForLoadState('networkidle');
 
   // Verify Reset button is visible and has correct text

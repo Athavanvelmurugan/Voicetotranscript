@@ -31,9 +31,18 @@ test.describe('Real-Browser 10s Mic Streaming & Server Decoding', () => {
       }
     });
 
-    // 2. Open consultation app
+    // 2. Login as doctor and open Live Consultation workspace
     await page.goto('/');
-    await expect(page.locator('.consultation-header')).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    const signInBtn = page.locator('button:has-text("Sign In")');
+    if (await signInBtn.isVisible({ timeout: 2500 }).catch(() => false)) {
+      await page.fill('input[type="email"]', 'alex.morgan@petcare.vet');
+      await page.fill('input[type="password"]', 'Password123!');
+      await signInBtn.click();
+      await page.waitForLoadState('networkidle');
+    }
+    await page.locator('aside.admin-vertical-sidebar button:has-text("Live Consultation")').click();
+    await expect(page.locator('.consultation-header')).toBeVisible({ timeout: 10000 });
 
     // Create a new consultation to activate recording session
     const newConsultBtn = page.getByRole('button', { name: /New Consultation/i });

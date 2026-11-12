@@ -24,11 +24,17 @@ export function DoctorDashboardTab({ onNavigateTab, onStartConsultation, onOpenP
     setLoading(true);
     setError(null);
     try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const slotsUrl = user?.id
+        ? `/api/v1/scheduling/slots?doctorId=${user.id}&date=${todayStr}`
+        : null;
       const [consultRes, petsRes, apptRes, slotsRes] = await Promise.all([
         apiClient('/api/v1/consultations'),
         apiClient('/api/v1/pets'),
-        apiClient('/api/v1/scheduling/appointments').catch(() => ({ json: async () => ({ success: false }) })),
-        apiClient('/api/v1/scheduling/slots').catch(() => ({ json: async () => ({ success: false }) })),
+        apiClient('/api/v1/scheduling').catch(() => ({ json: async () => ({ success: false }) })),
+        slotsUrl
+          ? apiClient(slotsUrl).catch(() => ({ json: async () => ({ success: false }) }))
+          : Promise.resolve({ json: async () => ({ success: true, data: [] }) }),
       ]);
 
       const consultData = await consultRes.json();
@@ -41,7 +47,6 @@ export function DoctorDashboardTab({ onNavigateTab, onStartConsultation, onOpenP
       const appts = apptData.success ? apptData.data || [] : [];
       const slots = slotsData.success ? slotsData.data || [] : [];
 
-      const todayStr = new Date().toISOString().split('T')[0];
       const todayAppts = appts.filter(a => a.scheduled_at && a.scheduled_at.startsWith(todayStr));
       const completed = consults.filter(c => c.status === 'completed');
       const openSlots = slots.filter(s => s.is_available);
@@ -71,7 +76,7 @@ export function DoctorDashboardTab({ onNavigateTab, onStartConsultation, onOpenP
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchDashboardData();

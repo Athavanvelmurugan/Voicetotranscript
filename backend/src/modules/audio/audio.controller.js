@@ -15,6 +15,7 @@
  */
 
 const fs = require('fs');
+const crypto = require('crypto');
 const whisperClient = require('../transcription/whisper.client');
 const speakerClassifier = require('../transcription/speaker.classifier');
 const audioStorage = require('./audio.storage');
@@ -508,10 +509,11 @@ class AudioController {
         // C. Persist raw audio binary directly into PostgreSQL (consultation_audio BYTEA, zero disk)
         try {
           if (audioBuffer && audioBuffer.length > 0) {
+            const audioHash = crypto.createHash('sha256').update(audioBuffer).digest('hex');
             await db.query(`
-              INSERT INTO consultation_audio (consultation_id, audio_data, mime_type, file_name, file_size_bytes, clinic_id)
-              VALUES ($1, $2, $3, $4, $5, COALESCE($6::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1))
-            `, [consultation.id, audioBuffer, mimeType, fileName, audioBuffer.length, consultation.clinic_id || null]);
+              INSERT INTO consultation_audio (consultation_id, audio_data, audio_hash, mime_type, file_name, file_size_bytes, clinic_id)
+              VALUES ($1, $2, $3, $4, $5, $6, COALESCE($7::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1))
+            `, [consultation.id, audioBuffer, audioHash, mimeType, fileName, audioBuffer.length, consultation.clinic_id || null]);
           }
         } catch (audioErr) {
           console.warn('[AudioController] Warning saving consultation audio BYTEA:', audioErr.message);

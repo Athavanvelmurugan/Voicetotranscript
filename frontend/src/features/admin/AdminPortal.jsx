@@ -7,13 +7,14 @@ import {
 import { useAuth } from '../../auth/AuthContext';
 import { DashboardTab } from './DashboardTab';
 import { DoctorOnboardingTab } from './DoctorOnboardingTab';
+import { JoinRequestsTab } from './JoinRequestsTab';
 import { StaffManagementTab } from './StaffManagementTab';
 import { ClinicSettingsTab } from './ClinicSettingsTab';
 import { AuditLogsTab } from './AuditLogsTab';
 
 export function AdminPortal() {
   const { user, logout } = useAuth();
-  const validTabs = ['dashboard', 'onboarding', 'staff', 'audit', 'settings'];
+  const validTabs = ['dashboard', 'onboarding', 'join-requests', 'staff', 'audit', 'settings'];
 
   const [activeTab, setActiveTab] = useState(() => {
     try {
@@ -108,6 +109,7 @@ export function AdminPortal() {
   const navItems = [
     { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { key: 'onboarding', label: 'Doctor Register', icon: UserPlus },
+    { key: 'join-requests', label: 'Join Requests', icon: Stethoscope },
     { key: 'staff', label: 'Doctor List', icon: Users },
     { key: 'audit', label: 'Audit Log', icon: ShieldCheck },
     { key: 'settings', label: 'Setting', icon: Settings },
@@ -116,6 +118,7 @@ export function AdminPortal() {
   const pageTitles = {
     dashboard: { title: 'Practice Overview', subtitle: 'Real-time clinic metrics, operational status, and security compliance.' },
     onboarding: { title: 'Doctor Register', subtitle: 'Direct clinician registration, medical license provisioning, and credentials.' },
+    'join-requests': { title: 'Doctor Join Requests & Invitations', subtitle: 'Approve independent or hospital-affiliated doctor join requests and send invitations.' },
     staff: { title: 'Doctor Directory & Patients', subtitle: 'Manage clinical team, licenses, and view patient lists with privacy compliance.' },
     audit: { title: 'Audit & Compliance Logs', subtitle: 'Hospital operational event trail tracking clinic admin, doctor, and pet owner actions.' },
     settings: { title: 'Hospital & Practice Configuration', subtitle: 'Scheduling buffers, clinical audio retention policies, and branding.' },
@@ -273,6 +276,7 @@ export function AdminPortal() {
         <main className="admin-content-viewport" role="main">
           {activeTab === 'dashboard' && <DashboardTab onNavigateTab={handleTabSelect} />}
           {activeTab === 'onboarding' && <DoctorOnboardingTab onNavigateTab={handleTabSelect} />}
+          {activeTab === 'join-requests' && <JoinRequestsTab />}
           {activeTab === 'staff' && <StaffManagementTab onNavigateTab={handleTabSelect} />}
           {activeTab === 'audit' && <AuditLogsTab />}
           {activeTab === 'settings' && <ClinicSettingsTab />}

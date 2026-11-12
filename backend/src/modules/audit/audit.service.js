@@ -26,6 +26,22 @@ class AuditService {
     return crypto.createHash('sha256').update(raw).digest('hex');
   }
 
+  async _resolveEffectiveClinicId(clinicId, consultationId, methodName) {
+    let effectiveClinicId = clinicId;
+    if (!effectiveClinicId && consultationId) {
+      const cRes = await db.query('SELECT clinic_id FROM consultations WHERE id = $1;', [consultationId]);
+      if (cRes.rows.length > 0) {
+        effectiveClinicId = cRes.rows[0].clinic_id;
+      }
+    }
+    if (!effectiveClinicId) {
+      const err = new Error(`AuditService.${methodName} requires clinicId or a consultationId linked to a clinic.`);
+      err.code = 'AUDIT_TENANT_REQUIRED';
+      throw err;
+    }
+    return effectiveClinicId;
+  }
+
   /**
    * Log a cryptographically chained, append-only ledger entry
    */
@@ -38,14 +54,7 @@ class AuditService {
     payloadSnapshot = {},
     customTimestamp = null,
   }) {
-    let effectiveClinicId = clinicId;
-    if (!effectiveClinicId && consultationId) {
-      const cRes = await db.query('SELECT clinic_id FROM consultations WHERE id = $1;', [consultationId]);
-      if (cRes.rows.length > 0) {
-        effectiveClinicId = cRes.rows[0].clinic_id;
-      }
-    }
-    if (!effectiveClinicId) effectiveClinicId = 1;
+    const effectiveClinicId = await this._resolveEffectiveClinicId(clinicId, consultationId, 'logChainedEvent');
 
     // 1. Fetch latest block for this consultation to establish hash chain linkage
     const lastRowRes = await db.query(
@@ -108,7 +117,13 @@ class AuditService {
     );
 
     if (rows.length === 0) {
-      return { valid: true, count: 0, message: 'Ledger is empty for this consultation' };
+      return {
+        valid: false,
+        count: 0,
+        isEmpty: true,
+        reason: 'Ledger is empty for this consultation',
+        message: 'Ledger is empty for this consultation',
+      };
     }
 
     for (let i = 0; i < rows.length; i++) {
@@ -179,14 +194,7 @@ class AuditService {
     metadata = {},
     ipAddress = null,
   }) {
-    let effectiveClinicId = clinicId;
-    if (!effectiveClinicId && consultationId) {
-      const cRes = await db.query('SELECT clinic_id FROM consultations WHERE id = $1;', [consultationId]);
-      if (cRes.rows.length > 0) {
-        effectiveClinicId = cRes.rows[0].clinic_id;
-      }
-    }
-    if (!effectiveClinicId) effectiveClinicId = 1;
+    const effectiveClinicId = await this._resolveEffectiveClinicId(clinicId, consultationId, 'log');
 
     const query = `
       INSERT INTO consultation_audit_logs 

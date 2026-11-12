@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Stethoscope, Heart, UserPlus, Calendar, Settings,
   LogOut, Sun, Moon, Menu, X, ChevronRight, ChevronLeft, Activity, ShieldCheck,
-  CalendarClock
+  CalendarClock, Building2
 } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { apiClient } from '../../api/client';
@@ -14,11 +14,15 @@ import { DoctorAppointmentScheduleTab } from './DoctorAppointmentScheduleTab';
 import { DoctorScheduleDualTab } from './DoctorScheduleDualTab';
 import { DoctorAuditLogTab } from './DoctorAuditLogTab';
 import { DoctorSettingsTab } from './DoctorSettingsTab';
+import { PracticeAffiliationsTab } from './PracticeAffiliationsTab';
 import { PatientClinicalChart } from './PatientClinicalChart';
 
 export function DoctorPortal() {
-  const { user, logout } = useAuth();
-  const validTabs = ['dashboard', 'patients', 'consultation', 'add-patient', 'appointments', 'schedule', 'audit', 'settings'];
+  const { user, logout, switchPractice } = useAuth();
+  const validTabs = ['dashboard', 'patients', 'consultation', 'add-patient', 'appointments', 'schedule', 'practices', 'audit', 'settings'];
+  const activeMemberships = Array.isArray(user?.memberships)
+    ? user.memberships.filter((m) => String(m.status || '').toUpperCase() === 'ACTIVE')
+    : [];
 
   const doctorDisplayName = user?.name
     ? (user.name.startsWith('Dr.') ? user.name : `Dr. ${user.name}`)
@@ -215,6 +219,12 @@ export function DoctorPortal() {
       description: 'Available appointment slots & confirmed appointments'
     },
     {
+      key: 'practices',
+      label: 'My Practices',
+      icon: Building2,
+      description: 'Independent workspace & accredited hospital affiliations'
+    },
+    {
       key: 'audit',
       label: 'Audit Log',
       icon: ShieldCheck,
@@ -253,6 +263,10 @@ export function DoctorPortal() {
       title: 'Doctor Schedule & Slot Availability',
       subtitle: 'Daily appointment bookings, available consultation time slots, and queue management.',
     },
+    practices: {
+      title: 'Practices & Hospital Affiliations',
+      subtitle: 'Switch between your independent practice and accredited hospitals or submit join requests.',
+    },
     audit: {
       title: 'Clinical & Guardian Audit Trail',
       subtitle: 'Track pet owner bookings, consents, prescriptions, and cryptographic verification.',
@@ -285,11 +299,11 @@ export function DoctorPortal() {
             {!isSidebarCollapsed && (
               <div className="sidebar-brand-text">
                 <h2 className="sidebar-clinic-name">
-                  {user?.clinicName || 'Central Valley Animal Hospital'}
+                  {user?.practiceName || user?.clinicName || 'Independent Practice'}
                 </h2>
                 <div className="sidebar-practice-pill">
                   <span className="live-dot" aria-hidden="true" />
-                  <span>Doctor Workspace</span>
+                  <span>{user?.practiceType === 'INDEPENDENT' ? 'Independent Practice' : 'Doctor Workspace'}</span>
                 </div>
               </div>
             )}
@@ -314,6 +328,28 @@ export function DoctorPortal() {
             </button>
           </div>
         </div>
+
+        {/* Multi-Practice Switcher */}
+        {!isSidebarCollapsed && activeMemberships.length > 0 && (
+          <div className="practice-switcher-wrap">
+            <label htmlFor="doctor-practice-switcher" className="practice-switcher-label">
+              Active Workspace
+            </label>
+            <select
+              id="doctor-practice-switcher"
+              className="practice-switcher-select"
+              value={String(user?.practiceId || activeMemberships[0]?.practice_id || '')}
+              onChange={(e) => switchPractice(Number(e.target.value))}
+              data-testid="doctor-practice-switcher"
+            >
+              {activeMemberships.map((m) => (
+                <option key={m.practice_id} value={String(m.practice_id)}>
+                  {m.practice_name} ({m.practice_type === 'INDEPENDENT' ? 'Independent' : 'Hospital'})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Sidebar Navigation Items */}
         <nav className="sidebar-nav-container" aria-label="Clinical Navigation">
@@ -460,6 +496,10 @@ export function DoctorPortal() {
               onStartConsultation={handleStartConsultation}
               onOpenPatientChart={(petId) => setActiveChartPetId(petId)}
             />
+          )}
+
+          {activeTab === 'practices' && (
+            <PracticeAffiliationsTab />
           )}
 
           {activeTab === 'audit' && (

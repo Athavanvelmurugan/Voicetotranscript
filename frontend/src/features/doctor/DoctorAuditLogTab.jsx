@@ -36,7 +36,7 @@ export function DoctorAuditLogTab() {
 
       const res = await apiClient(`/api/v1/audit-viewer?${params.toString()}`);
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success) {
         setEvents(data.data || []);
         if (data.pagination) {
           setPaginationMeta(data.pagination);
@@ -64,13 +64,20 @@ export function DoctorAuditLogTab() {
     fetchEvents();
   }, [fetchEvents]);
 
-  const actionFilterOptions = [
-    { value: '', label: 'All Pet Owner & Clinical Actions' },
-    { value: 'appointment_scheduled', label: 'Pet Owner Booking' },
-    { value: 'consent_signed', label: 'Guardian Consent' },
-    { value: 'APPROVE_DOCUMENT', label: 'Clinical SOAP Approved' },
-    { value: 'CREATE_PET', label: 'Patient Enrolled' },
-    { value: 'CREATE_CONSULTATION', label: 'Consultation Initiated' },
+  const filterConfigs = [
+    {
+      id: 'action',
+      label: 'Action Type',
+      value: actionFilter,
+      options: [
+        { key: '', label: 'All Pet Owner & Clinical Actions' },
+        { key: 'appointment_scheduled', label: 'Pet Owner Booking' },
+        { key: 'consent_signed', label: 'Guardian Consent' },
+        { key: 'APPROVE_DOCUMENT', label: 'Clinical SOAP Approved' },
+        { key: 'CREATE_PET', label: 'Patient Enrolled' },
+        { key: 'CREATE_CONSULTATION', label: 'Consultation Initiated' },
+      ],
+    },
   ];
 
   return (
@@ -100,19 +107,17 @@ export function DoctorAuditLogTab() {
 
       {/* Universal Search & Action Filter Bar */}
       <SearchFilterBar
-        searchPlaceholder="Search audit events by action, pet guardian name, patient ID..."
-        searchValue={search}
+        placeholder="Search audit events by action, pet guardian name, patient ID..."
+        searchTerm={search}
         onSearchChange={(val) => {
           setSearch(val);
           setPage(1);
         }}
-        filterOptions={actionFilterOptions}
-        filterValue={actionFilter}
-        onFilterChange={(val) => {
+        filters={filterConfigs}
+        onFilterChange={(_, val) => {
           setActionFilter(val);
           setPage(1);
         }}
-        filterLabel="Action Type"
         onRefresh={fetchEvents}
         isLoading={loading}
         totalResults={paginationMeta.total}

@@ -126,6 +126,77 @@ export function AuthProvider({ children }) {
     return data.data.user;
   }, []);
 
+  const postAuthJson = useCallback(async (endpoint, payload, fallbackMsg) => {
+    setAuthError(null);
+    const res = await apiClient(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const errorMsg = data.error || fallbackMsg;
+      setAuthError(errorMsg);
+      throw new Error(errorMsg);
+    }
+    if (data.data?.user) {
+      setUser(data.data.user);
+    }
+    return data.data;
+  }, []);
+
+  const registerHospital = useCallback((formData) => {
+    return postAuthJson('/api/v1/auth/register/hospital', formData, 'Hospital registration failed.');
+  }, [postAuthJson]);
+
+  const registerDoctor = useCallback((formData) => {
+    return postAuthJson('/api/v1/auth/register/doctor', formData, 'Doctor registration failed.');
+  }, [postAuthJson]);
+
+  const registerPetOwner = useCallback((formData) => {
+    return postAuthJson('/api/v1/auth/register/pet-owner', formData, 'Pet owner registration failed.');
+  }, [postAuthJson]);
+
+  const verifyEmail = useCallback((email, code) => {
+    return postAuthJson('/api/v1/auth/verify-email', { email, code }, 'Email verification failed.');
+  }, [postAuthJson]);
+
+  const verifyMobile = useCallback((mobileNumber, code) => {
+    return postAuthJson('/api/v1/auth/verify-mobile', { mobileNumber, code }, 'Mobile verification failed.');
+  }, [postAuthJson]);
+
+  const resendVerification = useCallback((channel, identifier) => {
+    return postAuthJson('/api/v1/auth/resend-verification', { channel, identifier }, 'Failed to resend code.');
+  }, [postAuthJson]);
+
+  const forgotPassword = useCallback((email) => {
+    return postAuthJson('/api/v1/auth/forgot-password', { email }, 'Unable to send reset link.');
+  }, [postAuthJson]);
+
+  const resetPassword = useCallback((token, newPassword, confirmPassword) => {
+    return postAuthJson('/api/v1/auth/reset-password', { token, newPassword, confirmPassword }, 'Failed to reset password.');
+  }, [postAuthJson]);
+
+  const switchPractice = useCallback(async (practiceId) => {
+    const res = await apiClient('/api/v1/auth/switch-practice', {
+      method: 'POST',
+      body: JSON.stringify({ practiceId }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to switch practice workspace.');
+    }
+    try {
+      localStorage.removeItem('activeConsultationId');
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith('activeConsultationId')) localStorage.removeItem(k);
+      });
+    } catch (_) {}
+    if (data.data?.user) {
+      setUser(data.data.user);
+    }
+    return data.data?.user;
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await apiClient('/api/v1/auth/logout', { method: 'POST' });
@@ -133,6 +204,7 @@ export function AuthProvider({ children }) {
     try {
       localStorage.removeItem('activeConsultationId');
       localStorage.removeItem('activeDoctorId');
+      localStorage.removeItem('petcare_owner_session');
       Object.keys(localStorage).forEach((k) => {
         if (k.startsWith('activeConsultationId')) localStorage.removeItem(k);
       });
@@ -152,11 +224,21 @@ export function AuthProvider({ children }) {
     login,
     verifyMfa,
     registerClinic,
+    registerHospital,
+    registerDoctor,
+    registerPetOwner,
+    verifyEmail,
+    verifyMobile,
+    resendVerification,
+    forgotPassword,
+    resetPassword,
+    switchPractice,
     logout,
     checkSession,
     isAuthenticated: !!user,
     isDoctor: user?.role === 'doctor' || user?.role === 'veterinarian',
     isAdmin: user?.role === 'clinic_admin' || user?.role === 'super_admin',
+    isPetOwner: user?.role === 'pet_owner',
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

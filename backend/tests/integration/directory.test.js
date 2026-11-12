@@ -1,25 +1,34 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { server } = require('../../src/server');
+const db = require('../../src/db/connection');
+const authService = require('../../src/modules/auth/auth.service');
+const { loadUserContext } = require('../../src/modules/auth/userContext.helper');
 
 describe('Doctor & PetCare Directory Management API', () => {
   const testPort = 5056;
   let baseUrl;
   let createdDoctorId = null;
   let createdPetId = null;
+  let authToken;
 
   before(async () => {
+    const ctx = await loadUserContext(1);
+    authToken = authService.generateTokens(ctx).accessToken;
     await new Promise((resolve) => server.listen(testPort, resolve));
     baseUrl = `http://localhost:${testPort}`;
   });
 
   after(async () => {
     await new Promise((resolve) => server.close(resolve));
+    await db.pool.end();
   });
 
   // ─── DOCTORS ────────────────────────────────────────────────────────────────
   it('1. GET /api/v1/directory/doctors should list seeded doctors', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/directory/doctors`);
+    const res = await fetch(`${baseUrl}/api/v1/directory/doctors`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
     const json = await res.json();
     assert.equal(res.status, 200);
     assert.equal(json.success, true);
@@ -31,7 +40,7 @@ describe('Doctor & PetCare Directory Management API', () => {
     const uniqueEmail = `test.vet.${Date.now()}@petcare.vet`;
     const res = await fetch(`${baseUrl}/api/v1/directory/doctors`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
       body: JSON.stringify({
         name: 'Dr. Gregory House, DVM',
         email: uniqueEmail,
@@ -51,7 +60,7 @@ describe('Doctor & PetCare Directory Management API', () => {
   it('3. POST /api/v1/directory/doctors should reject duplicate email', async () => {
     const res = await fetch(`${baseUrl}/api/v1/directory/doctors`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
       body: JSON.stringify({
         name: 'Duplicate Doctor',
         email: 'alex.morgan@petcare.vet',
@@ -68,6 +77,7 @@ describe('Doctor & PetCare Directory Management API', () => {
     assert.ok(createdDoctorId);
     const res = await fetch(`${baseUrl}/api/v1/directory/doctors/${createdDoctorId}`, {
       method: 'DELETE',
+      headers: { Authorization: `Bearer ${authToken}` },
     });
     const json = await res.json();
     assert.equal(res.status, 200);
@@ -79,6 +89,7 @@ describe('Doctor & PetCare Directory Management API', () => {
     // Doctor #1 has seeded appointments / consultations
     const res = await fetch(`${baseUrl}/api/v1/directory/doctors/1`, {
       method: 'DELETE',
+      headers: { Authorization: `Bearer ${authToken}` },
     });
     const json = await res.json();
     assert.equal(res.status, 400);
@@ -88,7 +99,9 @@ describe('Doctor & PetCare Directory Management API', () => {
 
   // ─── PETS ───────────────────────────────────────────────────────────────────
   it('6. GET /api/v1/directory/pets should list seeded pets', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/directory/pets`);
+    const res = await fetch(`${baseUrl}/api/v1/directory/pets`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
     const json = await res.json();
     assert.equal(res.status, 200);
     assert.equal(json.success, true);
@@ -99,7 +112,7 @@ describe('Doctor & PetCare Directory Management API', () => {
   it('7. POST /api/v1/directory/pets should dynamically add a new pet', async () => {
     const res = await fetch(`${baseUrl}/api/v1/directory/pets`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
       body: JSON.stringify({
         name: 'Milo',
         species: 'Canine (Dog)',
@@ -124,6 +137,7 @@ describe('Doctor & PetCare Directory Management API', () => {
     assert.ok(createdPetId);
     const res = await fetch(`${baseUrl}/api/v1/directory/pets/${createdPetId}`, {
       method: 'DELETE',
+      headers: { Authorization: `Bearer ${authToken}` },
     });
     const json = await res.json();
     assert.equal(res.status, 200);

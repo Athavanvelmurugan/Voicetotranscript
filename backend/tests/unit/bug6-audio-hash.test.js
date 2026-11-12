@@ -28,7 +28,16 @@ function createWavBuffer(durationSeconds = 1.0, sampleRate = 16000) {
 }
 
 test('BUG 6 Regression Test: Cryptographic Audio Hash & Byte-Identity Verification', async (t) => {
+  const cRes = await db.query(
+    `INSERT INTO consultations (clinic_id, doctor_id, pet_id, status, language, consent_given)
+     VALUES (1, 1, 1, 'recording', 'en', true)
+     RETURNING id`
+  );
+  const consultId = cRes.rows[0].id;
+
   t.after(async () => {
+    await db.query('DELETE FROM consultation_audio WHERE consultation_id = $1', [consultId]).catch(() => {});
+    await db.query('DELETE FROM consultations WHERE id = $1', [consultId]).catch(() => {});
     await db.pool.end();
   });
 
@@ -37,10 +46,10 @@ test('BUG 6 Regression Test: Cryptographic Audio Hash & Byte-Identity Verificati
 
   // Insert consultation audio directly with expected hash
   const insertRes = await db.query(
-    `INSERT INTO consultation_audio (consultation_id, audio_data, mime_type, file_name, file_size_bytes, audio_hash)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO consultation_audio (consultation_id, clinic_id, audio_data, mime_type, file_name, file_size_bytes, audio_hash)
+     VALUES ($1, 1, $2, $3, $4, $5, $6)
      RETURNING id`,
-    [1, testAudio, 'audio/wav', 'hash_test.wav', testAudio.length, expectedHash]
+    [consultId, testAudio, 'audio/wav', 'hash_test.wav', testAudio.length, expectedHash]
   );
   const audioId = insertRes.rows[0].id;
 
@@ -55,7 +64,7 @@ test('BUG 6 Regression Test: Cryptographic Audio Hash & Byte-Identity Verificati
 
   await t.test('2. GET /audio sets ETag and X-Audio-SHA256 headers matching hash', async () => {
     let headers = {};
-    const req = { params: { id: 1 } };
+    const req = { params: { id: consultId } };
     const res = {
       setHeader(name, value) {
         headers[name] = value;
@@ -74,7 +83,7 @@ test('BUG 6 Regression Test: Cryptographic Audio Hash & Byte-Identity Verificati
     // Verify untampered first
     let verifyStatus = null;
     let verifyBody = null;
-    const req = { params: { id: 1 } };
+    const req = { params: { id: consultId } };
     const res = {
       status(code) { verifyStatus = code; return this; },
       json(data) { verifyBody = data; return this; },

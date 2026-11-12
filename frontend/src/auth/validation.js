@@ -122,3 +122,36 @@ export function validateOtp(otp) {
   }
   return { isValid: true, error: '' };
 }
+
+export function validateRequiredText(value, label, minLen = 2, maxLen = 150) {
+  if (!value || !String(value).trim()) {
+    return { isValid: false, error: `${label} is required.` };
+  }
+  const clean = String(value).trim();
+  if (clean.length < minLen || clean.length > maxLen) {
+    return { isValid: false, error: `${label} must be between ${minLen} and ${maxLen} characters.` };
+  }
+  return { isValid: true, error: '' };
+}
+
+export function validatePinCode(pin) {
+  if (!pin || !String(pin).trim()) {
+    return { isValid: false, error: 'PIN / postal code is required.' };
+  }
+  const clean = String(pin).trim();
+  if (!/^[a-zA-Z0-9\-\s]{3,12}$/.test(clean)) {
+    return { isValid: false, error: 'Please enter a valid PIN / postal code.' };
+  }
+  return { isValid: true, error: '' };
+}
+
+export function validateYearsOfExperience(years) {
+  if (years === '' || years === null || years === undefined) {
+    return { isValid: false, error: 'Years of experience is required.' };
+  }
+  const n = Number(years);
+  if (Number.isNaN(n) || n < 0 || n > 70) {
+    return { isValid: false, error: 'Enter a valid number of years (0–70).' };
+  }
+  return { isValid: true, error: '' };
+}

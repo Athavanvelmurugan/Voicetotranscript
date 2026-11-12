@@ -78,6 +78,42 @@ class SuperAdminController {
     }
   }
 
+  async getPendingHospitals(req, res, next) {
+    try {
+      const data = await superAdminService.getPendingHospitals();
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async approveHospital(req, res, next) {
+    try {
+      const data = await superAdminService.approveHospital(
+        parseInt(req.params.id, 10),
+        req.user.id,
+        { ip: req.ip, userAgent: req.headers['user-agent'] }
+      );
+      res.json({ success: true, message: 'Hospital approved and activated.', data });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async rejectHospital(req, res, next) {
+    try {
+      const data = await superAdminService.rejectHospital(
+        parseInt(req.params.id, 10),
+        req.user.id,
+        req.body?.reason || '',
+        { ip: req.ip, userAgent: req.headers['user-agent'] }
+      );
+      res.json({ success: true, message: 'Hospital application rejected.', data });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getGlobalPatients(req, res, next) {
     try {
       const { page, limit, offset, search } = parsePagination(req.query);

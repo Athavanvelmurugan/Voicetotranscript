@@ -6,7 +6,10 @@ class DirectoryRepository {
     let whereClause = '';
     const params = [];
     if (clinicId) {
-      whereClause = 'WHERE u.clinic_id = $1';
+      whereClause = `WHERE (u.clinic_id = $1 OR EXISTS (
+        SELECT 1 FROM practice_members pm JOIN practices pr ON pr.id = pm.practice_id
+        WHERE pm.user_id = u.id AND pr.clinic_id = $1 AND pm.status = 'ACTIVE'
+      ))`;
       params.push(clinicId);
     }
     const query = `
@@ -68,7 +71,9 @@ class DirectoryRepository {
     let whereClause = '';
     const params = [];
     if (clinicId) {
-      whereClause = 'WHERE p.clinic_id = $1';
+      whereClause = `WHERE (p.clinic_id = $1 OR EXISTS (
+        SELECT 1 FROM pet_practice_links ppl WHERE ppl.pet_id = p.id AND ppl.clinic_id = $1 AND ppl.status = 'ACTIVE'
+      ))`;
       params.push(clinicId);
     }
     const query = `

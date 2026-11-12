@@ -20,11 +20,11 @@ test.describe('Admin Portal — Doctor Onboarding & Removed Legacy Tabs', () => 
     await expect(page.locator('button:has-text("Patient Registry")')).toHaveCount(0);
     await expect(page.locator('button:has-text("Calendar & Slots")')).toHaveCount(0);
 
-    // Doctor Onboarding MUST exist
-    const onboardingNavBtn = page.locator('button:has-text("Doctor Onboarding")');
+    // Doctor Register MUST exist
+    const onboardingNavBtn = page.locator('aside.admin-vertical-sidebar button:has-text("Doctor Register")');
     await expect(onboardingNavBtn).toBeVisible();
 
-    // 3. Click Doctor Onboarding
+    // 3. Click Doctor Register
     await onboardingNavBtn.click();
     await page.waitForTimeout(500);
 
@@ -65,8 +65,8 @@ test.describe('Admin Portal — Doctor Onboarding & Removed Legacy Tabs', () => 
     await expect(successCard).toContainText(docName);
     await expect(successCard).toContainText(uniqueEmail);
 
-    // 7. Verify no invite method in Staff Roster
-    const staffNavBtn = page.locator('button:has-text("Staff Roster")');
+    // 7. Verify no direct invite method in Doctor List
+    const staffNavBtn = page.locator('aside.admin-vertical-sidebar button:has-text("Doctor List")');
     await staffNavBtn.click();
     await page.waitForTimeout(500);
 
@@ -74,8 +74,8 @@ test.describe('Admin Portal — Doctor Onboarding & Removed Legacy Tabs', () => 
     await expect(page.locator('button:has-text("Invite Provider")')).toHaveCount(0);
     await expect(page.locator('button:has-text("Generate Invitation")')).toHaveCount(0);
 
-    // The newly onboarded doctor must appear in Staff Roster
-    const searchInput = page.locator('input[placeholder*="Search by name"]');
+    // The newly onboarded doctor must appear in Doctor List
+    const searchInput = page.locator('input[placeholder*="Search staff"]');
     await searchInput.fill(uniqueEmail);
     await page.waitForTimeout(500);
 

@@ -90,6 +90,9 @@ class SchedulingController {
   async getById(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
+      if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ success: false, error: 'Valid appointment ID is required.' });
+      }
       const apt = await schedulingService.getAppointmentById(req.user.clinicId, id);
       res.json({ success: true, data: apt });
     } catch (err) {
@@ -128,6 +131,9 @@ class SchedulingController {
   async update(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
+      if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ success: false, error: 'Valid appointment ID is required.' });
+      }
       const reqInfo = { ip: req.ip, userAgent: req.headers['user-agent'] };
       const updated = await schedulingService.updateAppointment(
         req.user.clinicId,

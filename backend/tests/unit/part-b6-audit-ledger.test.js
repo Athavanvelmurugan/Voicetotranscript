@@ -8,8 +8,8 @@ test('Part B.6 Cryptographic Audit Ledger Chained Events', async (t) => {
 
   t.before(async () => {
     const res = await db.query(
-      `INSERT INTO consultations (doctor_id, pet_id, status, language, consent_given)
-       VALUES (1, 1, 'recording', 'en', true)
+      `INSERT INTO consultations (clinic_id, doctor_id, pet_id, status, language, consent_given)
+       VALUES (1, 1, 1, 'recording', 'en', true)
        RETURNING id`
     );
     testConsultId = res.rows[0].id;

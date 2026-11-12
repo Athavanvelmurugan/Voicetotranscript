@@ -35,12 +35,17 @@ export async function apiClient(url, options = {}) {
     throw new Error(`Network request failed: ${networkErr.message}`);
   }
 
-  // Intercept 401 for silent token refresh (except for login or refresh itself)
+  // Intercept 401 for silent token refresh (except for auth flow endpoints)
   if (
     response.status === 401 &&
     !url.includes('/api/v1/auth/login') &&
     !url.includes('/api/v1/auth/refresh') &&
-    !url.includes('/api/v1/auth/register-clinic')
+    !url.includes('/api/v1/auth/register-clinic') &&
+    !url.includes('/api/v1/auth/register/') &&
+    !url.includes('/api/v1/auth/verify-') &&
+    !url.includes('/api/v1/auth/resend-verification') &&
+    !url.includes('/api/v1/auth/forgot-password') &&
+    !url.includes('/api/v1/auth/reset-password')
   ) {
     if (!isRefreshing) {
       isRefreshing = true;

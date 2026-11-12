@@ -10,6 +10,8 @@ describe('Pet Guardian Dual Auth & Multi-Hospital Network Tests', async () => {
   let guardianToken = null;
   let guardianId = null;
   let newPetId = null;
+  let selectedDateStr = null;
+  let selectedSlot = null;
 
   // 1. Sign Up New Pet Guardian with First Pet
   test('1. POST /api/v1/owner-auth/signup creates new guardian & registers first pet', async () => {
@@ -132,11 +134,11 @@ describe('Pet Guardian Dual Auth & Multi-Hospital Network Tests', async () => {
 
   // 7. Check Real-Time Slots for Chosen Doctor
   test('7. GET /api/v1/owner-portal/available-slots returns 15-minute booking slots', async () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = tomorrow.toISOString().split('T')[0];
+    const targetDay = new Date();
+    targetDay.setDate(targetDay.getDate() + 1);
+    const dateStr = targetDay.toISOString().split('T')[0];
 
-    const res = await fetch(`${BASE_URL}/api/v1/owner-portal/available-slots?clinicId=1&date=${dateStr}`, {
+    const res = await fetch(`${BASE_URL}/api/v1/owner-portal/available-slots?clinicId=1&doctorId=1&date=${dateStr}`, {
       headers: { Authorization: `Bearer ${guardianToken}` },
     });
 
@@ -145,13 +147,15 @@ describe('Pet Guardian Dual Auth & Multi-Hospital Network Tests', async () => {
     assert.equal(data.success, true);
     assert.ok(Array.isArray(data.data));
     assert.ok(data.data.length > 0, 'Expected slots to be generated');
+    selectedDateStr = dateStr;
+    selectedSlot = data.data.find((s) => s.available);
+    assert.ok(selectedSlot, 'Expected at least one available slot');
   });
 
   // 8. Book Appointment for Pet at Selected Hospital & Doctor
   test('8. POST /api/v1/owner-portal/book-appointment successfully creates appointment', async () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = tomorrow.toISOString().split('T')[0];
+    const startTime = selectedSlot.startTime.slice(11, 16);
+    const endTime = selectedSlot.endTime.slice(11, 16);
 
     const res = await fetch(`${BASE_URL}/api/v1/owner-portal/book-appointment`, {
       method: 'POST',
@@ -163,9 +167,9 @@ describe('Pet Guardian Dual Auth & Multi-Hospital Network Tests', async () => {
         clinicId: 1,
         petId: newPetId,
         doctorId: 1,
-        appointmentDate: dateStr,
-        startTime: '10:00',
-        endTime: '10:15',
+        appointmentDate: selectedDateStr,
+        startTime,
+        endTime,
         reason: 'First Wellness Exam & Vaccination',
       }),
     });

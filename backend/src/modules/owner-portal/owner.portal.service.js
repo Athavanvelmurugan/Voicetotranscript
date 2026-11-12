@@ -20,11 +20,18 @@ class OwnerPortalService {
 
     const profile = ownerRes.rows[0];
 
-    // Fetch all affiliated care hospitals for this pet owner
+    // Fetch all affiliated care hospitals & independent practices for this pet owner
     const affilRes = await db.query(
-      `SELECT DISTINCT c.id, c.name, c.address, c.phone, c.is_emergency
+      `SELECT DISTINCT c.id, pr.id AS practice_id, pr.practice_type, c.name, COALESCE(pr.address, c.address) AS address, COALESCE(pr.phone, c.phone) AS phone, c.is_emergency
        FROM clinics c
-       WHERE c.id = $1
+       LEFT JOIN practices pr ON pr.clinic_id = c.id
+       WHERE ($1::int IS NOT NULL AND c.id = $1)
+          OR c.id IN (
+            SELECT DISTINCT ppl.clinic_id
+            FROM pet_practice_links ppl
+            JOIN pet_owners po ON po.pet_id = ppl.pet_id
+            WHERE po.owner_id = $2 AND ppl.status = 'ACTIVE'
+          )
           OR c.id IN (
             SELECT DISTINCT a.clinic_id
             FROM appointments a
@@ -32,7 +39,7 @@ class OwnerPortalService {
             WHERE po.owner_id = $2
           )
        ORDER BY c.name ASC;`,
-      [profile.clinic_id || 1, ownerId]
+      [profile.clinic_id || null, ownerId]
     );
 
     profile.affiliated_clinics = affilRes.rows;
@@ -70,21 +77,22 @@ class OwnerPortalService {
       throw err;
     }
 
-    // Resolve owner's clinic
+    // Resolve owner's optional primary clinic (no longer required for independent pet owners)
     const owner = await this.getProfile(ownerId);
-    const clinicId = owner.clinic_id || 1;
+    const clinicId = owner.clinic_id || null;
 
     // 1. Insert into pets table
     const petQuery = `
       INSERT INTO pets (
-        clinic_id, name, species, breed, age_years, weight_kg, sex,
+        clinic_id, owner_user_id, name, species, breed, age_years, weight_kg, sex,
         microchip_no, allergies
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *;
     `;
     const petValues = [
       clinicId,
+      owner.user_id || null,
       name.trim(),
       species.trim(),
       breed ? breed.trim() : null,
@@ -97,12 +105,21 @@ class OwnerPortalService {
     const petRes = await db.query(petQuery, petValues);
     const newPet = petRes.rows[0];
 
-    // 2. Link in pet_owners
+    // 2. Link in pet_owners & optional pet_practice_links
     await db.query(
       `INSERT INTO pet_owners (pet_id, owner_id, is_primary)
        VALUES ($1, $2, TRUE);`,
       [newPet.id, ownerId]
     );
+
+    if (clinicId) {
+      await db.query(
+        `INSERT INTO pet_practice_links (pet_id, practice_id, clinic_id, status)
+         SELECT $1, pr.id, pr.clinic_id, 'ACTIVE' FROM practices pr WHERE pr.clinic_id = $2
+         ON CONFLICT (pet_id, practice_id) DO NOTHING;`,
+        [newPet.id, clinicId]
+      );
+    }
 
     return newPet;
   }
@@ -248,12 +265,15 @@ class OwnerPortalService {
     const { rows } = await db.query(upsertQuery, values);
     const consent = rows[0];
 
+    const ownerUserRes = await db.query('SELECT user_id FROM owners WHERE id = $1;', [ownerId]);
+    const actorUserId = ownerUserRes.rows[0]?.user_id || null;
+
     // Log to immutable cryptographic audit ledger
     await auditService.logChainedEvent({
       consultationId,
       clinicId: consult.clinic_id,
       eventType: 'consent_granted',
-      actorId: ownerId,
+      actorId: actorUserId,
       actorType: 'system',
       payloadSnapshot: {
         method: 'portal_digital',
@@ -274,39 +294,64 @@ class OwnerPortalService {
   }
 
   /**
-   * List all active hospitals for pet owner selection
+   * List all active Hospitals and Independent Practices for pet owner discovery
    */
   async getHospitals() {
     const query = `
-      SELECT c.id, c.name, c.slug, c.timezone, c.status, c.address, c.phone, c.is_emergency,
-             COUNT(DISTINCT u.id) AS doctor_count
-      FROM clinics c
-      LEFT JOIN users u ON u.clinic_id = c.id AND u.role IN ('doctor', 'veterinarian') AND u.status = 'active'
-      WHERE c.status = 'active'
-      GROUP BY c.id
-      ORDER BY c.is_emergency DESC, c.name ASC;
+      SELECT
+        c.id, p.id AS practice_id, p.practice_type, p.name, p.slug, c.timezone,
+        p.status, COALESCE(p.address, c.address) AS address,
+        p.city, p.state, p.pin_code,
+        COALESCE(p.phone, c.phone) AS phone,
+        c.is_emergency,
+        p.specialization,
+        dp.qualification AS doctor_qualification,
+        dp.years_of_experience AS doctor_experience,
+        COUNT(DISTINCT pm.user_id)::int AS doctor_count
+      FROM practices p
+      JOIN clinics c ON c.id = p.clinic_id
+      LEFT JOIN doctor_profiles dp ON dp.user_id = p.owner_user_id AND p.practice_type = 'INDEPENDENT'
+      LEFT JOIN practice_members pm ON pm.practice_id = p.id AND pm.status = 'ACTIVE' AND pm.role IN ('DOCTOR', 'OWNER')
+      WHERE p.status = 'ACTIVE' AND p.is_discoverable = TRUE
+      GROUP BY c.id, p.id, dp.user_id
+      ORDER BY p.practice_type ASC, c.is_emergency DESC, p.name ASC;
     `;
     const { rows } = await db.query(query);
     return rows;
   }
 
   /**
-   * List all doctors inside a selected hospital
+   * List all doctors inside a selected Hospital or Independent Practice (accepts clinicId or practiceId)
    */
-  async getHospitalDoctors(clinicId) {
+  async getHospitalDoctors(clinicOrPracticeId) {
     const query = `
-      SELECT u.id, u.name, u.email, u.license_number, u.role, u.specialty,
-             c.name AS clinic_name
-      FROM users u
-      JOIN clinics c ON c.id = u.clinic_id
-      WHERE u.clinic_id = $1 AND u.role IN ('doctor', 'veterinarian') AND u.status = 'active'
+      SELECT DISTINCT
+        u.id, u.name, u.email, COALESCE(dp.registration_number, u.license_number) AS license_number,
+        u.role, COALESCE(dp.specialization, u.specialty) AS specialty,
+        dp.qualification, dp.years_of_experience,
+        pr.name AS clinic_name, pr.practice_type
+      FROM practices pr
+      JOIN users u ON (
+        u.clinic_id = pr.clinic_id
+        OR EXISTS (
+          SELECT 1 FROM practice_members pm
+          WHERE pm.practice_id = pr.id AND pm.user_id = u.id AND pm.status = 'ACTIVE' AND pm.role IN ('DOCTOR', 'OWNER')
+        )
+      )
+      LEFT JOIN doctor_profiles dp ON dp.user_id = u.id
+      WHERE (pr.clinic_id = $1 OR pr.id = $1)
+        AND pr.status = 'ACTIVE'
+        AND (u.role IN ('doctor', 'veterinarian') OR EXISTS (
+          SELECT 1 FROM practice_members pm2 WHERE pm2.practice_id = pr.id AND pm2.user_id = u.id AND pm2.role IN ('DOCTOR', 'OWNER') AND pm2.status = 'ACTIVE'
+        ))
+        AND UPPER(u.status) = 'ACTIVE'
       ORDER BY u.name ASC;
     `;
-    const { rows } = await db.query(query, [clinicId]);
+    const { rows } = await db.query(query, [clinicOrPracticeId]);
     return rows;
   }
 
-  async bookAppointment(ownerId, { clinicId, petId, doctorId, appointmentDate, startTime, endTime, reason, durationMin = 15 }) {
+  async bookAppointment(ownerId, { clinicId, practiceId, petId, doctorId, appointmentDate, startTime, endTime, reason, durationMin = 15 }) {
     // Verify pet belongs to owner
     const ownership = await db.query(
       'SELECT pet_id FROM pet_owners WHERE pet_id = $1 AND owner_id = $2',
@@ -318,13 +363,48 @@ class OwnerPortalService {
       throw err;
     }
 
+    const targetId = practiceId || clinicId || 1;
+    const pracRes = practiceId
+      ? await db.query(
+          `SELECT id AS practice_id, clinic_id, status FROM practices WHERE (id = $1 OR clinic_id = $1) ORDER BY (id = $1) DESC, id ASC LIMIT 1;`,
+          [practiceId]
+        )
+      : await db.query(
+          `SELECT id AS practice_id, clinic_id, status FROM practices WHERE (clinic_id = $1 OR id = $1) ORDER BY (clinic_id = $1) DESC, id ASC LIMIT 1;`,
+          [clinicId || 1]
+        );
+    const targetPractice = pracRes.rows[0];
+    const resolvedClinicId = targetPractice ? targetPractice.clinic_id : targetId;
+    const resolvedPracticeId = targetPractice ? targetPractice.practice_id : null;
+
+    if (targetPractice && targetPractice.status !== 'ACTIVE') {
+      const err = new Error('Selected hospital or doctor practice is not currently active.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Link pet to this practice cleanly without removing existing practice links
+    if (resolvedPracticeId) {
+      await db.query(
+        `INSERT INTO pet_practice_links (pet_id, practice_id, clinic_id, status, last_visit_at)
+         VALUES ($1, $2, $3, 'ACTIVE', NOW())
+         ON CONFLICT (pet_id, practice_id)
+         DO UPDATE SET status = 'ACTIVE', last_visit_at = NOW();`,
+        [petId, resolvedPracticeId, resolvedClinicId]
+      );
+      await db.query(
+        `UPDATE pets SET clinic_id = COALESCE(clinic_id, $1) WHERE id = $2;`,
+        [resolvedClinicId, petId]
+      );
+    }
+
     const scheduledAt = appointmentDate && startTime
       ? new Date(`${appointmentDate}T${startTime}:00Z`).toISOString()
       : new Date().toISOString();
 
     const schedulingService = require('../scheduling/scheduling.service');
     return schedulingService.createAppointment(
-      clinicId || 1,
+      resolvedClinicId,
       {
         pet_id: petId,
         doctor_id: doctorId || null,
@@ -341,41 +421,57 @@ class OwnerPortalService {
   }
 
   /**
-   * Affiliation lifecycle: Pet owner affiliates with a hospital & doctor, agreeing to consent terms
+   * Affiliation lifecycle: Pet owner affiliates with a hospital or independent doctor
    */
-  async affiliateHospital(ownerId, { clinicId, doctorId, consentAgreed }) {
-    if (!clinicId) {
-      const err = new Error('Hospital ID is required for clinical affiliation');
+  async affiliateHospital(ownerId, { clinicId, practiceId, doctorId, consentAgreed }) {
+    const targetId = practiceId || clinicId;
+    if (!targetId) {
+      const err = new Error('Hospital or Practice ID is required for clinical affiliation');
       err.statusCode = 400;
       throw err;
     }
 
-    // Update owner's primary clinic
+    const pracRes = await db.query(
+      `SELECT id AS practice_id, clinic_id FROM practices WHERE id = $1 OR clinic_id = $1 LIMIT 1;`,
+      [targetId]
+    );
+    const resolvedClinicId = pracRes.rows[0]?.clinic_id || targetId;
+    const resolvedPracticeId = pracRes.rows[0]?.practice_id || null;
+
     await db.query(
-      'UPDATE owners SET clinic_id = $1, updated_at = NOW() WHERE id = $2',
-      [clinicId, ownerId]
+      'UPDATE owners SET clinic_id = $1 WHERE id = $2',
+      [resolvedClinicId, ownerId]
     );
 
-    // Also update any of owner's pets to be associated with this clinic
+    if (resolvedPracticeId) {
+      await db.query(
+        `INSERT INTO pet_practice_links (pet_id, practice_id, clinic_id, status)
+         SELECT po.pet_id, $1, $2, 'ACTIVE'
+         FROM pet_owners po WHERE po.owner_id = $3
+         ON CONFLICT (pet_id, practice_id) DO UPDATE SET status = 'ACTIVE';`,
+        [resolvedPracticeId, resolvedClinicId, ownerId]
+      );
+    }
+
     await db.query(
-      `UPDATE pets SET clinic_id = $1, updated_at = NOW()
+      `UPDATE pets SET clinic_id = COALESCE(clinic_id, $1)
        WHERE id IN (SELECT pet_id FROM pet_owners WHERE owner_id = $2)`,
-      [clinicId, ownerId]
+      [resolvedClinicId, ownerId]
     );
 
-    // Record digital consent if agreed
     if (consentAgreed) {
       await db.query(
         `INSERT INTO owner_consents (owner_id, clinic_id, consent_type, agreed, agreed_at)
          VALUES ($1, $2, 'hospital_affiliation_consent', true, NOW())
          ON CONFLICT DO NOTHING`,
-        [ownerId, clinicId]
-      ).catch(() => {}); // Graceful if table optional
+        [ownerId, resolvedClinicId]
+      ).catch(() => {});
     }
 
     return {
       success: true,
-      affiliatedClinicId: clinicId,
+      affiliatedClinicId: resolvedClinicId,
+      affiliatedPracticeId: resolvedPracticeId,
       doctorId: doctorId || null,
       message: 'Successfully affiliated with hospital and attending veterinarian.'
     };
@@ -386,7 +482,7 @@ class OwnerPortalService {
    */
   async removeAffiliation(ownerId) {
     await db.query(
-      'UPDATE owners SET clinic_id = NULL, updated_at = NOW() WHERE id = $1',
+      'UPDATE owners SET clinic_id = NULL WHERE id = $1',
       [ownerId]
     );
 

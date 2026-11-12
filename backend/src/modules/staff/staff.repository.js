@@ -2,7 +2,10 @@ const db = require('../../db/connection');
 
 class StaffRepository {
   async getStaff(clinicId, { page = 1, limit = 10, offset = 0, search = '', role = '' } = {}) {
-    let whereClause = 'WHERE u.clinic_id = $1';
+    let whereClause = `WHERE (u.clinic_id = $1 OR EXISTS (
+      SELECT 1 FROM practice_members pm JOIN practices pr ON pr.id = pm.practice_id
+      WHERE pm.user_id = u.id AND pr.clinic_id = $1 AND pm.status = 'ACTIVE'
+    ))`;
     const params = [clinicId];
     let idx = 2;
 

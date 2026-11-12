@@ -65,7 +65,7 @@ export function OwnerAppointmentDualTab({ owner, onNavigateTab }) {
   const [ownerProfile, setOwnerProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
-  // Load pets and affiliated profile on mount
+  // Load pets, all discoverable hospitals/independent doctors, and profile on mount
   useEffect(() => {
     ownerFetch('/api/v1/owner-portal/pets')
       .then((r) => r.json())
@@ -78,35 +78,47 @@ export function OwnerAppointmentDualTab({ owner, onNavigateTab }) {
       .catch(() => {});
 
     setProfileLoading(true);
-    ownerFetch('/api/v1/owner-portal/me')
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success && d.data) {
-          setOwnerProfile(d.data);
-          if (d.data.clinic_id) {
-            setSelectedHospitalId(String(d.data.clinic_id));
-            // Fetch doctors for this affiliated hospital
-            ownerFetch(`/api/v1/owner-portal/hospitals/${d.data.clinic_id}/doctors`)
-              .then((res) => res.json())
-              .then((docData) => {
-                if (docData.success && docData.data?.length > 0) {
-                  setDoctors(docData.data);
-                  const matchedDoc = d.data.primary_doctor_id
-                    ? docData.data.find((doc) => doc.id === d.data.primary_doctor_id)
-                    : null;
-                  setSelectedDoctorId(String(matchedDoc ? matchedDoc.id : docData.data[0].id));
-                } else {
-                  setDoctors([]);
-                  setSelectedDoctorId('');
-                }
-              })
-              .catch(() => {});
+    Promise.all([
+      ownerFetch('/api/v1/owner-portal/me').then((r) => r.json()).catch(() => ({})),
+      ownerFetch('/api/v1/owner-portal/hospitals').then((r) => r.json()).catch(() => ({})),
+    ])
+      .then(([profData, hospData]) => {
+        const hospList = hospData?.success ? (hospData.data || []) : [];
+        setHospitals(hospList);
+
+        if (profData?.success && profData.data) {
+          setOwnerProfile(profData.data);
+          if (profData.data.clinic_id) {
+            setSelectedHospitalId(String(profData.data.clinic_id));
+          } else if (hospList.length > 0) {
+            setSelectedHospitalId(String(hospList[0].id));
           }
+        } else if (hospList.length > 0) {
+          setSelectedHospitalId(String(hospList[0].id));
         }
       })
-      .catch(() => {})
       .finally(() => setProfileLoading(false));
   }, []);
+
+  // Load doctors whenever selected practice/hospital changes
+  useEffect(() => {
+    if (!selectedHospitalId) return;
+    ownerFetch(`/api/v1/owner-portal/hospitals/${selectedHospitalId}/doctors`)
+      .then((res) => res.json())
+      .then((docData) => {
+        if (docData.success && docData.data?.length > 0) {
+          setDoctors(docData.data);
+          const matchedDoc = ownerProfile?.primary_doctor_id
+            ? docData.data.find((doc) => doc.id === ownerProfile.primary_doctor_id)
+            : null;
+          setSelectedDoctorId(String(matchedDoc ? matchedDoc.id : docData.data[0].id));
+        } else {
+          setDoctors([]);
+          setSelectedDoctorId('');
+        }
+      })
+      .catch(() => {});
+  }, [selectedHospitalId, ownerProfile]);
 
   // When doctor and date are chosen, fetch available slots
   const fetchSlots = useCallback(async () => {
@@ -295,46 +307,82 @@ export function OwnerAppointmentDualTab({ owner, onNavigateTab }) {
           SUB-TAB 1: APPOINTMENT BOOKING (Doctor Confirmed Slots)
           ═══════════════════════════════════════════════════════════════ */}
       {activeSubTab === 'booking' && (
-        !profileLoading && !selectedHospitalId ? (
+        !profileLoading && hospitals.length === 0 ? (
           <div className="owner-no-affiliation-card">
             <Building2 size={36} className="affiliation-prompt-icon" />
-            <h3>No Hospital Affiliation Configured</h3>
+            <h3>No Active Veterinary Practices Available</h3>
             <p>
-              Please select your veterinary clinic and primary attending doctor in <strong>Clinical Affiliation</strong> before booking consultation slots.
+              No accredited hospitals or independent doctors are currently active for online booking.
             </p>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => onNavigateTab && onNavigateTab('affiliation')}
-            >
-              <span>Go to Clinical Affiliation</span>
-              <ArrowRight size={15} />
-            </button>
           </div>
         ) : (
           <div className="owner-booking-workflow-card">
-            {/* Verified Clinical Affiliation Summary Card (Replaces Dropdowns) */}
+            {/* Practice & Clinician Summary */}
             <div className="booking-affiliation-summary-card">
               <div className="affiliation-badge-item">
                 <Building2 size={16} aria-hidden="true" />
-                <span>Affiliated Hospital: <strong>{ownerProfile?.clinic_name || 'Central Valley Animal Hospital'}</strong></span>
+                <span>
+                  Selected Practice:{' '}
+                  <strong>{selectedHospital?.name || ownerProfile?.clinic_name || 'Select Practice'}</strong>
+                  {selectedHospital?.practice_type ? ` (${selectedHospital.practice_type === 'INDEPENDENT' ? 'Independent Doctor' : 'Hospital'})` : ''}
+                </span>
               </div>
               <div className="affiliation-badge-item">
                 <Stethoscope size={16} aria-hidden="true" />
-                <span>Attending Doctor: <strong>{doctors.find((d) => String(d.id) === String(selectedDoctorId))?.name || (doctors[0] ? doctors[0].name : 'Attending DVM')}</strong></span>
+                <span>Attending Doctor: <strong>{selectedDoctor?.name || doctors[0]?.name || 'Attending DVM'}</strong></span>
               </div>
             </div>
 
             <form onSubmit={handleConfirmBooking}>
               {bookingError && (
-                <div className="admin-badge badge-danger admin-alert-banner" style={{ marginBottom: 'var(--space-4)' }}>
+                <div className="admin-badge badge-danger admin-alert-banner portal-alert-gap">
                   <AlertCircle size={16} />
                   <span>{bookingError}</span>
                 </div>
               )}
 
               <div className="owner-booking-grid">
-                {/* Step 1: Pet Companion Selection */}
+                {/* Practice Selector (Any Hospital or Independent Doctor) */}
+                <div className="admin-form-group">
+                  <label htmlFor="owner-book-hospital">Select Hospital or Independent Doctor *</label>
+                  <select
+                    id="owner-book-hospital"
+                    className="admin-form-control"
+                    value={selectedHospitalId}
+                    onChange={(e) => setSelectedHospitalId(e.target.value)}
+                    required
+                  >
+                    {hospitals.map((h) => (
+                      <option key={h.id} value={h.id}>
+                        {h.name} — {h.practice_type === 'INDEPENDENT' ? 'Independent Practice' : 'Hospital'}{h.city ? ` (${h.city})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Attending Doctor Selector */}
+                <div className="admin-form-group">
+                  <label htmlFor="owner-book-doctor">Attending Veterinarian *</label>
+                  <select
+                    id="owner-book-doctor"
+                    className="admin-form-control"
+                    value={selectedDoctorId}
+                    onChange={(e) => setSelectedDoctorId(e.target.value)}
+                    required
+                  >
+                    {doctors.length === 0 ? (
+                      <option value="">No doctors available at this practice</option>
+                    ) : (
+                      doctors.map((doc) => (
+                        <option key={doc.id} value={doc.id}>
+                          {doc.name} {doc.specialty ? `(${doc.specialty})` : ''}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                {/* Pet Companion Selection */}
                 <div className="admin-form-group">
                   <label htmlFor="owner-book-pet">Select Patient Companion *</label>
                   <select
