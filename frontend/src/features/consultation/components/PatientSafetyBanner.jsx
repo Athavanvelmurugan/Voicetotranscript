@@ -10,6 +10,7 @@ export function PatientSafetyBanner({
   microchipNo = null,
   weightKg = null,
   ageYears = null,
+  compact = false,
 }) {
   // Normalize arrays if stored as JSON strings
   const parsedAllergies = Array.isArray(allergies)
@@ -23,31 +24,38 @@ export function PatientSafetyBanner({
   const hasAllergies = parsedAllergies.length > 0;
   const hasConditions = parsedConditions.length > 0;
   const isHighRisk = hasAllergies || hasConditions;
+  const showLeftMeta = !compact || Boolean(microchipNo);
 
   return (
     <div
-      className={`patient-safety-banner ${isHighRisk ? 'safety-high-risk' : 'safety-standard'}`}
+      className={`patient-safety-banner ${isHighRisk ? 'safety-high-risk' : 'safety-standard'} ${compact ? 'patient-safety-banner--compact' : ''}`}
       role="region"
       aria-label="Patient Clinical Safety Banner"
     >
-      <div className="safety-left">
-        <div className="safety-pet-meta">
-          <span className="safety-pet-name">{petName}</span>
-          {(species || breed) && (
-            <span className="safety-pet-sub">
-              {[species, breed].filter(Boolean).join(' • ')}
-            </span>
-          )}
-          {weightKg && <span className="safety-badge-info">{weightKg} kg</span>}
-          {ageYears && <span className="safety-badge-info">{ageYears} yrs</span>}
-          {microchipNo && (
-            <span className="safety-badge-chip">
-              <Tag size={12} aria-hidden="true" />
-              <span>Chip #{microchipNo}</span>
-            </span>
-          )}
+      {showLeftMeta && (
+        <div className="safety-left">
+          <div className="safety-pet-meta">
+            {!compact && (
+              <>
+                <span className="safety-pet-name">{petName}</span>
+                {(species || breed) && (
+                  <span className="safety-pet-sub">
+                    {[species, breed].filter(Boolean).join(' • ')}
+                  </span>
+                )}
+                {weightKg && <span className="safety-badge-info">{weightKg} kg</span>}
+                {ageYears && <span className="safety-badge-info">{ageYears} yrs</span>}
+              </>
+            )}
+            {microchipNo && (
+              <span className="safety-badge-chip">
+                <Tag size={12} aria-hidden="true" />
+                <span>Chip #{microchipNo}</span>
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="safety-alerts">
         {hasAllergies && (

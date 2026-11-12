@@ -107,14 +107,14 @@ export function OwnerLiveConsultationTab({ owner, onOpenVerifyModal }) {
 
       {/* TODAY'S LIVE CONSULTATION CARD */}
       {todayConsultation ? (
-        <div className="admin-card" style={{ marginBottom: 'var(--space-6)', border: '1px solid var(--color-primary-border)' }}>
-          <div className="admin-card-header" style={{ background: 'var(--color-primary-soft)' }}>
+        <div className="admin-card owner-live-card">
+          <div className="admin-card-header owner-live-card-header">
             <div>
-              <div className="hero-status-pill" style={{ background: 'var(--color-primary)', color: '#fff' }}>
-                <span className="live-dot" style={{ background: '#fff' }} aria-hidden="true" />
+              <div className="hero-status-pill owner-live-status-pill">
+                <span className="live-dot owner-live-dot" aria-hidden="true" />
                 <span>Today's Consultation Meeting Active</span>
               </div>
-              <h3 className="admin-card-title" style={{ marginTop: 'var(--space-2)' }}>
+              <h3 className="admin-card-title owner-live-card-title">
                 {todayConsultation.pet_name} with {todayConsultation.doctor_name || 'Attending DVM'}
               </h3>
               <p className="admin-card-subtitle">
@@ -125,23 +125,23 @@ export function OwnerLiveConsultationTab({ owner, onOpenVerifyModal }) {
           </div>
 
           <div className="admin-card-body">
-            <h4 style={{ margin: '0 0 var(--space-2) 0', fontSize: 'var(--text-sm)' }}>Ambient AI Scribe Summary</h4>
-            <p className="admin-meta-sub" style={{ lineHeight: '1.6', color: 'var(--color-text)' }}>
+            <h4 className="owner-live-summary-heading">Ambient AI Scribe Summary</h4>
+            <p className="admin-meta-sub owner-live-summary-text">
               {todayConsultation.clinical_summary || 'Encounter in progress. Ambient clinical notes will update in real time upon doctor approval.'}
             </p>
           </div>
         </div>
       ) : (
-        <div className="admin-card" style={{ borderStyle: 'dashed' }}>
-          <div className="admin-card-body" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', padding: 'var(--space-5)' }}>
+        <div className="admin-card owner-live-standby-card">
+          <div className="admin-card-body owner-live-standby-body">
             <div className="admin-stat-icon icon-blue">
               <Stethoscope size={24} />
             </div>
             <div>
-              <h4 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)' }}>
+              <h4 className="owner-live-standby-title">
                 No Active Live Consultation Today
               </h4>
-              <p className="admin-meta-sub" style={{ margin: 'var(--space-1) 0 0 0' }}>
+              <p className="admin-meta-sub owner-live-standby-desc">
                 When you have an appointment scheduled for today, real-time consultation updates, ambient AI scribe summaries, and prescription drafts will stream here automatically.
               </p>
             </div>
@@ -163,7 +163,7 @@ export function OwnerLiveConsultationTab({ owner, onOpenVerifyModal }) {
 
         <div className="admin-card-body">
           {/* Universal Search & Date Filter Bar */}
-          <div className="doctor-filter-bar" style={{ marginBottom: 'var(--space-4)' }}>
+          <div className="doctor-filter-bar owner-filter-bar">
             <div className="doctor-search-box">
               <Search size={18} className="doctor-search-icon" />
               <input
@@ -178,7 +178,7 @@ export function OwnerLiveConsultationTab({ owner, onOpenVerifyModal }) {
               />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <div className="owner-date-filter-group">
               <input
                 type="date"
                 className="schedule-date-input"
@@ -215,10 +215,10 @@ export function OwnerLiveConsultationTab({ owner, onOpenVerifyModal }) {
           ) : (
             <div className="owner-consultation-cards-stack">
               {paginatedItems.map((c) => (
-                <div key={c.id} className="owner-consultation-card" style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-3)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                <div key={c.id} className="owner-consultation-card">
+                  <div className="owner-consultation-card-header">
                     <div>
-                      <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)' }}>
+                      <h4 className="owner-consultation-title">
                         {c.pet_name} — {(() => {
                           const raw = c.started_at || c.created_at;
                           if (!raw) return 'Clinical Visit';
@@ -238,10 +238,9 @@ export function OwnerLiveConsultationTab({ owner, onOpenVerifyModal }) {
                     {c.ledger_hash && (
                       <button
                         type="button"
-                        className="audit-proof-pill"
+                        className="audit-proof-pill owner-consultation-proof-btn"
                         onClick={() => onOpenVerifyModal && onOpenVerifyModal(c.ledger_hash)}
                         title="Verify cryptographic proof"
-                        style={{ cursor: 'pointer', border: 'none' }}
                       >
                         <ShieldCheck size={14} className="audit-check-icon" />
                         <span className="text-xs">Ledger Verified</span>
@@ -249,7 +248,7 @@ export function OwnerLiveConsultationTab({ owner, onOpenVerifyModal }) {
                     )}
                   </div>
 
-                  <p style={{ margin: 'var(--space-2) 0', fontSize: 'var(--text-sm)', color: 'var(--color-text)', lineHeight: '1.5' }}>
+                  <p className="owner-consultation-summary">
                     {c.clinical_summary || 'Routine veterinary clinical evaluation recorded.'}
                   </p>
                 </div>

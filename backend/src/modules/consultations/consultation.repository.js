@@ -82,18 +82,21 @@ class ConsultationRepository {
     return rows[0] || null;
   }
 
-  async recordConsent({ consultationId, givenBy, ipAddress = null, userAgent = null }) {
+  async recordConsent({ consultationId, givenBy, ipAddress = null, userAgent = null, clinicId = null }) {
     const client = await db.getClient();
     try {
       await client.query('BEGIN');
       const consentQuery = `
-        INSERT INTO recording_consents (consultation_id, given_by, ip_address, user_agent)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO recording_consents (consultation_id, given_by, ip_address, user_agent, clinic_id)
+        VALUES ($1, $2, $3, $4, COALESCE($5::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1))
         ON CONFLICT (consultation_id) 
-        DO UPDATE SET given_by = EXCLUDED.given_by, created_at = NOW()
+        DO UPDATE SET
+          given_by = EXCLUDED.given_by,
+          clinic_id = COALESCE(EXCLUDED.clinic_id, recording_consents.clinic_id),
+          created_at = NOW()
         RETURNING *;
       `;
-      const consentRes = await client.query(consentQuery, [consultationId, givenBy, ipAddress, userAgent]);
+      const consentRes = await client.query(consentQuery, [consultationId, givenBy, ipAddress, userAgent, clinicId || null]);
 
       const consultQuery = `
         UPDATE consultations
@@ -133,11 +136,12 @@ class ConsultationRepository {
     avgLogprob = null,
     noSpeechProb = null,
     needsVetReview = false,
+    clinicId = null,
   }) {
     const query = `
       INSERT INTO transcript_segments 
-        (consultation_id, sequence_number, text, is_partial, speaker_role, language_detected, confidence, start_ms, end_ms, source, pass_number, is_final_pass, model, provider, prompt_version, params, avg_logprob, no_speech_prob, needs_vet_review)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+        (consultation_id, sequence_number, text, is_partial, speaker_role, language_detected, confidence, start_ms, end_ms, source, pass_number, is_final_pass, model, provider, prompt_version, params, avg_logprob, no_speech_prob, needs_vet_review, clinic_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, COALESCE($20::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1))
       ON CONFLICT (consultation_id, pass_number, sequence_number, is_partial)
       DO UPDATE SET 
         text = EXCLUDED.text,
@@ -148,7 +152,8 @@ class ConsultationRepository {
         provider = EXCLUDED.provider,
         avg_logprob = EXCLUDED.avg_logprob,
         no_speech_prob = EXCLUDED.no_speech_prob,
-        needs_vet_review = EXCLUDED.needs_vet_review
+        needs_vet_review = EXCLUDED.needs_vet_review,
+        clinic_id = COALESCE(EXCLUDED.clinic_id, transcript_segments.clinic_id)
       RETURNING *;
     `;
     const values = [
@@ -171,6 +176,7 @@ class ConsultationRepository {
       avgLogprob,
       noSpeechProb,
       needsVetReview,
+      clinicId || null,
     ];
     const { rows } = await db.query(query, values);
     return rows[0];

@@ -24,15 +24,15 @@ export function LiveTranscript({ segments, partialSegment, doctorName, ownerName
   return (
     <div className="transcript-container">
       {segments.length === 0 && !partialSegment && (
-        <div style={{ textAlign: 'center', color: '#94a3b8', margin: 'auto', padding: '50px 24px' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#f1f5f9', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
-            <Mic size={28} color="#0284c7" style={{ opacity: 0.8 }} />
+        <div className="transcript-empty-state">
+          <div className="transcript-empty-icon-box">
+            <Mic size={28} />
           </div>
-          <p style={{ fontWeight: 700, fontSize: '0.95rem', color: '#334155', letterSpacing: '-0.01em' }}>
+          <p className="transcript-empty-title">
             Live Clinical Transcript Ready
           </p>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '6px', lineHeight: 1.6, maxWidth: '320px', margin: '6px auto 0 auto' }}>
-            Press <strong>Start Recording</strong> to capture clinical dialogue. Audio is transcribed in real-time via <strong>Whisper API</strong>.
+          <p className="transcript-empty-sub">
+            Press <strong>Start Recording</strong> to capture clinical dialogue. Audio is transcribed in real-time via <strong>Whisper Large V3</strong>.
           </p>
         </div>
       )}
@@ -53,34 +53,25 @@ export function LiveTranscript({ segments, partialSegment, doctorName, ownerName
             className={`transcript-message ${getSpeakerStyle(role)}`}
           >
             <div className="transcript-meta">
-              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '50%',
-                  background: isDoctor ? '#e0f2fe' : '#f1f5f9',
-                  color: isDoctor ? '#0284c7' : '#475569',
-                }}>
+              <span className="transcript-speaker-wrap">
+                <span className={`transcript-speaker-avatar ${isDoctor ? 'transcript-speaker-avatar--doctor' : 'transcript-speaker-avatar--owner'}`}>
                   {isDoctor ? <Stethoscope size={10} /> : <User size={10} />}
                 </span>
-                <span style={{ letterSpacing: '0.02em' }}>{getSpeakerLabel(role)}</span>
+                <span className="transcript-speaker-name">{getSpeakerLabel(role)}</span>
                 {sourceIsWhisper && (
-                  <span style={{ fontSize: '0.62rem', background: '#f0f9ff', color: '#0284c7', border: '1px solid #bae6fd', padding: '1px 5px', borderRadius: '9999px', marginLeft: '2px', fontWeight: 700 }}>
+                  <span className="transcript-whisper-tag">
                     Whisper
                   </span>
                 )}
               </span>
 
-              <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', color: '#64748b' }}>
+              <span className="transcript-seq-meta">
                 #{segSeq}
                 {segStartMs > 0 && ` · ${(segStartMs / 1000).toFixed(1)}s`}
                 {seg.confidence ? ` · ${(seg.confidence * 100).toFixed(0)}%` : ''}
               </span>
             </div>
-            <div style={{ color: '#1e293b', fontSize: '0.86rem' }}>{seg.text}</div>
+            <div className="transcript-body-text">{seg.text}</div>
           </div>
         );
       })}
@@ -89,13 +80,13 @@ export function LiveTranscript({ segments, partialSegment, doctorName, ownerName
       {partialSegment && (
         <div className="transcript-message transcript-partial">
           <div className="transcript-meta">
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Upload size={11} color="#d97706" />
+            <span className="transcript-speaker-wrap">
+              <Upload size={11} className="icon-warning" />
               <span>{getSpeakerLabel(partialSegment.speaker)} (Uploading...)</span>
             </span>
-            <span style={{ fontSize: '0.7rem', color: '#b45309' }}>processing</span>
+            <span className="transcript-partial-status">processing</span>
           </div>
-          <div style={{ color: '#78350f' }}>{partialSegment.text || '...'}</div>
+          <div className="transcript-partial-text">{partialSegment.text || '...'}</div>
         </div>
       )}
 

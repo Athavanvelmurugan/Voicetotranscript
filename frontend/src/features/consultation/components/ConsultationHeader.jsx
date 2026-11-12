@@ -21,19 +21,20 @@ export function ConsultationHeader({
     return (
       <div className="consultation-header">
         <div className="consultation-header-top">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <div className="badge badge-purple" style={{ padding: '6px 12px', fontSize: '0.82rem' }}>
+          <div className="header-setup-bar">
+            <div className="badge badge-purple header-setup-badge">
               <Stethoscope size={15} />
               <span>Attending: {doctors.find((d) => d.id === activeDoctorId)?.name || 'Dr. Attending DVM'}</span>
             </div>
 
-            <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
+            <div className="header-setup-hint">
               No active consultation selected. Start a consultation or select a patient.
             </div>
           </div>
 
           <div className="header-actions-group">
             <button
+              type="button"
               className="btn btn-primary"
               onClick={onOpenNewConsultationModal}
             >
@@ -57,7 +58,7 @@ export function ConsultationHeader({
           <div className="pet-details">
             <h1>
               <span>{consultation.pet_name}</span>
-              <span className="badge badge-info" style={{ marginLeft: '4px' }}>
+              <span className="badge badge-info header-species-badge">
                 {consultation.pet_species}
               </span>
             </h1>
@@ -75,18 +76,11 @@ export function ConsultationHeader({
           {/* Dynamic Consultation Switcher Dropdown */}
           {consultations.length > 0 && (
             <select
-              className="form-control"
-              style={{
-                fontWeight: 600,
-                fontSize: '0.82rem',
-                padding: '6px 10px',
-                background: '#f8fafc',
-                cursor: 'pointer',
-                minWidth: '200px',
-              }}
+              className="form-control header-switcher-select"
               value={consultation.id}
               onChange={(e) => onSelectConsultation && onSelectConsultation(parseInt(e.target.value, 10))}
               title="Switch active consultation"
+              aria-label="Switch active consultation"
             >
               {consultations.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -98,6 +92,7 @@ export function ConsultationHeader({
 
           {/* + New Consultation Button */}
           <button
+            type="button"
             className="btn btn-primary"
             onClick={onOpenNewConsultationModal}
             title="Create a new dynamic consultation"
@@ -108,12 +103,8 @@ export function ConsultationHeader({
           {/* Complete Consultation Button */}
           {consultation.status !== 'completed' && onCompleteConsultation && (
             <button
-              className="btn btn-primary"
-              style={{
-                background: '#059669',
-                borderColor: '#059669',
-                color: '#ffffff',
-              }}
+              type="button"
+              className="btn btn-success header-btn-complete"
               onClick={() => onCompleteConsultation(consultation.id)}
               title="Finalize and lock this clinical consultation"
             >
@@ -124,10 +115,11 @@ export function ConsultationHeader({
           {/* Delete current consultation button */}
           {onDeleteConsultation && (
             <button
-              className="btn btn-outline"
-              style={{ padding: '6px 9px', color: '#e11d48', borderColor: '#fecdd3' }}
+              type="button"
+              className="btn btn-outline header-btn-delete"
               onClick={() => onDeleteConsultation(consultation.id)}
               title="Delete this consultation session"
+              aria-label="Delete this consultation session"
             >
               <Trash2 size={14} />
             </button>
@@ -135,18 +127,16 @@ export function ConsultationHeader({
         </div>
       </div>
 
-      {/* Deck 2: Clinical Vitals & Status Meta-strip */}
+      {/* Deck 2: Deduplicated Clinical Metadata & Status Strip */}
       <div className="consultation-header-bottom">
         <div className="header-vitals-strip">
           <div className="vital-item">
+            <User size={13} className="icon-primary" />
             <span>Owner:</span>
-            <strong style={{ color: '#0f172a' }}>{consultation.owner_name || 'Pet Owner'}</strong>
-            {consultation.owner_contact && <span style={{ color: '#64748b' }}>({consultation.owner_contact})</span>}
-          </div>
-          <span className="vital-divider" />
-          <div className="vital-item">
-            <span>Species:</span>
-            <strong>{consultation.pet_species || 'Canine'}</strong>
+            <strong className="header-owner-name">{consultation.owner_name || 'Pet Owner'}</strong>
+            {consultation.owner_contact && (
+              <span className="header-owner-contact">({consultation.owner_contact})</span>
+            )}
           </div>
         </div>
 
@@ -155,12 +145,6 @@ export function ConsultationHeader({
           <div className="badge badge-purple" title="Attending Veterinarian">
             <Stethoscope size={13} />
             <span>{consultation?.doctor_name || (doctors.find((d) => d.id === activeDoctorId)?.name) || 'Attending DVM'}</span>
-          </div>
-
-          {/* Pet Owner Badge */}
-          <div className="badge badge-info" title="Pet Owner">
-            <User size={13} />
-            <span>Owner: <strong>{consultation.owner_name || 'Pet Owner'}</strong></span>
           </div>
 
           {/* Appointment ID Badge */}

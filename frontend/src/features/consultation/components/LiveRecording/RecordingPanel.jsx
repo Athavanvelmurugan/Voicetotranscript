@@ -36,12 +36,12 @@ export function RecordingPanel({
     <section className="recording-panel">
       <div className="panel-header">
         <div className="panel-title">
-          <Mic size={17} color="#0284c7" />
+          <Mic size={17} className="icon-primary" />
           <span>Live Audio & Whisper Scribe</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', color: '#64748b' }}>
-          <Activity size={13} color="#059669" />
-          <span style={{ fontFamily: 'ui-monospace, monospace' }}>
+        <div className="panel-segments-meta">
+          <Activity size={13} className="icon-success" />
+          <span className="panel-segments-count">
             {segments.length} segment{segments.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -69,7 +69,7 @@ export function RecordingPanel({
         isUploadingAudio={isUploadingAudio}
       />
 
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <div className="transcript-scroll-body">
         <LiveTranscript
           segments={segments}
           partialSegment={partialSegment}
@@ -91,7 +91,7 @@ export function RecordingPanel({
           >
             {isGenerating ? (
               <div className="btn-insights-content">
-                <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                <Loader2 size={18} className="spin-animate" />
                 <div className="btn-insights-text">
                   <span className="btn-insights-title">Extracting Clinical Insights...</span>
                   <span className="btn-insights-subtitle">Synthesizing audio transcripts with AI</span>
@@ -100,7 +100,7 @@ export function RecordingPanel({
             ) : (
               <div className="btn-insights-content">
                 <div className="btn-insights-icon-box">
-                  <Sparkles size={18} color="#ffffff" />
+                  <Sparkles size={18} className="icon-on-primary" />
                 </div>
                 <div className="btn-insights-text">
                   <span className="btn-insights-title">Generate & View Clinical Insights</span>

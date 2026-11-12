@@ -94,10 +94,11 @@ class AudioController {
       const chunkBytes = fs.readFileSync(tempFilePath);
       const mimeType = req.file.mimetype || 'audio/wav';
       await db.query(
-        `INSERT INTO consultation_audio_chunks (consultation_id, chunk_index, audio_data, mime_type)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (consultation_id, chunk_index) DO UPDATE SET audio_data = EXCLUDED.audio_data`,
-        [consultationId, chunkIndex, chunkBytes, mimeType]
+        `INSERT INTO consultation_audio_chunks (consultation_id, chunk_index, audio_data, mime_type, clinic_id)
+         VALUES ($1, $2, $3, $4, COALESCE($5::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1))
+         ON CONFLICT (consultation_id, chunk_index)
+         DO UPDATE SET audio_data = EXCLUDED.audio_data, clinic_id = COALESCE(EXCLUDED.clinic_id, consultation_audio_chunks.clinic_id)`,
+        [consultationId, chunkIndex, chunkBytes, mimeType, consultation.clinic_id || null]
       );
 
       const fileSizeMB = audioStorage.fileSizeMB(tempFilePath).toFixed(2);
@@ -137,10 +138,10 @@ class AudioController {
           droppedSegments: transcriptionResult.droppedSegments || [],
         };
         await dbClient.query(
-          `INSERT INTO consultation_chunk_receipts (consultation_id, chunk_index, response_payload)
-           VALUES ($1, $2, $3)
+          `INSERT INTO consultation_chunk_receipts (consultation_id, chunk_index, response_payload, clinic_id)
+           VALUES ($1, $2, $3, COALESCE($4::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1))
            ON CONFLICT (consultation_id, chunk_index) DO NOTHING`,
-          [consultationId, chunkIndex, JSON.stringify(emptyResponse)]
+          [consultationId, chunkIndex, JSON.stringify(emptyResponse), consultation.clinic_id || null]
         );
         return res.status(200).json(emptyResponse);
       }
@@ -239,10 +240,10 @@ class AudioController {
 
       // Record chunk receipt for idempotency (Bug 7)
       await dbClient.query(
-        `INSERT INTO consultation_chunk_receipts (consultation_id, chunk_index, response_payload)
-         VALUES ($1, $2, $3)
+        `INSERT INTO consultation_chunk_receipts (consultation_id, chunk_index, response_payload, clinic_id)
+         VALUES ($1, $2, $3, COALESCE($4::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1))
          ON CONFLICT (consultation_id, chunk_index) DO NOTHING`,
-        [consultationId, chunkIndex, JSON.stringify(responsePayload)]
+        [consultationId, chunkIndex, JSON.stringify(responsePayload), consultation.clinic_id || null]
       );
 
       // Audit log the transcription
@@ -508,9 +509,9 @@ class AudioController {
         try {
           if (audioBuffer && audioBuffer.length > 0) {
             await db.query(`
-              INSERT INTO consultation_audio (consultation_id, audio_data, mime_type, file_name, file_size_bytes)
-              VALUES ($1, $2, $3, $4, $5)
-            `, [consultation.id, audioBuffer, mimeType, fileName, audioBuffer.length]);
+              INSERT INTO consultation_audio (consultation_id, audio_data, mime_type, file_name, file_size_bytes, clinic_id)
+              VALUES ($1, $2, $3, $4, $5, COALESCE($6::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1))
+            `, [consultation.id, audioBuffer, mimeType, fileName, audioBuffer.length, consultation.clinic_id || null]);
           }
         } catch (audioErr) {
           console.warn('[AudioController] Warning saving consultation audio BYTEA:', audioErr.message);

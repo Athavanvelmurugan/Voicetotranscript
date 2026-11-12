@@ -79,9 +79,12 @@ class ClinicalExtractor {
         consultation_id, status, model_used,
         pet_info, chief_complaints, symptoms, medical_history, allergies,
         vitals, observations, diagnoses, medications, lab_tests, follow_up,
-        missing_info, contradictions, raw_extraction, validation_errors, processing_ms
+        missing_info, contradictions, raw_extraction, validation_errors, processing_ms, clinic_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19,
+        COALESCE($20::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1)
+      )
       ON CONFLICT (consultation_id)
       DO UPDATE SET
         status = EXCLUDED.status,
@@ -102,6 +105,7 @@ class ClinicalExtractor {
         raw_extraction = EXCLUDED.raw_extraction,
         validation_errors = EXCLUDED.validation_errors,
         processing_ms = EXCLUDED.processing_ms,
+        clinic_id = COALESCE(EXCLUDED.clinic_id, clinical_extractions.clinic_id),
         updated_at = NOW()
       RETURNING *;
     `;
@@ -126,6 +130,7 @@ class ClinicalExtractor {
       JSON.stringify(rawJson),
       JSON.stringify(validationErrors),
       processingMs,
+      consultation.clinic_id || null,
     ];
 
     const { rows } = await db.query(query, values);

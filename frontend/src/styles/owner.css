@@ -2838,6 +2838,131 @@ input:checked + .slider:before {
   max-width: 480px;
 }
 
+/* ─── Owner Live Consultation & Visit History ─── */
+.owner-live-card {
+  margin-bottom: var(--space-5);
+  border: 1px solid var(--color-primary-border);
+}
+
+.owner-live-card-header {
+  background: var(--color-primary-soft);
+}
+
+.owner-live-status-pill {
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+}
+
+.owner-live-dot {
+  background: var(--color-text-on-primary);
+}
+
+.owner-live-card-title {
+  margin-top: var(--space-2);
+}
+
+.owner-live-summary-heading {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.owner-live-summary-text {
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.owner-live-standby-card {
+  border-style: dashed;
+}
+
+.owner-live-standby-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+@media (min-width: 600px) {
+  .owner-live-standby-body {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-5);
+  }
+}
+
+.owner-live-standby-title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.owner-live-standby-desc {
+  margin: var(--space-1) 0 0 0;
+}
+
+.owner-filter-bar {
+  margin-bottom: var(--space-4);
+}
+
+.owner-date-filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.owner-consultation-cards-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.owner-consultation-card {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.owner-consultation-card:hover {
+  border-color: var(--color-primary-border);
+  box-shadow: var(--shadow-xs);
+}
+
+.owner-consultation-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.owner-consultation-title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.owner-consultation-proof-btn {
+  cursor: pointer;
+  border: none;
+}
+
+.owner-consultation-summary {
+  margin: var(--space-2) 0 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+
 
 
 

@@ -112,182 +112,103 @@ export function ClinicalInsightsModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
+    <div className="modal-overlay modal-overlay--insights" onClick={onClose}>
       <div
-        className="modal-content modal-insights-content"
+        className="modal-content consult-modal-content modal-insights-content"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          padding: 0,
-        }}
       >
         {/* ─── Header ─── */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%)',
-            color: '#ffffff',
-            padding: '20px 24px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            boxShadow: '0 2px 8px rgba(12, 74, 110, 0.2)',
-          }}
-        >
+        <div className="modal-header--insights">
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <Sparkles size={20} color="#38bdf8" />
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 750, color: '#ffffff', letterSpacing: '-0.015em' }}>
+            <div className="insights-header-top">
+              <Sparkles size={20} className="icon-on-primary" />
+              <h2 className="insights-header-title">
                 AI Clinical Insights & Templates — {consultation?.pet_name || 'Patient'}
               </h2>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '0.8rem', opacity: 0.95 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255, 255, 255, 0.12)', padding: '2px 8px', borderRadius: '9999px' }}>
+            <div className="insights-meta-pills">
+              <span className="insights-meta-pill">
                 <Stethoscope size={12} /> {consultation?.doctor_name || 'Veterinarian'}
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255, 255, 255, 0.12)', padding: '2px 8px', borderRadius: '9999px' }}>
+              <span className="insights-meta-pill">
                 <User size={12} /> Owner: {consultation?.owner_name || 'Owner'}
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255, 255, 255, 0.12)', padding: '2px 8px', borderRadius: '9999px' }}>
+              <span className="insights-meta-pill">
                 <Activity size={12} /> {consultation?.pet_species || 'Canine'} ({consultation?.pet_breed || 'Mixed'})
               </span>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            style={{
-              background: 'rgba(255, 255, 255, 0.18)',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '6px',
-              color: '#ffffff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className="insights-close-btn"
             title="Close popup"
+            aria-label="Close clinical insights modal"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* ─── Tabs Navigation ─── */}
-        <div
-          style={{
-            display: 'flex',
-            background: '#f8fafc',
-            borderBottom: '1px solid #e2e8f0',
-            padding: '4px 16px 0 16px',
-            gap: '8px',
-            overflowX: 'auto',
-          }}
-        >
+        <div className="insights-tabs-bar">
           <button
+            type="button"
             onClick={() => setActiveTab('summary')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '10px 16px',
-              border: 'none',
-              borderBottom: activeTab === 'summary' ? '3px solid #0284c7' : '3px solid transparent',
-              background: 'transparent',
-              color: activeTab === 'summary' ? '#0284c7' : '#64748b',
-              fontWeight: activeTab === 'summary' ? 700 : 500,
-              fontSize: '0.86rem',
-              cursor: 'pointer',
-            }}
+            className={`insights-tab-btn ${activeTab === 'summary' ? 'active' : ''}`}
           >
             <FileText size={15} /> Summary
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('medicine')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '10px 16px',
-              border: 'none',
-              borderBottom: activeTab === 'medicine' ? '3px solid #0284c7' : '3px solid transparent',
-              background: 'transparent',
-              color: activeTab === 'medicine' ? '#0284c7' : '#64748b',
-              fontWeight: activeTab === 'medicine' ? 700 : 500,
-              fontSize: '0.86rem',
-              cursor: 'pointer',
-            }}
+            className={`insights-tab-btn ${activeTab === 'medicine' ? 'active' : ''}`}
           >
             <Pill size={15} /> Medicine ({medications.length})
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('tests')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '10px 16px',
-              border: 'none',
-              borderBottom: activeTab === 'tests' ? '3px solid #0284c7' : '3px solid transparent',
-              background: 'transparent',
-              color: activeTab === 'tests' ? '#0284c7' : '#64748b',
-              fontWeight: activeTab === 'tests' ? 700 : 500,
-              fontSize: '0.86rem',
-              cursor: 'pointer',
-            }}
+            className={`insights-tab-btn ${activeTab === 'tests' ? 'active' : ''}`}
           >
             <FlaskConical size={15} /> Tests & Biomarkers ({labTests.length})
           </button>
         </div>
 
         {/* ─── Modal Body Content ─── */}
-        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, maxHeight: '60vh' }}>
+        <div className="insights-body">
           {/* TAB 1: SUMMARY */}
           {activeTab === 'summary' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="insights-stack">
               {/* 1. Clinical Overview Narrative Card */}
-              <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderLeft: '4px solid #0284c7', borderRadius: '12px', padding: '18px 20px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <Sparkles size={16} color="#0284c7" />
-                  <h3 style={{ margin: 0, fontSize: '0.96rem', color: '#0f172a', fontWeight: 750 }}>
+              <div className="insights-card insights-card--overview">
+                <div className="insights-card-header">
+                  <Sparkles size={16} className="icon-primary" />
+                  <h3 className="insights-card-title">
                     Clinical Overview Narrative
                   </h3>
                 </div>
-                <p style={{ margin: 0, color: '#334155', fontSize: '0.90rem', lineHeight: 1.65 }}>
+                <p className="insights-narrative-text">
                   {overviewNarrative}
                 </p>
               </div>
 
               {/* 2. Chief Complaints & Symptoms Card */}
               {(chiefComplaints.length > 0 || symptomsList.length > 0) && (
-                <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px 20px', background: '#ffffff', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                    <Activity size={16} color="#0284c7" />
-                    <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#0f172a', fontWeight: 700 }}>
+                <div className="insights-card insights-card--soft">
+                  <div className="insights-card-header">
+                    <Activity size={16} className="icon-primary" />
+                    <h4 className="insights-card-title">
                       Chief Complaints & Reported Symptoms
                     </h4>
                   </div>
 
                   {chiefComplaints.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                    <div className="insights-complaint-chips">
                       {chiefComplaints.map((cc, i) => (
-                        <span
-                          key={i}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '4px 10px',
-                            background: '#e0f2fe',
-                            color: '#0369a1',
-                            borderRadius: '16px',
-                            fontSize: '0.82rem',
-                            fontWeight: 600,
-                          }}
-                        >
+                        <span key={i} className="insights-complaint-chip">
                           • {cc}
                         </span>
                       ))}
@@ -295,38 +216,26 @@ export function ClinicalInsightsModal({
                   )}
 
                   {symptomsList.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="insights-list-stack">
                       {symptomsList.map((s, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            padding: '10px 14px',
-                            background: '#f8fafc',
-                            borderRadius: '8px',
-                            border: '1px solid #f1f5f9',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}
-                        >
+                        <div key={i} className="insights-list-row">
                           <div>
-                            <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.86rem' }}>
+                            <span className="insights-symptom-name">
                               {s.symptom}
                             </span>
                             {s.duration && (
-                              <span style={{ color: '#64748b', fontSize: '0.78rem', marginLeft: '8px' }}>
+                              <span className="insights-symptom-duration">
                                 (Duration: {s.duration})
                               </span>
                             )}
                             {s.quote && (
-                              <div style={{ color: '#94a3b8', fontSize: '0.75rem', fontStyle: 'italic', marginTop: '2px' }}>
+                              <div className="insights-symptom-quote">
                                 Quote: "{s.quote}"
                               </div>
                             )}
                           </div>
                           <span
-                            className={`badge ${s.severity === 'severe' ? 'badge-danger' : s.severity === 'moderate' ? 'badge-warning' : 'badge-info'}`}
-                            style={{ textTransform: 'capitalize', fontSize: '0.72rem' }}
+                            className={`badge insights-badge-cap ${s.severity === 'severe' ? 'badge-danger' : s.severity === 'moderate' ? 'badge-warning' : 'badge-info'}`}
                           >
                             {s.severity || 'Reported'}
                           </span>
@@ -339,16 +248,16 @@ export function ClinicalInsightsModal({
 
               {/* 3. Physical Examination Findings */}
               {examFindings.length > 0 && (
-                <div style={{ border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px 20px', background: '#ffffff' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                    <Stethoscope size={16} color="#0284c7" />
-                    <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#0f172a', fontWeight: 700 }}>
+                <div className="insights-card">
+                  <div className="insights-card-header">
+                    <Stethoscope size={16} className="icon-primary" />
+                    <h4 className="insights-card-title">
                       Physical Examination Findings
                     </h4>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div className="insights-list-stack">
                     {examFindings.map((f, i) => (
-                      <div key={i} style={{ fontSize: '0.85rem', color: '#334155', padding: '6px 10px', background: '#f8fafc', borderRadius: '6px' }}>
+                      <div key={i} className="insights-exam-item">
                         ✓ {typeof f === 'string' ? f : f.finding || JSON.stringify(f)}
                       </div>
                     ))}
@@ -357,43 +266,31 @@ export function ClinicalInsightsModal({
               )}
 
               {/* 4. Diagnoses Card */}
-              <div style={{ border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px 20px', background: '#ffffff' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <ShieldCheck size={16} color="#0284c7" />
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#0f172a', fontWeight: 700 }}>
+              <div className="insights-card">
+                <div className="insights-card-header">
+                  <ShieldCheck size={16} className="icon-primary" />
+                  <h4 className="insights-card-title">
                     Clinical Assessment & Diagnoses
                   </h4>
                 </div>
                 {diagnosesList.length === 0 ? (
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                  <p className="insights-empty-note">
                     No acute pathology confirmed at present examination. Patient triaged for home monitoring.
                   </p>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div className="insights-list-stack">
                     {diagnosesList.map((d, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          padding: '10px 14px',
-                          background: '#f8fafc',
-                          borderRadius: '8px',
-                          fontSize: '0.85rem',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}
-                      >
+                      <div key={i} className="insights-list-row">
                         <div>
-                          <span style={{ fontWeight: 700, color: '#0284c7' }}>
+                          <span className="insights-diagnosis-name">
                             {typeof d === 'string' ? d : d.condition || d.name}
                           </span>
                           {d.clinical_reasoning && (
-                            <span style={{ color: '#64748b', marginLeft: '8px' }}>— {d.clinical_reasoning}</span>
+                            <span className="insights-diagnosis-reason">— {d.clinical_reasoning}</span>
                           )}
                         </div>
                         <span
-                          className={`badge ${d.type === 'confirmed' ? 'badge-success' : 'badge-warning'}`}
-                          style={{ textTransform: 'capitalize', fontSize: '0.72rem' }}
+                          className={`badge insights-badge-cap ${d.type === 'confirmed' ? 'badge-success' : 'badge-warning'}`}
                         >
                           {d.type || 'Suspected'}
                         </span>
@@ -404,14 +301,14 @@ export function ClinicalInsightsModal({
               </div>
 
               {/* 5. Owner Guidance Card */}
-              <div style={{ border: '1px solid #bfdbfe', background: '#eff6ff', borderRadius: '12px', padding: '16px 20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <User size={16} color="#1e40af" />
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#1e40af', fontWeight: 700 }}>
+              <div className="insights-card insights-card--info">
+                <div className="insights-card-header">
+                  <User size={16} className="insights-card-title--info" />
+                  <h4 className="insights-card-title insights-card-title--info">
                     Owner Home Care & Discharge Guidance
                   </h4>
                 </div>
-                <p style={{ margin: 0, color: '#1e3a8a', fontSize: '0.86rem', lineHeight: 1.55 }}>
+                <p className="insights-info-text">
                   {summaryContent.owner_guidance ||
                     (followUp.monitoring_instructions && followUp.monitoring_instructions.length > 0
                       ? followUp.monitoring_instructions.join('. ')
@@ -421,16 +318,16 @@ export function ClinicalInsightsModal({
 
               {/* 6. Missing Information / Safety Guardrail Notice */}
               {missingAlerts.length > 0 && (
-                <div style={{ border: '1px solid #fde68a', background: '#fffbeb', borderRadius: '12px', padding: '14px 18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                    <AlertTriangle size={15} color="#d97706" />
-                    <span style={{ fontWeight: 700, fontSize: '0.84rem', color: '#92400e' }}>
+                <div className="insights-card insights-card--warning">
+                  <div className="insights-card-header">
+                    <AlertTriangle size={15} className="icon-warning" />
+                    <span className="insights-warning-title">
                       Clinical Safety & Information Checklist
                     </span>
                   </div>
-                  <ul style={{ margin: '4px 0 0 18px', padding: 0, fontSize: '0.80rem', color: '#78350f' }}>
+                  <ul className="insights-warning-list">
                     {missingAlerts.map((m, idx) => (
-                      <li key={idx} style={{ marginBottom: '2px' }}>{m}</li>
+                      <li key={idx}>{m}</li>
                     ))}
                   </ul>
                 </div>
@@ -440,58 +337,49 @@ export function ClinicalInsightsModal({
 
           {/* TAB 2: MEDICINE */}
           {activeTab === 'medicine' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div className="insights-stack">
               {medications.length === 0 ? (
-                <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', padding: '32px 20px', textAlign: 'center' }}>
-                  <Pill size={32} color="#94a3b8" style={{ margin: '0 auto 12px auto' }} />
-                  <p style={{ fontWeight: 600, color: '#475569', fontSize: '0.92rem', margin: 0 }}>
+                <div className="insights-empty-panel">
+                  <Pill size={32} className="insights-empty-panel-icon" />
+                  <p className="insights-empty-panel-title">
                     No prescription medications detected in consultation audio.
                   </p>
-                  <p style={{ color: '#94a3b8', fontSize: '0.82rem', marginTop: '4px' }}>
+                  <p className="insights-empty-panel-sub">
                     If medications are needed, you can add them directly in the Prescription document tab.
                   </p>
                 </div>
               ) : (
                 medications.map((item, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '12px',
-                      padding: '16px 20px',
-                      background: '#ffffff',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.96rem', color: '#0284c7' }}>
+                  <div key={idx} className="insights-card">
+                    <div className="insights-item-header">
+                      <span className="insights-med-title">
                         #{idx + 1} {item.medicine_name} {item.strength ? `(${item.strength})` : ''}
                       </span>
-                      <span className="badge badge-info" style={{ textTransform: 'capitalize' }}>
+                      <span className="badge badge-info insights-badge-cap">
                         {item.route || 'Oral'}
                       </span>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', fontSize: '0.85rem' }}>
+                    <div className="insights-med-grid">
                       <div>
-                        <strong style={{ color: '#64748b' }}>Dosage:</strong> {item.dosage || 'Standard'}
+                        <strong className="insights-field-label">Dosage:</strong> {item.dosage || 'Standard'}
                       </div>
                       <div>
-                        <strong style={{ color: '#64748b' }}>Frequency:</strong> {item.frequency || 'As directed'}
+                        <strong className="insights-field-label">Frequency:</strong> {item.frequency || 'As directed'}
                       </div>
                       <div>
-                        <strong style={{ color: '#64748b' }}>Duration:</strong> {item.duration || 'As directed'}
+                        <strong className="insights-field-label">Duration:</strong> {item.duration || 'As directed'}
                       </div>
                     </div>
 
                     {item.special_instructions && (
-                      <div style={{ marginTop: '10px', fontSize: '0.83rem', color: '#475569', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px' }}>
+                      <div className="insights-note-strip">
                         <strong>Instructions:</strong> {item.special_instructions}
                       </div>
                     )}
 
                     {item.evidence && (
-                      <div className="evidence-pill" style={{ marginTop: '10px' }}>
+                      <div className="evidence-pill">
                         <Quote size={12} />
                         <span>"{item.evidence.quote}" ({item.evidence.speaker})</span>
                       </div>
@@ -504,61 +392,53 @@ export function ClinicalInsightsModal({
 
           {/* TAB 3: TESTS (BIOMARKERS) */}
           {activeTab === 'tests' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div className="insights-stack">
               {labTests.length === 0 ? (
-                <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', padding: '32px 20px', textAlign: 'center' }}>
-                  <FlaskConical size={32} color="#94a3b8" style={{ margin: '0 auto 12px auto' }} />
-                  <p style={{ fontWeight: 600, color: '#475569', fontSize: '0.92rem', margin: 0 }}>
+                <div className="insights-empty-panel">
+                  <FlaskConical size={32} className="insights-empty-panel-icon" />
+                  <p className="insights-empty-panel-title">
                     No laboratory tests or diagnostic biomarkers ordered.
                   </p>
-                  <p style={{ color: '#94a3b8', fontSize: '0.82rem', marginTop: '4px' }}>
+                  <p className="insights-empty-panel-sub">
                     Diagnostics can be requested or customized in the Lab Tests document tab.
                   </p>
                 </div>
               ) : (
                 labTests.map((test, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '12px',
-                      padding: '16px 20px',
-                      background: '#ffffff',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.94rem', color: '#0f172a' }}>
+                  <div key={idx} className="insights-card">
+                    <div className="insights-item-header">
+                      <span className="insights-test-title">
                         #{idx + 1} {test.test_name}
                       </span>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <span className="badge badge-info" style={{ textTransform: 'uppercase', fontSize: '0.72rem' }}>
+                      <div className="insights-test-badges">
+                        <span className="badge badge-info insights-badge-upper">
                           {test.status || 'ORDERED'}
                         </span>
-                        <span className={`badge ${test.priority === 'urgent' ? 'badge-danger' : 'badge-purple'}`} style={{ textTransform: 'uppercase', fontSize: '0.72rem' }}>
+                        <span className={`badge insights-badge-upper ${test.priority === 'urgent' ? 'badge-danger' : 'badge-purple'}`}>
                           {test.priority || 'ROUTINE'}
                         </span>
                       </div>
                     </div>
 
-                    <div style={{ fontSize: '0.85rem', color: '#334155', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div className="insights-test-body">
                       <div>
-                        <strong style={{ color: '#64748b' }}>Target Biomarker / Panel:</strong>{' '}
-                        <span style={{ color: '#0284c7', fontWeight: 600 }}>{test.biomarker || 'Standard diagnostic panel'}</span>
+                        <strong className="insights-field-label">Target Biomarker / Panel:</strong>{' '}
+                        <span className="insights-biomarker-val">{test.biomarker || 'Standard diagnostic panel'}</span>
                       </div>
                       {test.clinical_reason && (
                         <div>
-                          <strong style={{ color: '#64748b' }}>Clinical Indication:</strong> {test.clinical_reason}
+                          <strong className="insights-field-label">Clinical Indication:</strong> {test.clinical_reason}
                         </div>
                       )}
                       {test.instructions && (
-                        <div style={{ background: '#f8fafc', padding: '6px 10px', borderRadius: '6px', fontSize: '0.82rem', color: '#475569' }}>
+                        <div className="insights-note-strip">
                           <strong>Patient Preparation:</strong> {test.instructions}
                         </div>
                       )}
                     </div>
 
                     {test.evidence && (
-                      <div className="evidence-pill" style={{ marginTop: '8px' }}>
+                      <div className="evidence-pill">
                         <Quote size={12} />
                         <span>"{test.evidence.quote}" ({test.evidence.speaker})</span>
                       </div>
@@ -571,54 +451,54 @@ export function ClinicalInsightsModal({
 
           {/* TAB 4: FOLLOW-UPS */}
           {activeTab === 'followup' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="insights-stack">
               {/* Timeframe Card */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 18px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
-                <Clock size={20} color="#0284c7" />
+              <div className="insights-schedule-card">
+                <Clock size={20} className="icon-primary" />
                 <div>
-                  <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+                  <div className="insights-schedule-label">
                     Recommended Re-check Schedule
                   </div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>
+                  <div className="insights-schedule-val">
                     {followUpContent.timeframe || followUp.timeframe || 'PRN (As needed or if symptoms persist)'}
                   </div>
                 </div>
               </div>
 
               {/* Home Monitoring Instructions */}
-              <div style={{ border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px 20px', background: '#ffffff' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#0f172a', fontWeight: 700 }}>
+              <div className="insights-card">
+                <h4 className="insights-card-title">
                   Owner Monitoring Checklist
                 </h4>
                 {monitoring.length > 0 ? (
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.86rem', color: '#334155', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <ul className="insights-checklist">
                     {monitoring.map((item, idx) => (
                       <li key={idx}>{item}</li>
                     ))}
                   </ul>
                 ) : (
-                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+                  <p className="insights-empty-note">
                     Monitor appetite, activity level, hydration, and report any recurrence of symptoms.
                   </p>
                 )}
               </div>
 
               {/* Emergency Red Flags */}
-              <div style={{ border: '1px solid #fca5a5', background: '#fef2f2', borderRadius: '12px', padding: '16px 20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#991b1b' }}>
+              <div className="insights-card insights-card--danger">
+                <div className="insights-card-header insights-card-title--danger">
                   <AlertTriangle size={18} />
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700 }}>
+                  <h4 className="insights-card-title insights-card-title--danger">
                     Emergency Red-Flag Warning Signs
                   </h4>
                 </div>
                 {redFlags.length > 0 ? (
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#7f1d1d', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <ul className="insights-checklist insights-checklist--danger">
                     {redFlags.map((flag, idx) => (
                       <li key={idx}><strong>{flag}</strong> — Seek immediate emergency veterinary attention</li>
                     ))}
                   </ul>
                 ) : (
-                  <p style={{ margin: 0, fontSize: '0.84rem', color: '#7f1d1d' }}>
+                  <p className="insights-empty-note insights-checklist--danger">
                     Seek immediate emergency veterinary care if the patient shows difficulty breathing, collapse, extreme lethargy, or uncontrolled vomiting.
                   </p>
                 )}
@@ -629,51 +509,43 @@ export function ClinicalInsightsModal({
 
         {/* ─── Rejection Reason Prompt (Modal Level) ─── */}
         {showRejectBox && (
-          <div style={{
-            background: '#fff1f2',
-            borderTop: '1px solid #fecdd3',
-            borderBottom: '1px solid #fecdd3',
-            padding: '12px 24px',
-            animation: 'fadeIn 0.2s ease-out'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span style={{ fontSize: '0.825rem', fontWeight: 700, color: '#9f1239', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <AlertTriangle size={15} color="#e11d48" /> Reject AI Clinical Documentation
+          <div className="insights-reject-panel">
+            <div className="insights-reject-header">
+              <span className="insights-reject-title">
+                <AlertTriangle size={15} className="icon-danger" /> Reject AI Clinical Documentation
               </span>
               <button
                 type="button"
                 onClick={() => setShowRejectBox(false)}
-                style={{ background: 'none', border: 'none', color: '#9f1239', cursor: 'pointer' }}
+                className="insights-reject-close"
+                aria-label="Close rejection note"
               >
                 <X size={14} />
               </button>
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#881337', margin: '0 0 8px 0' }}>
+            <p className="insights-reject-desc">
               Please specify why the AI draft is being rejected (e.g. incorrect medication, missing diagnosis, needs re-transcription):
             </p>
             <textarea
-              className="form-control"
+              className="form-control insights-reject-textarea"
               rows={2}
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Clinical reason for rejection..."
-              style={{ fontSize: '0.82rem', marginBottom: '8px', background: '#ffffff' }}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <div className="insights-reject-actions">
               <button
                 type="button"
-                className="btn btn-outline"
+                className="btn btn-outline doc-action-btn"
                 onClick={() => setShowRejectBox(false)}
-                style={{ fontSize: '0.78rem', padding: '4px 10px', background: '#ffffff' }}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="btn btn-danger"
+                className="btn btn-danger doc-action-btn"
                 disabled={isRejectingAll}
                 onClick={() => onRejectAll && onRejectAll(rejectReason || 'Clinician rejected AI clinical draft')}
-                style={{ fontSize: '0.78rem', padding: '4px 12px', background: '#e11d48', borderColor: '#e11d48', color: '#ffffff' }}
               >
                 {isRejectingAll ? 'Rejecting...' : 'Confirm Rejection'}
               </button>
@@ -682,50 +554,36 @@ export function ClinicalInsightsModal({
         )}
 
         {/* ─── Footer Action Bar ─── */}
-        <div
-          style={{
-            background: '#f8fafc',
-            borderTop: '1px solid #e2e8f0',
-            padding: '14px 24px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '12px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="insights-footer">
+          <div className="insights-footer-group">
             <button
               type="button"
-              className="btn btn-outline"
+              className="btn btn-outline insights-footer-btn"
               onClick={handleCopySummary}
-              style={{ fontSize: '0.82rem', background: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              {copied ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+              {copied ? <Check size={14} className="icon-success" /> : <Copy size={14} />}
               {copied ? 'Copied to Clipboard!' : 'Copy Summary'}
             </button>
 
             {onRegenerate && (
               <button
                 type="button"
-                className="btn btn-outline"
+                className="btn btn-outline insights-footer-btn"
                 onClick={onRegenerate}
                 disabled={isGenerating}
-                style={{ fontSize: '0.82rem', background: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}
                 title="Re-run AI extraction across current transcripts to update templates"
               >
-                <Sparkles size={14} color="#0284c7" />
+                <Sparkles size={14} className="icon-primary" />
                 {isGenerating ? 'Extracting with AI...' : 'Re-generate with AI'}
               </button>
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="insights-footer-group">
             <button
               type="button"
-              className="btn btn-outline"
+              className="btn btn-outline insights-footer-btn"
               onClick={onClose}
-              style={{ fontSize: '0.82rem', background: '#ffffff' }}
               title="Close modal to edit individual fields in right panel"
             >
               Edit in Workspace
@@ -734,18 +592,9 @@ export function ClinicalInsightsModal({
             {onRejectAll && (
               <button
                 type="button"
-                className="btn btn-danger"
+                className="btn btn-danger insights-footer-btn"
                 onClick={() => setShowRejectBox(true)}
                 disabled={isRejectingAll || isApprovingAll}
-                style={{
-                  fontSize: '0.82rem',
-                  background: '#e11d48',
-                  borderColor: '#e11d48',
-                  color: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
               >
                 <X size={14} />
                 {isRejectingAll ? 'Rejecting...' : 'Reject AI Draft'}
@@ -755,17 +604,9 @@ export function ClinicalInsightsModal({
             {onApproveAll && (
               <button
                 type="button"
-                className="btn btn-primary"
+                className="btn btn-success insights-footer-btn"
                 onClick={onApproveAll}
                 disabled={isApprovingAll || isRejectingAll}
-                style={{
-                  fontSize: '0.82rem',
-                  background: '#059669',
-                  borderColor: '#059669',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
               >
                 <ShieldCheck size={14} />
                 {isApprovingAll ? 'Approving All...' : 'Approve & Sign All'}

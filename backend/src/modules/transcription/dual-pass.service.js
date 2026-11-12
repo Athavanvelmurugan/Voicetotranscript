@@ -102,8 +102,8 @@ class DualPassService {
     // Upsert into consultation_audio
     await db.query(
       `INSERT INTO consultation_audio 
-        (consultation_id, audio_data, mime_type, file_name, file_size_bytes, audio_hash)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+        (consultation_id, audio_data, mime_type, file_name, file_size_bytes, audio_hash, clinic_id)
+       VALUES ($1, $2, $3, $4, $5, $6, COALESCE((SELECT clinic_id FROM consultations WHERE id = $1), 1))`,
       [
         consultationId,
         stitchedBuffer,
@@ -328,10 +328,13 @@ class DualPassService {
         const seg = whisperResult.segments[i];
         const insertRes = await db.query(
           `INSERT INTO transcript_segments 
-            (consultation_id, sequence_number, text, is_partial, speaker_role, language_detected, confidence, start_ms, end_ms, source, pass_number, is_final_pass)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 2, true)
+            (consultation_id, sequence_number, text, is_partial, speaker_role, language_detected, confidence, start_ms, end_ms, source, pass_number, is_final_pass, clinic_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 2, true, COALESCE((SELECT clinic_id FROM consultations WHERE id = $1), 1))
            ON CONFLICT (consultation_id, pass_number, sequence_number, is_partial)
-           DO UPDATE SET text = EXCLUDED.text, confidence = EXCLUDED.confidence
+           DO UPDATE SET
+             text = EXCLUDED.text,
+             confidence = EXCLUDED.confidence,
+             clinic_id = COALESCE(EXCLUDED.clinic_id, transcript_segments.clinic_id)
            RETURNING *`,
           [
             consultationId,

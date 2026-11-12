@@ -414,7 +414,10 @@ export function DoctorPortal() {
         </header>
 
         {/* Main Content Viewport */}
-        <main className="admin-content-viewport" role="main">
+        <main
+          className={`admin-content-viewport ${activeTab === 'consultation' ? 'admin-content-viewport--consultation' : ''}`}
+          role="main"
+        >
           {activeTab === 'dashboard' && (
             <DoctorDashboardTab
               onNavigateTab={handleTabSelect}
@@ -434,6 +437,7 @@ export function DoctorPortal() {
             <ConsultationWorkspace
               preSelectedPetId={preSelectedPetId}
               onClearPreSelectedPet={() => setPreSelectedPetId(null)}
+              inPortal={true}
             />
           )}
 

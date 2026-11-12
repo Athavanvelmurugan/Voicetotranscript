@@ -9,12 +9,16 @@ class DocumentRepository {
     content = {},
     missingFields = [],
     aiConfidence = 1.0,
+    clinicId = null,
   }) {
     const query = `
       INSERT INTO consultation_documents (
-        consultation_id, extraction_id, doc_type, status, content, missing_fields, ai_confidence, current_version
+        consultation_id, extraction_id, doc_type, status, content, missing_fields, ai_confidence, current_version, clinic_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, 1)
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7, 1,
+        COALESCE($8::int, (SELECT clinic_id FROM consultations WHERE id = $1), 1)
+      )
       ON CONFLICT (consultation_id, doc_type)
       DO UPDATE SET
         extraction_id = EXCLUDED.extraction_id,
@@ -28,6 +32,7 @@ class DocumentRepository {
         END,
         missing_fields = EXCLUDED.missing_fields,
         ai_confidence = EXCLUDED.ai_confidence,
+        clinic_id = COALESCE(EXCLUDED.clinic_id, consultation_documents.clinic_id),
         updated_at = NOW()
       RETURNING *;
     `;
@@ -39,6 +44,7 @@ class DocumentRepository {
       JSON.stringify(content),
       JSON.stringify(missingFields),
       aiConfidence,
+      clinicId || null,
     ];
     const { rows } = await db.query(query, values);
     return rows[0];
@@ -93,12 +99,18 @@ class DocumentRepository {
     return rows[0];
   }
 
-  async createVersion({ documentId, versionNumber, content, changedBy, changeType, changeSummary }) {
+  async createVersion({ documentId, versionNumber, content, changedBy, changeType, changeSummary, clinicId = null }) {
     const query = `
-      INSERT INTO document_versions (document_id, version_number, content, changed_by, change_type, change_summary)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO document_versions (document_id, version_number, content, changed_by, change_type, change_summary, clinic_id)
+      VALUES (
+        $1, $2, $3, $4, $5, $6,
+        COALESCE($7::int, (SELECT clinic_id FROM consultation_documents WHERE id = $1), 1)
+      )
       ON CONFLICT (document_id, version_number)
-      DO UPDATE SET content = EXCLUDED.content, change_summary = EXCLUDED.change_summary
+      DO UPDATE SET
+        content = EXCLUDED.content,
+        change_summary = EXCLUDED.change_summary,
+        clinic_id = COALESCE(EXCLUDED.clinic_id, document_versions.clinic_id)
       RETURNING *;
     `;
     const values = [
@@ -108,6 +120,7 @@ class DocumentRepository {
       changedBy,
       changeType,
       changeSummary || null,
+      clinicId || null,
     ];
     const { rows } = await db.query(query, values);
     return rows[0];
@@ -125,13 +138,16 @@ class DocumentRepository {
     return rows;
   }
 
-  async recordApproval({ documentId, doctorId, action, versionNumber, reason }) {
+  async recordApproval({ documentId, doctorId, action, versionNumber, reason, clinicId = null }) {
     const query = `
-      INSERT INTO document_approvals (document_id, doctor_id, action, version_number, reason)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO document_approvals (document_id, doctor_id, action, version_number, reason, clinic_id)
+      VALUES (
+        $1, $2, $3, $4, $5,
+        COALESCE($6::int, (SELECT clinic_id FROM consultation_documents WHERE id = $1), 1)
+      )
       RETURNING *;
     `;
-    const values = [documentId, doctorId, action, versionNumber, reason || null];
+    const values = [documentId, doctorId, action, versionNumber, reason || null, clinicId || null];
     const { rows } = await db.query(query, values);
     return rows[0];
   }

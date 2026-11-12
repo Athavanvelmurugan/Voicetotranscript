@@ -9,9 +9,9 @@ export function DocumentEditor({
 }) {
   if (!document || !formData) {
     return (
-      <div style={{ padding: '60px 20px', textAlign: 'center', color: '#94a3b8' }}>
-        <p style={{ fontWeight: 600, fontSize: '1rem' }}>No Document Generated Yet</p>
-        <p style={{ fontSize: '0.85rem', marginTop: '6px' }}>
+      <div className="doc-empty-state">
+        <p className="doc-empty-state-title">No Document Generated Yet</p>
+        <p className="doc-empty-state-sub">
           Stop the live recording or click "Generate Clinical Documents" to populate drafts.
         </p>
       </div>
@@ -46,7 +46,7 @@ export function DocumentEditor({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className="doc-editor-stack">
       {/* Missing Information Alert Box */}
       {missing_fields && missing_fields.length > 0 && (
         <div className="missing-info-box">
@@ -65,16 +65,15 @@ export function DocumentEditor({
       {doc_type === 'prescription' && (
         <>
           <div className="form-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Pill size={18} color="#0284c7" /> Prescribed Medications
+            <div className="form-section-header">
+              <h3>
+                <Pill size={18} className="icon-primary" /> Prescribed Medications
               </h3>
               {!isApproved && (
                 <button
                   type="button"
-                  className="btn btn-outline"
+                  className="btn btn-outline doc-action-btn"
                   onClick={handleAddMedication}
-                  style={{ padding: '5px 12px', fontSize: '0.8rem', background: '#fff' }}
                 >
                   <Plus size={14} /> Add Medication
                 </button>
@@ -82,16 +81,15 @@ export function DocumentEditor({
             </div>
 
             {(!formData.items || formData.items.length === 0) ? (
-              <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', padding: '24px', textAlign: 'center', marginBottom: '16px' }}>
-                <p style={{ color: '#64748b', fontSize: '0.88rem', margin: '0 0 12px 0' }}>
+              <div className="doc-empty-inline-box">
+                <p className="doc-empty-inline-text">
                   No prescription medications detected in consultation audio. Click below to add medications or write instructions in Doctor Notes.
                 </p>
                 {!isApproved && (
                   <button
                     type="button"
-                    className="btn btn-outline"
+                    className="btn btn-outline doc-action-btn"
                     onClick={handleAddMedication}
-                    style={{ fontSize: '0.82rem', background: '#fff' }}
                   >
                     <Plus size={14} /> Add Medication Manually
                   </button>
@@ -101,24 +99,19 @@ export function DocumentEditor({
               formData.items.map((item, idx) => (
                 <div
                   key={idx}
-                  style={{
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    padding: '14px',
-                    marginBottom: '12px',
-                    background: '#ffffff',
-                  }}
+                  className="doc-subcard"
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 700, color: '#0284c7' }}>
+                  <div className="doc-subcard-header">
+                    <div className="doc-subcard-title">
                       Item #{idx + 1}: {item.medicine_name || 'New Medication'}
                     </div>
                     {!isApproved && (
                       <button
                         type="button"
                         onClick={() => handleRemoveMedication(idx)}
-                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                        className="doc-remove-btn"
                         title="Remove item"
+                        aria-label={`Remove medication ${idx + 1}`}
                       >
                         <Trash2 size={15} />
                       </button>
@@ -245,16 +238,10 @@ export function DocumentEditor({
           {(formData.tests || []).map((t, idx) => (
             <div
               key={idx}
-              style={{
-                border: '1px solid #cbd5e1',
-                borderRadius: '8px',
-                padding: '14px',
-                marginBottom: '12px',
-                background: '#ffffff',
-              }}
+              className="doc-subcard"
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontWeight: 700, color: '#0284c7' }}>#{idx + 1} {t.test_name}</span>
+              <div className="doc-subcard-header">
+                <span className="doc-subcard-title">#{idx + 1} {t.test_name}</span>
                 <span className="badge badge-info">{t.status.toUpperCase()}</span>
               </div>
               <div className="form-grid">
@@ -307,7 +294,7 @@ export function DocumentEditor({
                     <option value="stat">STAT (Immediate)</option>
                   </select>
                 </div>
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                <div className="form-group form-group-span-full">
                   <label>Clinical Reason</label>
                   <input
                     type="text"
@@ -349,12 +336,12 @@ export function DocumentEditor({
                 onChange={(e) => onChangeField('S', { ...formData.S, chief_complaint: e.target.value })}
               />
             </div>
-            <div style={{ marginTop: '10px' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>REPORTED SYMPTOMS</label>
+            <div className="doc-sublabel-group">
+              <label className="doc-sublabel">REPORTED SYMPTOMS</label>
               {(formData.S?.reported_symptoms || []).map((s, i) => (
-                <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid #f1f5f9', fontSize: '0.85rem' }}>
+                <div key={i} className="doc-symptom-row">
                   <strong>{s.symptom}</strong> (Duration: {s.duration})
-                  {s.evidence && <span style={{ color: '#64748b', fontStyle: 'italic', marginLeft: '8px' }}>— "{s.evidence}"</span>}
+                  {s.evidence && <span className="doc-symptom-evidence">— "{s.evidence}"</span>}
                 </div>
               ))}
             </div>
@@ -445,26 +432,25 @@ export function DocumentEditor({
 
       {/* 5. SUMMARY TEMPLATE */}
       {doc_type === 'summary' && (
-        <div className="form-section" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="form-section form-section--summary">
           <h3>Comprehensive Consultation Summary</h3>
 
           {/* Clinical Overview Narrative */}
           <div className="form-group">
-            <label style={{ fontWeight: 700, color: '#0f172a' }}>Clinical Overview Narrative</label>
+            <label className="doc-summary-narrative-label">Clinical Overview Narrative</label>
             <textarea
-              className="form-control"
+              className="form-control doc-summary-textarea"
               rows={4}
               disabled={isApproved}
               value={formData.overview || formData.clinical_narrative || ''}
               onChange={(e) => onChangeField('overview', e.target.value)}
               placeholder="Synthesized clinical narrative of the consultation presentation and assessment..."
-              style={{ lineHeight: 1.6, fontSize: '0.90rem' }}
             />
           </div>
 
           {/* Chief Complaints */}
           <div className="form-group">
-            <label style={{ fontWeight: 600, color: '#334155' }}>Chief Complaints</label>
+            <label className="doc-summary-field-label">Chief Complaints</label>
             <input
               type="text"
               className="form-control"
@@ -476,18 +462,18 @@ export function DocumentEditor({
 
           {/* Symptoms Overview */}
           {(formData.symptoms_overview || formData.symptoms) && (
-            <div style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+            <div className="doc-surface-block">
+              <label className="doc-surface-label">
                 Symptoms Overview & Timeline
               </label>
               {(formData.symptoms_overview || []).length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                <ul className="doc-surface-list">
                   {(formData.symptoms_overview || []).map((s, idx) => (
-                    <li key={idx} style={{ fontSize: '0.875rem', padding: '3px 0', color: '#334155' }}>{s}</li>
+                    <li key={idx} className="doc-surface-item">{s}</li>
                   ))}
                 </ul>
               ) : (
-                <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8', fontStyle: 'italic' }}>
+                <p className="doc-surface-empty doc-surface-empty--italic">
                   No specific symptoms reported in consultation audio.
                 </p>
               )}
@@ -495,77 +481,77 @@ export function DocumentEditor({
           )}
 
           {/* Clinical Examination Findings */}
-          <div style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+          <div className="doc-surface-block">
+            <label className="doc-surface-label">
               Physical Examination & Abnormal Findings
             </label>
             {(formData.clinical_examination_summary || []).length > 0 ? (
-              <ul style={{ margin: 0, paddingLeft: '20px' }}>
+              <ul className="doc-surface-list">
                 {(formData.clinical_examination_summary || []).map((f, idx) => (
-                  <li key={idx} style={{ fontSize: '0.875rem', padding: '3px 0', color: '#334155' }}>{f}</li>
+                  <li key={idx} className="doc-surface-item">{f}</li>
                 ))}
               </ul>
             ) : (
-              <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+              <p className="doc-surface-empty">
                 Physical examination parameters reviewed within normal baseline.
               </p>
             )}
           </div>
 
           {/* Assessment Conclusions */}
-          <div style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+          <div className="doc-surface-block">
+            <label className="doc-surface-label">
               Assessment Conclusions & Diagnoses
             </label>
             {(formData.assessment_conclusions || []).length > 0 ? (
-              <ul style={{ margin: 0, paddingLeft: '20px' }}>
+              <ul className="doc-surface-list">
                 {(formData.assessment_conclusions || []).map((c, idx) => (
-                  <li key={idx} style={{ fontSize: '0.875rem', padding: '3px 0', fontWeight: 600, color: '#0369a1' }}>{c}</li>
+                  <li key={idx} className="doc-surface-item doc-surface-item--diagnosis">{c}</li>
                 ))}
               </ul>
             ) : (
-              <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+              <p className="doc-surface-empty">
                 No acute pathology confirmed at present examination.
               </p>
             )}
           </div>
 
           {/* Treatment Plan & Investigations */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+          <div className="doc-two-col-summary">
+            <div className="doc-surface-block doc-surface-block--compact">
+              <label className="doc-surface-label">
                 Prescribed Medications
               </label>
               {(formData.prescribed_treatment_plan || []).length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: '18px' }}>
+                <ul className="doc-surface-list">
                   {(formData.prescribed_treatment_plan || []).map((p, idx) => (
-                    <li key={idx} style={{ fontSize: '0.82rem', padding: '2px 0' }}>{p}</li>
+                    <li key={idx} className="doc-surface-item doc-surface-item--compact">{p}</li>
                   ))}
                 </ul>
               ) : (
-                <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontStyle: 'italic' }}>None prescribed in audio</span>
+                <span className="doc-surface-empty doc-surface-empty--italic">None prescribed in audio</span>
               )}
             </div>
 
-            <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+            <div className="doc-surface-block doc-surface-block--compact">
+              <label className="doc-surface-label">
                 Recommended Lab Tests
               </label>
               {(formData.recommended_investigations || []).length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: '18px' }}>
+                <ul className="doc-surface-list">
                   {(formData.recommended_investigations || []).map((l, idx) => (
-                    <li key={idx} style={{ fontSize: '0.82rem', padding: '2px 0' }}>{l}</li>
+                    <li key={idx} className="doc-surface-item doc-surface-item--compact">{l}</li>
                   ))}
                 </ul>
               ) : (
-                <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontStyle: 'italic' }}>None ordered in audio</span>
+                <span className="doc-surface-empty doc-surface-empty--italic">None ordered in audio</span>
               )}
             </div>
           </div>
 
           {/* Client Instructions & Follow-up */}
           <div className="form-group">
-            <label style={{ fontWeight: 600, color: '#334155' }}>Client Home Care & Follow-up Instructions</label>
+            <label className="doc-summary-field-label">Client Home Care & Follow-up Instructions</label>
             <textarea
               className="form-control"
               rows={2}

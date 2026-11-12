@@ -25,60 +25,60 @@ export function VersionHistoryModal({ documentId, isOpen, onClose }) {
   const getIcon = (type) => {
     switch (type) {
       case 'approved':
-        return <CheckCircle size={14} color="#10b981" />;
+        return <CheckCircle size={14} className="icon-success" />;
       case 'rejected':
-        return <XCircle size={14} color="#ef4444" />;
+        return <XCircle size={14} className="icon-danger" />;
       case 'doctor_edit':
-        return <Edit3 size={14} color="#0284c7" />;
+        return <Edit3 size={14} className="icon-primary" />;
       default:
-        return <Sparkles size={14} color="#8b5cf6" />;
+        return <Sparkles size={14} className="icon-secondary" />;
     }
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content consult-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
-            <History size={18} color="#0284c7" />
+          <div className="modal-title-row">
+            <History size={18} className="icon-primary" />
             <span>Document Audit Version History</span>
           </div>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={onClose}>
+          <button
+            type="button"
+            className="modal-close-icon-btn"
+            onClick={onClose}
+            aria-label="Close version history modal"
+          >
             <X size={18} />
           </button>
         </div>
 
         <div className="modal-body">
-          {loading && <p style={{ color: '#64748b' }}>Loading version trail...</p>}
-          {!loading && versions.length === 0 && <p style={{ color: '#64748b' }}>No version history available.</p>}
+          {loading && <p className="version-empty-text">Loading version trail...</p>}
+          {!loading && versions.length === 0 && <p className="version-empty-text">No version history available.</p>}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="version-list-stack">
             {versions.map((ver) => (
               <div
                 key={ver.id || ver.version_number}
-                style={{
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  padding: '12px 14px',
-                  background: '#f8fafc',
-                }}
+                className="version-card"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '0.875rem' }}>
+                <div className="version-card-header">
+                  <span className="version-card-title">
                     {getIcon(ver.change_type)}
                     Version #{ver.version_number}
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+                    <span className="version-card-type">
                       ({ver.change_type})
                     </span>
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                  <span className="version-card-date">
                     {new Date(ver.created_at).toLocaleString()}
                   </span>
                 </div>
-                <div style={{ fontSize: '0.8rem', color: '#334155' }}>
+                <div className="version-card-summary">
                   {ver.change_summary || 'Document state snapshot'}
                 </div>
-                <div style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '4px' }}>
+                <div className="version-card-author">
                   Author: <strong>{ver.changed_by_name || 'System / Attending Doctor'}</strong>
                 </div>
               </div>
@@ -87,7 +87,7 @@ export function VersionHistoryModal({ documentId, isOpen, onClose }) {
         </div>
 
         <div className="modal-footer">
-          <button className="btn btn-outline" onClick={onClose}>
+          <button type="button" className="btn btn-outline" onClick={onClose}>
             Close
           </button>
         </div>

@@ -53,15 +53,15 @@ export function RecordingControls({
 
     if (chunkStatus === 'uploading' || chunkStatus === 'processing') {
       return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.725rem', color: '#0284c7', background: '#f0f9ff', border: '1px solid #bae6fd', padding: '3px 8px', borderRadius: '9999px', fontWeight: 600 }}>
-          <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} />
+        <div className="chunk-status-pill chunk-status-pill--info">
+          <Loader2 size={11} className="spin-animate" />
           <span>{chunkStatus === 'uploading' ? 'Uploading chunk...' : 'Whisper transcribing...'}</span>
         </div>
       );
     }
     if (chunkStatus === 'done') {
       return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.725rem', color: '#059669', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '3px 8px', borderRadius: '9999px', fontWeight: 600 }}>
+        <div className="chunk-status-pill chunk-status-pill--success">
           <CheckCircle2 size={11} />
           <span>Chunk #{chunkCount} transcribed ✓</span>
         </div>
@@ -69,7 +69,7 @@ export function RecordingControls({
     }
     if (chunkStatus === 'error') {
       return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.725rem', color: '#e11d48', background: '#fff1f2', border: '1px solid #fecdd3', padding: '3px 8px', borderRadius: '9999px', fontWeight: 600 }}>
+        <div className="chunk-status-pill chunk-status-pill--danger">
           <AlertCircle size={11} />
           <span>Chunk error (retrying next)</span>
         </div>
@@ -82,29 +82,29 @@ export function RecordingControls({
     <div className="audio-controls">
       {/* Microphone permission error */}
       {micError && (
-        <div className="consent-box" style={{ background: '#fff1f2', borderColor: '#fecdd3', color: '#9f1239' }}>
-          <MicOff size={16} color="#e11d48" />
-          <span style={{ flex: 1 }}>{micError}</span>
+        <div className="consent-box consent-box--error">
+          <MicOff size={16} className="icon-danger" />
+          <span className="consent-box-text">{micError}</span>
         </div>
       )}
 
       {/* Dynamic Consent guard with Owner Name */}
       {!hasConsultation ? (
-        <div className="consent-box" style={{ background: '#f8fafc', borderColor: '#cbd5e1', color: '#475569' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <AlertCircle size={16} color="#64748b" />
+        <div className="consent-box consent-box--neutral">
+          <div className="consent-box-content">
+            <AlertCircle size={16} className="icon-muted" />
             <span>No active consultation selected. Please click <strong>+ New Consultation</strong> above to begin.</span>
           </div>
         </div>
       ) : !consentGiven && (
         <div className="consent-box">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <AlertCircle size={16} color="#d97706" />
+          <div className="consent-box-content">
+            <AlertCircle size={16} className="icon-warning" />
             <span>Recording consent required from <strong>{ownerName || 'Pet Owner'}</strong> before audio capture.</span>
           </div>
           <button
-            className="btn btn-primary"
-            style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+            type="button"
+            className="btn btn-primary consent-action-btn"
             onClick={onGrantConsent}
           >
             Record Consent from {ownerName || 'Owner'}
@@ -116,7 +116,7 @@ export function RecordingControls({
       <div className="controls-row">
         <div className="timer-box">
           {status === 'recording' ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div className="recording-pulse-wrap">
               <span className="recording-pulse" />
               <div className="live-audio-visualizer" title="Microphone capturing live audio stream">
                 <span className="wave-bar" />
@@ -127,7 +127,7 @@ export function RecordingControls({
               </div>
             </div>
           ) : (
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#94a3b8' }} />
+            <div className="timer-idle-dot" />
           )}
 
           <span className="tabular-timer">{formatTimer(seconds)}</span>
@@ -138,10 +138,10 @@ export function RecordingControls({
           {/* While recording */}
           {status === 'recording' && (
             <>
-              <button className="btn btn-outline btn-control-action" onClick={onPause} title="Pause — uploads current audio chunk">
+              <button type="button" className="btn btn-outline btn-control-action" onClick={onPause} title="Pause — uploads current audio chunk">
                 <Pause size={14} /> Pause
               </button>
-              <button className="btn btn-danger btn-control-action" onClick={() => onStop(seconds)} title="Stop & generate clinical documents">
+              <button type="button" className="btn btn-danger btn-control-action" onClick={() => onStop(seconds)} title="Stop & generate clinical documents">
                 <Square size={14} /> Stop & Scribe
               </button>
             </>
@@ -150,10 +150,10 @@ export function RecordingControls({
           {/* While paused */}
           {status === 'paused' && (
             <>
-              <button className="btn btn-primary btn-control-action" onClick={onResume}>
+              <button type="button" className="btn btn-primary btn-control-action" onClick={onResume}>
                 <Play size={14} /> Resume
               </button>
-              <button className="btn btn-danger btn-control-action" onClick={() => onStop(seconds)}>
+              <button type="button" className="btn btn-danger btn-control-action" onClick={() => onStop(seconds)}>
                 <Square size={14} /> Stop & Scribe
               </button>
             </>
@@ -163,6 +163,7 @@ export function RecordingControls({
           {status !== 'recording' && status !== 'paused' && (
             <>
               <button
+                type="button"
                 className="btn btn-primary btn-control-action"
                 disabled={!hasConsultation || !consentGiven || isUploadingAudio}
                 onClick={onStart}
@@ -173,28 +174,24 @@ export function RecordingControls({
               </button>
 
               <label
-                className="btn-upload-action"
-                style={{
-                  opacity: isUploadingAudio ? 0.7 : 1,
-                  cursor: isUploadingAudio ? 'not-allowed' : 'pointer',
-                }}
+                className={`btn-upload-action ${isUploadingAudio ? 'btn-upload-action--busy' : ''}`}
                 title="Upload pre-recorded consultation audio file (.wav, .mp3, .m4a, .webm)"
               >
                 {isUploadingAudio ? (
                   <>
-                    <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                    <Loader2 size={14} className="spin-animate" />
                     <span>Scribing...</span>
                   </>
                 ) : (
                   <>
-                    <Upload size={14} color="#0284c7" />
+                    <Upload size={14} className="icon-primary" />
                     <span>Upload Audio</span>
                   </>
                 )}
                 <input
                   type="file"
                   accept="audio/*,.mp3,.wav,.m4a,.webm,.ogg,.flac,.aac,.mp4"
-                  style={{ display: 'none' }}
+                  className="hidden-file-input"
                   disabled={isUploadingAudio}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
@@ -206,6 +203,7 @@ export function RecordingControls({
 
               {onReset && (status === 'processing' || status === 'completed') && (
                 <button
+                  type="button"
                   className="btn btn-outline btn-control-action btn-reset-action"
                   onClick={onReset}
                   title="Reset consultation to clean scheduled state"
@@ -221,9 +219,9 @@ export function RecordingControls({
 
       {/* Speaker Diarizer Segmented Control + Chunk Status */}
       {(status === 'recording' || status === 'paused') && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.04em' }}>SPEAKER:</span>
+        <div className="speaker-controls-bar">
+          <div className="speaker-controls-left">
+            <span className="speaker-label">SPEAKER:</span>
 
             <div className="segmented-control">
               {/* Auto AI Diarizer */}
@@ -233,7 +231,7 @@ export function RecordingControls({
                 onClick={() => onToggleSpeaker('auto')}
                 title="Automatically classify Doctor vs Owner using AI clinical turn diarization"
               >
-                <Sparkles size={12} color={currentSpeaker === 'auto' ? '#059669' : '#64748b'} />
+                <Sparkles size={12} className={currentSpeaker === 'auto' ? 'icon-success' : 'icon-muted'} />
                 <span>Auto AI Diarizer</span>
               </button>
 
@@ -244,7 +242,7 @@ export function RecordingControls({
                 onClick={() => onToggleSpeaker('doctor')}
                 title="Force current speaker tag to Attending Veterinarian"
               >
-                <Stethoscope size={12} color={currentSpeaker === 'doctor' ? '#0284c7' : '#64748b'} />
+                <Stethoscope size={12} className={currentSpeaker === 'doctor' ? 'icon-primary' : 'icon-muted'} />
                 <span>{doctorName ? `Dr. ${doctorName.replace(/^Dr\.?\s*/i, '')}` : 'Veterinarian'}</span>
               </button>
 
@@ -255,7 +253,7 @@ export function RecordingControls({
                 onClick={() => onToggleSpeaker('owner')}
                 title="Force current speaker tag to Pet Owner"
               >
-                <User size={12} color={currentSpeaker === 'owner' ? '#475569' : '#64748b'} />
+                <User size={12} className="icon-muted" />
                 <span>{ownerName || 'Pet Owner'}</span>
               </button>
             </div>
@@ -268,9 +266,9 @@ export function RecordingControls({
 
       {/* Whisper info banner — first time */}
       {status === 'recording' && chunkCount === 0 && (
-        <div style={{ fontSize: '0.74rem', color: '#64748b', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Upload size={12} color="#0284c7" />
-          <span>Local audio capture active. Transcribing via <strong>OpenAI Whisper API</strong> every 15s.</span>
+        <div className="audio-whisper-hint">
+          <Upload size={12} className="icon-primary" />
+          <span>Local audio capture active. Transcribing via <strong>Whisper Large V3</strong> every 15s.</span>
         </div>
       )}
     </div>

@@ -31,7 +31,7 @@ const config = {
     refreshTokenDays: 14,
     stagingHardcodedOtp: '123456',
   },
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 };
 
 module.exports = config;

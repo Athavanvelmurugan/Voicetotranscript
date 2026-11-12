@@ -12,7 +12,7 @@ export function DocumentTabs({ activeTab, onSelectTab, documents }) {
     const doc = documents.find((d) => d.doc_type === docType);
     if (!doc) {
       return (
-        <span style={{ fontSize: '0.68rem', color: '#94a3b8', background: '#f1f5f9', padding: '1px 6px', borderRadius: '9999px', fontWeight: 600 }}>
+        <span className="tab-status-chip--awaiting">
           Awaiting
         </span>
       );
@@ -21,26 +21,26 @@ export function DocumentTabs({ activeTab, onSelectTab, documents }) {
     switch (doc.status) {
       case 'approved':
         return (
-          <span className="badge badge-success" style={{ padding: '2px 7px', fontSize: '0.65rem' }}>
+          <span className="badge badge-success badge-compact">
             <CheckCircle2 size={10} /> Approved
           </span>
         );
       case 'rejected':
         return (
-          <span className="badge badge-danger" style={{ padding: '2px 7px', fontSize: '0.65rem' }}>
+          <span className="badge badge-danger badge-compact">
             <XCircle size={10} /> Rejected
           </span>
         );
       case 'needs_review':
         return (
-          <span className="badge badge-warning" style={{ padding: '2px 7px', fontSize: '0.65rem' }}>
+          <span className="badge badge-warning badge-compact">
             <AlertTriangle size={10} /> Edited
           </span>
         );
       case 'draft':
       default:
         return (
-          <span className="badge badge-info" style={{ padding: '2px 7px', fontSize: '0.65rem' }}>
+          <span className="badge badge-info badge-compact">
             <Clock size={10} /> Draft
           </span>
         );

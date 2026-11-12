@@ -27,15 +27,32 @@
   --color-warning:        #d97706;
   --color-warning-soft:   #fffbeb;
   --color-warning-border: #fde68a;
+  --color-warning-ink:    #92400e;
+  --color-warning-ink-strong: #78350f;
 
   --color-danger:         #e11d48;
   --color-danger-hover:   #be123c;
   --color-danger-soft:    #fff1f2;
   --color-danger-border:  #fecdd3;
+  --color-danger-ink:     #9f1239;
+  --color-danger-ink-strong: #881337;
+
+  --color-success-ink:    #065f46;
 
   --color-info:           #0284c7;
   --color-info-soft:      #f0f9ff;
+  --color-info-tint:      #e0f2fe;
   --color-info-border:    #bae6fd;
+  --color-info-ink:       #0369a1;
+  --color-info-card-bg:     #eff6ff;
+  --color-info-card-border: #bfdbfe;
+  --color-info-card-title:  #1e40af;
+  --color-info-card-text:   #1e3a8a;
+
+  /* ---------- Gradients ---------- */
+  --color-gradient-primary:      linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  --color-gradient-primary-soft: linear-gradient(135deg, var(--color-primary-soft) 0%, var(--color-info-tint) 100%);
+  --color-gradient-insights:     linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
 
   /* ---------- Slate Neutrals System ---------- */
   --slate-50:  #f8fafc;
@@ -98,6 +115,7 @@
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
   --text-xs:   0.75rem;
   --text-sm:   0.875rem;
+  --text-md:   0.9375rem;
   --text-base: 1rem;
   --text-lg:   1.125rem;
   --text-xl:   1.25rem;
@@ -172,15 +190,29 @@
   --color-warning:        #fcb900;
   --color-warning-soft:   #fffbe6;
   --color-warning-border: #ffe58f;
+  --color-warning-ink:    #8c5800;
+  --color-warning-ink-strong: #6e4400;
 
   --color-danger:         #e05050;
   --color-danger-hover:   #c83e3e;
   --color-danger-soft:    #fff0f0;
   --color-danger-border:  #f5c0c0;
+  --color-danger-ink:     #9e1c26;
+  --color-danger-ink-strong: #7f1d1d;
+
+  --color-success-ink:    #166534;
 
   --color-info:           #0074db;
   --color-info-soft:      #e6f7ff;
+  --color-info-tint:      #d4f1ec;
   --color-info-border:    #91d5ff;
+  --color-info-ink:       #1e6e64;
+  --color-info-card-bg:     #eaf7f5;
+  --color-info-card-border: #b2e5d0;
+  --color-info-card-title:  #1a5048;
+  --color-info-card-text:   #0d1b22;
+
+  --color-gradient-insights: linear-gradient(135deg, #1a5048 0%, #2b8f82 100%);
 
   /* Surfaces & Backgrounds: Fresh Petgards Mint Tint */
   --color-bg:             #f0faf9;

@@ -149,32 +149,40 @@ class DocumentController {
     }
   }
 
+  async ensureLatestPdf(docId, doctorId, { forceRefresh = false } = {}) {
+    if (forceRefresh) {
+      const generated = await pdfService.generateSignedDocumentPdf(docId, doctorId);
+      return generated.fileRecord;
+    }
+
+    const doc = await documentService.getDocument(docId);
+    const fileRes = await db.query(
+      'SELECT * FROM generated_files WHERE doc_id = $1 ORDER BY id DESC LIMIT 1',
+      [docId]
+    );
+    const fileRecord = fileRes.rows[0];
+
+    const isMissingOrStale =
+      !fileRecord ||
+      !fs.existsSync(fileRecord.storage_path) ||
+      !String(fileRecord.file_name || '').includes('_v2_') ||
+      (doc?.updated_at && new Date(fileRecord.created_at) < new Date(doc.updated_at));
+
+    if (isMissingOrStale) {
+      const generated = await pdfService.generateSignedDocumentPdf(docId, doctorId);
+      return generated.fileRecord;
+    }
+
+    return fileRecord;
+  }
+
   async downloadPdf(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
       const doctorId = this.getDoctorId(req);
+      const forceRefresh = req.query.refresh === '1' || req.query.refresh === 'true';
 
-      // Check if file exists in generated_files
-      let fileRes = await db.query(
-        'SELECT * FROM generated_files WHERE doc_id = $1 ORDER BY id DESC LIMIT 1',
-        [id]
-      );
-
-      let fileRecord;
-      if (fileRes.rows.length === 0) {
-        // Generate on-the-fly if not generated yet
-        const generated = await pdfService.generateSignedDocumentPdf(id, doctorId);
-        fileRecord = generated.fileRecord;
-      } else {
-        fileRecord = fileRes.rows[0];
-      }
-
-      if (!fs.existsSync(fileRecord.storage_path)) {
-        // Regenerate if file was pruned or missing on disk
-        const generated = await pdfService.generateSignedDocumentPdf(id, doctorId);
-        fileRecord = generated.fileRecord;
-      }
-
+      const fileRecord = await this.ensureLatestPdf(id, doctorId, { forceRefresh });
       res.download(fileRecord.storage_path, fileRecord.file_name);
     } catch (err) {
       next(err);
@@ -192,15 +200,9 @@ class DocumentController {
       }
 
       const consultation = await consultationService.getConsultation(doc.consultation_id);
-      
-      // Ensure PDF is generated
-      let fileRes = await db.query(
-        'SELECT * FROM generated_files WHERE doc_id = $1 ORDER BY id DESC LIMIT 1',
-        [id]
-      );
-      if (fileRes.rows.length === 0) {
-        await pdfService.generateSignedDocumentPdf(id, doctorId);
-      }
+
+      // Ensure up-to-date signed PDF exists before sharing
+      await this.ensureLatestPdf(id, doctorId);
 
       // Generate a secure share link (expires in 30 days)
       const rawToken = crypto.randomBytes(32).toString('hex');

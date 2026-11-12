@@ -3,7 +3,7 @@ import { DocumentTabs } from './DocumentTabs';
 import { DocumentEditor } from './DocumentEditor';
 import { ApprovalActions } from './ApprovalActions';
 import { VersionHistoryModal } from './VersionHistoryModal';
-import { Sparkles, AlertCircle, CheckCircle, FileText, Loader2 } from 'lucide-react';
+import { Sparkles, AlertCircle, CheckCircle, FileText, Loader2, Lock } from 'lucide-react';
 
 export function DocumentsPanel({
   documents,
@@ -121,32 +121,32 @@ export function DocumentsPanel({
 
       <div className="doc-content-container">
         {actionError && (
-          <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c', padding: '10px 14px', borderRadius: '10px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem' }}>
+          <div className="doc-error-banner">
             <AlertCircle size={16} />
             <span>{actionError}</span>
           </div>
         )}
 
         {documents.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '70px 20px', maxWidth: '480px', margin: '0 auto' }}>
-            <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: '#f0f9ff', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px auto' }}>
-              <Sparkles size={28} color="#0284c7" />
+          <div className="doc-empty-synthesis">
+            <div className="doc-empty-icon-box">
+              <Sparkles size={28} />
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 750, color: '#0f172a', marginBottom: '8px' }}>
+            <h3 className="doc-empty-title">
               Consultation Transcribed — Awaiting Synthesis
             </h3>
-            <p style={{ color: '#64748b', fontSize: '0.86rem', lineHeight: 1.55, marginBottom: '22px' }}>
+            <p className="doc-empty-desc">
               Audio dialogue has been transcribed via Whisper Large V3. Click below to synthesize the clinical summary, prescription orders, and laboratory investigations for veterinarian review and sign-off.
             </p>
             <button
-              className="btn btn-primary"
+              type="button"
+              className="btn btn-primary doc-empty-cta"
               disabled={isGenerating}
               onClick={onTriggerGenerate}
-              style={{ padding: '9px 20px', fontSize: '0.86rem', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
             >
               {isGenerating ? (
                 <>
-                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                  <Loader2 size={16} className="spin-animate" />
                   <span>Synthesizing Clinical Insights...</span>
                 </>
               ) : (
@@ -160,29 +160,36 @@ export function DocumentsPanel({
         ) : (
           <>
             <div className="doc-top-bar">
-              <div className="doc-title-box">
-                <h2>{activeDoc ? activeDoc.content?.title || activeTab.toUpperCase() : 'Document Draft'}</h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
-                  <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                    Status: <strong style={{ color: '#0f172a' }}>{activeDoc?.status.toUpperCase()}</strong>
-                  </span>
-                  <span>•</span>
-                  <span style={{ fontSize: '0.78rem', color: '#64748b', fontFamily: 'ui-monospace, monospace' }}>
-                    Version #{activeDoc?.current_version || 1}
-                  </span>
+              <div className="doc-header-row">
+                <div className="doc-title-box">
+                  <h2>{activeDoc ? activeDoc.content?.title || activeTab.toUpperCase() : 'Document Draft'}</h2>
+                  <div className="doc-title-meta">
+                    <span>
+                      Status: <strong className="doc-title-status-strong">{activeDoc?.status.toUpperCase()}</strong>
+                    </span>
+                    <span>•</span>
+                    <span className="doc-title-version">
+                      Version #{activeDoc?.current_version || 1}
+                    </span>
+                  </div>
                 </div>
+
+                {activeDoc?.status === 'approved' && (
+                  <div className="badge badge-success doc-seal-badge">
+                    <Lock size={13} /> Approved & Cryptographically Sealed
+                  </div>
+                )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="doc-action-toolbar">
                 <button
                   type="button"
-                  className="btn btn-outline"
+                  className="btn btn-outline doc-action-btn"
                   onClick={onTriggerGenerate}
                   disabled={isGenerating}
-                  style={{ fontSize: '0.80rem', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '5px' }}
                   title="Re-run clinical extraction from consultation transcripts to update all 5 templates"
                 >
-                  <Sparkles size={13} color="#0284c7" />
+                  <Sparkles size={13} className="icon-primary" />
                   <span>{isGenerating ? 'Extracting...' : 'Re-generate with AI'}</span>
                 </button>
 
@@ -207,14 +214,14 @@ export function DocumentsPanel({
 
             {/* Bottom Finalize & Complete Banner */}
             {documents.length > 0 && consultationStatus !== 'completed' && onCompleteConsultation && (
-              <div style={{ marginTop: '24px', padding: '16px 20px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div className="doc-finalize-banner">
                 <div>
-                  <div style={{ fontWeight: 750, color: '#065f46', fontSize: '0.92rem' }}>Ready to Finalize Consultation?</div>
-                  <div style={{ fontSize: '0.82rem', color: '#047857', marginTop: '2px' }}>All clinical documents have been drafted by AI scribe. You can review, sign, and complete.</div>
+                  <div className="doc-finalize-title">Ready to Finalize Consultation?</div>
+                  <div className="doc-finalize-sub">All clinical documents have been drafted by AI scribe. You can review, sign, and complete.</div>
                 </div>
                 <button
-                  className="btn btn-primary"
-                  style={{ background: '#059669', borderColor: '#059669', padding: '7px 16px', fontSize: '0.84rem' }}
+                  type="button"
+                  className="btn btn-success doc-finalize-btn"
                   onClick={onCompleteConsultation}
                 >
                   <CheckCircle size={15} /> Finalize & Complete Consultation
@@ -237,12 +244,12 @@ export function DocumentsPanel({
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="modal-overlay" onClick={() => setShowRejectModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content consult-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Reject Clinical Document Draft</h3>
+              <h3 className="doc-reject-title">Reject Clinical Document Draft</h3>
             </div>
             <div className="modal-body">
-              <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '14px', lineHeight: 1.5 }}>
+              <p className="doc-reject-desc">
                 Please provide a formal clinical reason for rejecting this document draft. This will be preserved in the legal audit log.
               </p>
               <textarea
@@ -254,10 +261,11 @@ export function DocumentsPanel({
               />
             </div>
             <div className="modal-footer">
-              <button className="btn btn-outline" onClick={() => setShowRejectModal(false)}>
+              <button type="button" className="btn btn-outline" onClick={() => setShowRejectModal(false)}>
                 Cancel
               </button>
               <button
+                type="button"
                 className="btn btn-danger"
                 disabled={!rejectReason.trim() || isSubmitting}
                 onClick={handleReject}

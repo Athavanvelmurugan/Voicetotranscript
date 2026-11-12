@@ -10,7 +10,11 @@ import { useMicrophone } from './hooks/useMicrophone';
 import { apiClient } from '../../api/client';
 import { Sparkles, Plus, X, Stethoscope, AlertCircle } from 'lucide-react';
 
-export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelectedPet = null }) {
+export function ConsultationWorkspace({
+  preSelectedPetId = null,
+  onClearPreSelectedPet = null,
+  inPortal = false,
+}) {
   const { user } = useAuth();
   const [consultations, setConsultations]   = useState([]);
 
@@ -694,7 +698,7 @@ export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelec
   };
 
   return (
-    <div className="consultation-workspace">
+    <div className={`consultation-workspace ${inPortal ? 'consultation-workspace--in-portal' : ''}`}>
       {errorMessage && (
         <div className="alert-inline-error">
           <AlertCircle size={16} />
@@ -706,11 +710,11 @@ export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelec
       {extractionProgress && (
         <div className="alert-inline-progress">
           <Sparkles size={20} className="spin" />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>
+          <div className="alert-progress-body">
+            <div className="alert-progress-title">
               AI Clinical Extraction in Progress ({extractionProgress.percent}%)
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#15803d' }}>
+            <div className="alert-progress-sub">
               Stage: {extractionProgress.stage?.replace(/_/g, ' ')}
             </div>
           </div>
@@ -741,6 +745,7 @@ export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelec
           microchipNo={consultation.pet_microchip_no}
           weightKg={consultation.pet_weight}
           ageYears={consultation.pet_age}
+          compact={true}
         />
       )}
 
@@ -800,13 +805,18 @@ export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelec
       {/* ─── + New Dynamic Consultation Modal ─── */}
       {showNewModal && (
         <div className="modal-overlay" onClick={() => setShowNewModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+          <div className="modal-content consult-modal-content consult-modal-content--sm" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
-                <Stethoscope size={18} color="#0284c7" />
+              <div className="modal-title-row">
+                <Stethoscope size={18} className="icon-primary" />
                 <span>Create New Consultation</span>
               </div>
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => setShowNewModal(false)}>
+              <button
+                type="button"
+                className="modal-close-icon-btn"
+                onClick={() => setShowNewModal(false)}
+                aria-label="Close new consultation modal"
+              >
                 <X size={18} />
               </button>
             </div>
@@ -814,8 +824,8 @@ export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelec
             <form onSubmit={handleCreateNewConsultation}>
               <div className="modal-body">
                 {/* Attending Veterinarian Locked to Authenticated Doctor */}
-                <div className="form-group" style={{ marginBottom: '14px' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '6px', display: 'block' }}>
+                <div className="form-group new-consult-form-group">
+                  <label className="new-consult-label">
                     Attending Clinician
                   </label>
                   <div className="doctor-locked-badge">
@@ -825,8 +835,8 @@ export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelec
                 </div>
 
                 {/* Patient / Pet Selection */}
-                <div className="form-group" style={{ marginBottom: '14px' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px', display: 'block' }}>
+                <div className="form-group new-consult-form-group">
+                  <label className="new-consult-label">
                     Select Patient (Pet)
                   </label>
                   <select
@@ -844,8 +854,8 @@ export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelec
                 </div>
 
                 {/* Audio Language Selection */}
-                <div className="form-group" style={{ marginBottom: '14px' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                <div className="form-group new-consult-form-group">
+                  <label className="new-consult-label">
                     Consultation Audio Language
                   </label>
                   <select
@@ -860,14 +870,14 @@ export function ConsultationWorkspace({ preSelectedPetId = null, onClearPreSelec
                 </div>
 
                 {/* Pet Owner Consent */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div className="new-consult-consent-box">
                   <input
                     type="checkbox"
                     id="consent_check"
                     checked={newConsent}
                     onChange={(e) => setNewConsent(e.target.checked)}
                   />
-                  <label htmlFor="consent_check" style={{ fontSize: '0.82rem', color: '#334155', cursor: 'pointer' }}>
+                  <label htmlFor="consent_check" className="new-consult-consent-label">
                     Pet owner digital recording consent granted
                   </label>
                 </div>
