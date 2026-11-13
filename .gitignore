@@ -39,8 +39,9 @@ blob-report/
 coverage/
 *.lcov
 *.png
-!frontend/src/assets/*.png
-!public/*.png
+!frontend/public/**
+!frontend/src/assets/**
+!public/**
 
 # ─── Logs & Process Files ───
 *.log
